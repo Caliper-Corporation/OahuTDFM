@@ -1,0 +1,4 @@
+master_tazs
+8,codepage=65001
+"Master_ID",I,1,4,0,4,0,,"","",,"Sum",
+"MountainTAZ",I,5,4,0,8,0,,"","If this is a mountain TAZ, it is ignored by the model (no centroid connector).|They are included in the TAZ layer to facilitate communication with DPP.",,"Sum",
