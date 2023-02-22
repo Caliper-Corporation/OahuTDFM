@@ -1,6 +1,6 @@
 Oahu Network 102907
-210
-"ID",I,1,4,0,10,0,,"","",,"Sum",
+222
+"ID",I,1,4,0,4,0,,"","",,"Sum",
 "ID:1",I,5,4,0,10,0,,"","",,"Sum",
 "X",R,9,8,0,10,2,,"","Raw X Coordinate",,"Blank",
 "Y",R,17,8,0,10,2,,"","Raw Y Coordinate",,"Blank",
@@ -23,3 +23,5 @@ Oahu Network 102907
 "RailProject",C,179,24,0,24,0,,"","rail stations broken up by first project, west extension, and east extension",,"Blank",
 "Original_Node_ID_NEW",I,203,4,0,8,0,,"","",,"Sum",
 "Existing",I,207,4,0,8,0,,"","",,"Sum",
+"preserve",I,211,4,0,8,0,,"","",,"Sum",
+"stop_dist",R,215,8,0,10,2,,"","",,"Sum",
