@@ -7,7 +7,7 @@ Oahu Network 102907
 "HCMType",C,51,14,0,14,0,,"","",,"Copy",
 "PostedSpeed",I,65,4,0,8,0,,"","",,"Copy",
 "HCMMedian",C,69,14,0,14,0,,"","",,"Copy",
-"DTWB",C,83,9,0,9,0,,"","",,"Sum",
+"DTWB",C,83,9,0,9,0,,"","",,"Copy",
 "HOV",C,92,4,0,4,0,,"","",,"Copy",
 "TollType",C,96,4,0,4,0,,"","",,"Copy",
 "CountID",I,100,4,0,8,0,,"","ID of count station",,"Copy",
