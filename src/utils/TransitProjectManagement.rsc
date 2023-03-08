@@ -284,10 +284,11 @@ Macro "Import from GTFS" (MacroOpts)
     {FieldName: "ProjID", Type: "string"},
     {FieldName: "Mode", Type: "integer"},
     {FieldName: "Fare", Type: "real"},
-    {FieldName: "AMHeadway", Type: "integer"},
-    {FieldName: "MDHeadway", Type: "integer"},
-    {FieldName: "PMHeadway", Type: "integer"},
-    {FieldName: "NTHeadway", Type: "integer"}
+    {FieldName: "EA_Headway", Type: "integer"},
+    {FieldName: "AM_Headway", Type: "integer"},
+    {FieldName: "MD_Headway", Type: "integer"},
+    {FieldName: "PM_Headway", Type: "integer"},
+    {FieldName: "EV_Headway", Type: "integer"}
   }
   tbl.AddFields({Fields: fields})
   master_tbl = CreateObject("Table", master_rlyr)
@@ -299,10 +300,11 @@ Macro "Import from GTFS" (MacroOpts)
   join_tbl.(rlyr + ".ProjID") = join_tbl.(master_rlyr + ".ProjID")
   join_tbl.(rlyr + ".Mode") = join_tbl.(master_rlyr + ".Mode")
   join_tbl.(rlyr + ".Fare") = join_tbl.(master_rlyr + ".Fare")
-  join_tbl.(rlyr + ".AMHeadway") = join_tbl.(master_rlyr + ".AMHeadway")
-  join_tbl.(rlyr + ".MDHeadway") = join_tbl.(master_rlyr + ".MDHeadway")
-  join_tbl.(rlyr + ".PMHeadway") = join_tbl.(master_rlyr + ".PMHeadway")
-  join_tbl.(rlyr + ".NTHeadway") = join_tbl.(master_rlyr + ".NTHeadway")
+  join_tbl.(rlyr + ".EA_Headway") = join_tbl.(master_rlyr + ".EA_Headway")
+  join_tbl.(rlyr + ".AM_Headway") = join_tbl.(master_rlyr + ".AM_Headway")
+  join_tbl.(rlyr + ".MD_Headway") = join_tbl.(master_rlyr + ".MD_Headway")
+  join_tbl.(rlyr + ".PM_Headway") = join_tbl.(master_rlyr + ".PM_Headway")
+  join_tbl.(rlyr + ".EV_Headway") = join_tbl.(master_rlyr + ".EV_Headway")
 
   // Clean up stop attributes
   stop_tbl = CreateObject("Table", slyr)
@@ -315,9 +317,11 @@ Macro "Import from GTFS" (MacroOpts)
   }})
   // Add back stop attributes from master
   fields = {
-    {FieldName: "dwell_on", Type: "real"},
-    {FieldName: "dwell_off", Type: "real"},
-    {FieldName: "xfer_pen", Type: "real"}
+    {FieldName: "shape_stop", Type: "integer"}//,
+    // TODO: transfer these fields once they exist on the stop layer
+    // {FieldName: "dwell_on", Type: "real"},
+    // {FieldName: "dwell_off", Type: "real"},
+    // {FieldName: "xfer_pen", Type: "real"}
   }
   stop_tbl.AddFields({Fields: fields})
   stop_tbl.RenameField({FieldName: "GTFS_Stop_ID", NewName:"Master_Stop_ID"})
@@ -327,9 +331,11 @@ Macro "Import from GTFS" (MacroOpts)
     LeftFields: "Master_Stop_ID",
     RightFields: "ID"
   })
-  join_tbl.(slyr + ".dwell_on") = join_tbl.(master_slyr + ".dwell_on")
-  join_tbl.(slyr + ".dwell_off") = join_tbl.(master_slyr + ".dwell_off")
-  join_tbl.(slyr + ".xfer_pen") = join_tbl.(master_slyr + ".xfer_pen")
+  join_tbl.(slyr + ".shape_stop") = join_tbl.(master_slyr + ".shape_stop")
+  // TODO: transfer these fields once they exist on the stop layer
+  // join_tbl.(slyr + ".dwell_on") = join_tbl.(master_slyr + ".dwell_on")
+  // join_tbl.(slyr + ".dwell_off") = join_tbl.(master_slyr + ".dwell_off")
+  // join_tbl.(slyr + ".xfer_pen") = join_tbl.(master_slyr + ".xfer_pen")
   join_tbl = null
 endmacro
 
@@ -341,19 +347,17 @@ Also tags stops with node IDs in the 'node_id' field.
 Macro "Update Scenario Attributes" (MacroOpts)
 
   // Argument extraction
-  // master_rts = MacroOpts.master_rts
   scen_hwy = MacroOpts.scen_hwy
   proj_list = MacroOpts.proj_list
-  // centroid_qry = MacroOpts.centroid_qry
   output_rts_file = MacroOpts.output_rts_file
 
   // Read in the parameter file
   param = CreateObject("Table", proj_list)
 
   // Create a map of the scenario RTS
-  opts = null
-  opts.file = output_rts_file
-  {map, {rlyr, slyr}} = RunMacro("Create Map", opts)
+  map = CreateObject("Map", output_rts_file)
+  {nlyr, llyr, rlyr, slyr} = map.GetLayerNames()
+
   SetLayer(rlyr)
 
   // Loop over column names and update attributes. ProjID is skipped.
@@ -396,8 +400,6 @@ Macro "Update Scenario Attributes" (MacroOpts)
   a_field = {{"Node_ID", "Integer", 10, , , , , "ID of node closest to stop"}}
   RunMacro("Add Fields", {view: slyr, a_fields: a_field})
   n = TagRouteStopsWithNode(rlyr,,"Node_ID",.2)
-
-  CloseMap(map)
 EndMacro
 
 /*
@@ -435,13 +437,10 @@ Macro "Check Scenario Route System" (MacroOpts)
   {v_rid_s, } = RunMacro("Convert ProjID to RouteID", opts)
 
   // Open the master and scenario route systems in separate maps.
-  opts = null
-  opts.file = master_rts
-  {master_map, {rlyr_m, slyr_m, , , llyr_m}} = RunMacro("Create Map", opts)
-  opts = null
-  opts.file = output_rts_file
-  opts.debug = 1
-  {scen_map, {rlyr_s, slyr_s, , , llyr_s}} = RunMacro("Create Map", opts)
+  master_map = CreateObject("Map", master_rts)
+  {nlyr_m, llyr_m, rlyr_m, slyr_m} = master_map.GetLayerNames()
+  scen_map = CreateObject("Map", output_rts_file)
+  {nlyr_s, llyr_s, rlyr_s, slyr_s} = scen_map.GetLayerNames()
   
   // Compare master and scenario routes
   data = null
@@ -482,14 +481,11 @@ Macro "Check Scenario Route System" (MacroOpts)
     data.missing_stops = data.missing_stops + {num_stops_m - num_stops_s}
   end
 
-  // Close both maps
-  CloseMap(master_map)
-  CloseMap(scen_map)
-
   // Convert the named array into a table
-  for i = 1 to data.length do
+  fields = {{FieldName: "projid", Type: "string"}}
+  for i = 2 to data.length do
     field_name = data[i][1]
-    fields = fields + {FieldName: field_name}
+    fields = fields + {{FieldName: field_name}}
   end
   comp_tbl = CreateObject("Table", {Fields: fields})
   comp_tbl.AddRows({EmptyRows: data.projid.length})
@@ -683,5 +679,4 @@ Macro "Remove Shape Stops" (MacroOpts)
       DeleteRecordsInSet("to remove")
     end
   end
-
 endmacro
