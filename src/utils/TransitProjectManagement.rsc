@@ -348,8 +348,7 @@ Macro "Update Scenario Attributes" (MacroOpts)
   output_rts_file = MacroOpts.output_rts_file
 
   // Read in the parameter file
-  param = CreateObject("df")
-  param.read_csv(proj_list)
+  param = CreateObject("Table", proj_list)
 
   // Create a map of the scenario RTS
   opts = null
@@ -358,21 +357,21 @@ Macro "Update Scenario Attributes" (MacroOpts)
   SetLayer(rlyr)
 
   // Loop over column names and update attributes. ProjID is skipped.
-  a_colnames = param.colnames()
+  a_field_names = param.GetFieldNames()
   // Only do this process if columns other than ProjID exist.
-  if a_colnames.length > 1 then do
-    for col_name in a_colnames do
-      if col_name = "ProjID" then continue
+  if a_field_names.length > 1 then do
+    for field_name in a_field_names do
+      if field_name = "ProjID" then continue
 
-      // Create a data frame that filters out null values from this column
-      temp = param.copy()
-      temp.filter(col_name + " <> null")
+      // Filter out null values from this column
+      n = param.SelectByQuery({
+        SetName: "no_nulls",
+        Query: field_name + " <> null"
+      })
+      if n = 0 then continue
 
-      // Break if this column is empty
-      test = temp.is_empty()
-      if temp.is_empty() then continue
-
-      {v_pid, v_value} = temp.get_col({"ProjID", col_name})
+      v_pid = param.ProjID
+      v_value = param.(field_name)
       for i = 1 to v_pid.length do
         pid = v_pid[i]
         value = v_value[i]
@@ -388,7 +387,7 @@ Macro "Update Scenario Attributes" (MacroOpts)
 
         // Update the attribute
         SetRecord(rlyr, rh)
-        rlyr.(col_name) = value
+        rlyr.(field_name) = value
       end
     end
   end
@@ -435,31 +434,17 @@ Macro "Check Scenario Route System" (MacroOpts)
   opts.rts_file = output_rts_file
   {v_rid_s, } = RunMacro("Convert ProjID to RouteID", opts)
 
-  // Summarize the number of missing nodes by route. In order to have
-  // all the fields in one table, you have to open the RTS file, which
-  // links multiple tables together.
+  // Open the master and scenario route systems in separate maps.
   opts = null
   opts.file = master_rts
   {master_map, {rlyr_m, slyr_m, , , llyr_m}} = RunMacro("Create Map", opts)
-  stops_df = CreateObject("df")
-  opts = null
-  opts.view = slyr_m
-  // opts.fields = {"Route_ID", "missing_node"}
-  opts.fields = {"Route_ID"}
-  stops_df.read_view(opts)
-  stops_df.mutate("missing_node", null)
-  stops_df.group_by("Route_ID")
-  stops_df.summarize("missing_node", "sum")
-  stops_df.rename("sum_missing_node", "missing_node")
-
-  // Open the scenario route system in a separate map.
   opts = null
   opts.file = output_rts_file
   opts.debug = 1
   {scen_map, {rlyr_s, slyr_s, , , llyr_s}} = RunMacro("Create Map", opts)
-  // Compare route lengths between master and scenario
+  
+  // Compare master and scenario routes
   data = null
-
   for i = 1 to v_rev_pid.length do
     pid = v_rev_pid[i]
     rid_m = v_rid_m[i]
@@ -501,12 +486,19 @@ Macro "Check Scenario Route System" (MacroOpts)
   CloseMap(master_map)
   CloseMap(scen_map)
 
-  // Convert the named array into a data frame
-  length_df = CreateObject("df", data)
-  
-  length_df.write_csv(out_dir + "/_rts_creation_results.csv")
-
-  RunMacro("Close All")
+  // Convert the named array into a table
+  for i = 1 to data.length do
+    field_name = data[i][1]
+    fields = fields + {FieldName: field_name}
+  end
+  comp_tbl = CreateObject("Table", {Fields: fields})
+  comp_tbl.AddRows({EmptyRows: data.projid.length})
+  for i = 1 to data.length do
+    field_name = data[i][1]
+    values = data.(field_name)
+    comp_tbl.(field_name) = values
+  end
+  comp_tbl.Export({FileName: out_dir + "/_rts_creation_results.csv"})
 EndMacro
 
 /*
