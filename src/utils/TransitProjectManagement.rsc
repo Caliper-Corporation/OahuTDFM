@@ -413,31 +413,22 @@ Macro "Import from GTFS" (MacroOpts)
   }})
 
   // Add back route attributes from the master route system
-  fields = {
-    {FieldName: "ProjID", Type: "string"},
-    {FieldName: "Mode", Type: "integer"},
-    {FieldName: "Fare", Type: "real"},
-    {FieldName: "EA_Headway", Type: "integer"},
-    {FieldName: "AM_Headway", Type: "integer"},
-    {FieldName: "MD_Headway", Type: "integer"},
-    {FieldName: "PM_Headway", Type: "integer"},
-    {FieldName: "EV_Headway", Type: "integer"}
-  }
-  tbl.AddFields({Fields: fields})
   master_tbl = CreateObject("Table", master_rlyr)
+  fields_to_add = master_tbl.GetFieldNames()
+  for field in fields_to_add do
+    if field = "Route_ID" then continue
+    type = GetFieldType(master_rlyr+ "." + field)
+    tbl.AddField({FieldName: field, Type: type})
+  end  
   join_tbl = tbl.Join({
     Table: master_tbl,
     LeftFields: "Master_Route_ID",
     RightFields: "Route_ID"
   })
-  join_tbl.(rlyr + ".ProjID") = join_tbl.(master_rlyr + ".ProjID")
-  join_tbl.(rlyr + ".Mode") = join_tbl.(master_rlyr + ".Mode")
-  join_tbl.(rlyr + ".Fare") = join_tbl.(master_rlyr + ".Fare")
-  join_tbl.(rlyr + ".EA_Headway") = join_tbl.(master_rlyr + ".EA_Headway")
-  join_tbl.(rlyr + ".AM_Headway") = join_tbl.(master_rlyr + ".AM_Headway")
-  join_tbl.(rlyr + ".MD_Headway") = join_tbl.(master_rlyr + ".MD_Headway")
-  join_tbl.(rlyr + ".PM_Headway") = join_tbl.(master_rlyr + ".PM_Headway")
-  join_tbl.(rlyr + ".EV_Headway") = join_tbl.(master_rlyr + ".EV_Headway")
+  for field in fields_to_add do
+    if field = "Route_ID" or field = "Master_Route_ID" then continue
+    join_tbl.(rlyr + "." + field) = join_tbl.(master_rlyr + "." + field)
+  end
 
   // Clean up stop attributes
   stop_tbl = CreateObject("Table", slyr)
@@ -490,6 +481,8 @@ Macro "Merge Route Systems" (MacroOpts)
   // Create route and stop field arrays to merge attributes
   tbl = CreateObject("Table", rlyr2)
   field_names = tbl.GetFieldNames()
+  // TODO: Master_Route_ID needs to be removed from the master RTS. When that
+  // happens, that field needs to be handled here.
   dont_include = {"Route_ID", "Agency", "Length"}
   for field_name in field_names do
     if dont_include.position(field_name) > 0 then continue
@@ -502,6 +495,9 @@ Macro "Merge Route Systems" (MacroOpts)
   opts.[Stop Fields] = stop_fields
   MergeRouteSystems(rlyr, rlyr2 + "|", opts)
 
+  tbl = CreateObject("Table", rlyr)
+  tbl.DropFields("sel_temp")
+  tbl = null
   rts = null
   rts2 = null
   // Delete the broken route files
