@@ -1,6 +1,3 @@
-// MergeRouteSystem
-// TC40 create Route System subset ex
-
 /*
 Library of tools to create scenario RTS files by extracting from a master
 layer and moving to a scenario network.
@@ -140,8 +137,7 @@ Macro "Transit Project Management" (MacroOpts)
     RunMacro("Prepare Broken Routes", MacroOpts)
     RunMacro("Export to GTFS", MacroOpts)
     RunMacro("Import from GTFS", MacroOpts) 
-    Throw()
-    // RunMacro("Merge Route Systems")
+    RunMacro("Merge Route Systems", MacroOpts)
   end
   RunMacro("Update Scenario Attributes", MacroOpts)
   RunMacro("Check Scenario Route System", MacroOpts)
@@ -232,6 +228,7 @@ macro "Migrate Route System" (MacroOpts)
 		CloseFile(fp)
   end 
 
+  if GetFileInfo(link_err_file) <> null then DeleteFile(link_err_file)
 	return(broken_routes)
 endMacro 
 
@@ -473,6 +470,44 @@ Macro "Import from GTFS" (MacroOpts)
   // join_tbl.(slyr + ".dwell_off") = join_tbl.(master_slyr + ".dwell_off")
   // join_tbl.(slyr + ".xfer_pen") = join_tbl.(master_slyr + ".xfer_pen")
   join_tbl = null
+endmacro
+
+/*
+Combine the main route system with the route system containing corrected
+broken routes.
+*/
+
+Macro "Merge Route Systems" (MacroOpts)
+  output_rts_file = MacroOpts.output_rts_file
+  output_rts_file2 = Substitute(output_rts_file, ".rts", "_2.rts", )
+  proj_list = Substitute(MacroOpts.proj_list, ".csv", "_2.csv", )
+
+  rts = CreateObject("Map", output_rts_file)
+  {nlyr, llyr, rlyr, slyr} = rts.GetLayerNames()
+  rts2 = CreateObject("Map", output_rts_file2)
+  {nlyr2, llyr2, rlyr2, slyr2} = rts2.GetLayerNames()
+
+  // Create route and stop field arrays to merge attributes
+  tbl = CreateObject("Table", rlyr2)
+  field_names = tbl.GetFieldNames()
+  dont_include = {"Route_ID", "Agency", "Length"}
+  for field_name in field_names do
+    if dont_include.position(field_name) > 0 then continue
+    route_fields = route_fields + {{field_name, field_name}}
+  end
+  stop_fields = {{"shape_stop", "shape_stop"}, {"Node_ID", "Node_ID"}}
+
+  opts = null
+  opts.[Route Fields] = route_fields
+  opts.[Stop Fields] = stop_fields
+  MergeRouteSystems(rlyr, rlyr2 + "|", opts)
+
+  rts = null
+  rts2 = null
+  // Delete the broken route files
+  DeleteRouteSystem(output_rts_file2)
+  DeleteFile(proj_list)
+  DeleteFile(Substitute(proj_list, ".csv", ".dcc", ))
 endmacro
 
 /*
