@@ -140,6 +140,7 @@ Macro "Transit Project Management" (MacroOpts)
     RunMacro("Prepare Broken Routes", MacroOpts)
     RunMacro("Export to GTFS", MacroOpts)
     RunMacro("Import from GTFS", MacroOpts) 
+    Throw()
     // RunMacro("Merge Route Systems")
   end
   RunMacro("Update Scenario Attributes", MacroOpts)
@@ -275,7 +276,6 @@ Macro "Prepare Broken Routes" (MacroOpts)
   end
   proj_list2 = Substitute(proj_list, ".csv", "_2.csv", )
   tbl.Export({FileName: proj_list2})
-  Throw()
 endmacro
 
 /*
@@ -285,7 +285,7 @@ endmacro
 Macro "Export to GTFS" (MacroOpts)
 
   master_rts = MacroOpts.master_rts
-  proj_list = MacroOpts.proj_list
+  proj_list = Substitute(MacroOpts.proj_list, ".csv", "_2.csv", )
   scen_hwy = MacroOpts.scen_hwy
 
   // Get project IDs from the project list
@@ -344,7 +344,7 @@ Macro "Import from GTFS" (MacroOpts)
 
   scen_hwy = MacroOpts.scen_hwy
   master_rts = MacroOpts.master_rts
-  output_rts_file = MacroOpts.output_rts_file
+  output_rts_file = Substitute(MacroOpts.output_rts_file, ".rts", "_2.rts", )
   link_qry = MacroOpts.link_qry
   delete_shape_stops = MacroOpts.delete_shape_stops
   
