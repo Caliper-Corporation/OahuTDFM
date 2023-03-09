@@ -1,3 +1,6 @@
+// MergeRouteSystem
+// TC40 create Route System subset ex
+
 /*
 Library of tools to create scenario RTS files by extracting from a master
 layer and moving to a scenario network.
@@ -114,8 +117,8 @@ Macro "Transit Project Management" (MacroOpts)
   out_dir = RunMacro("Normalize Path", out_dir)
   output_rts_file = out_dir + "\\" + output_rts_file
 
-  // The steps below will tweak the master route system so that it shows up
-  // as changed in a git diff. Make a temp copy to avoid this.
+  // The steps below will modify the master route system.
+  // Make a temp copy to avoid modifying the actual master.
   {temp_rts, temp_hwy} = RunMacro("Copy RTS Files", {
     from_rts: master_rts,
     to_dir: out_dir,
@@ -131,8 +134,15 @@ Macro "Transit Project Management" (MacroOpts)
   MacroOpts.out_dir = out_dir
   MacroOpts.delete_shape_stops = delete_shape_stops
 
-  RunMacro("Export to GTFS", MacroOpts)
-  RunMacro("Import from GTFS", MacroOpts) 
+  broken_routes = RunMacro("Migrate Route System", MacroOpts)
+  Throw()
+  if broken_routes <> null then do
+    MacroOpts.broken_routes = broken_routes
+    RunMacro("Prepare Broken Routes", MacroOpts)
+    RunMacro("Export to GTFS", MacroOpts)
+    RunMacro("Import from GTFS", MacroOpts) 
+    // RunMacro("Merge Route Systems")
+  end
   RunMacro("Update Scenario Attributes", MacroOpts)
   RunMacro("Check Scenario Route System", MacroOpts)
   if delete_shape_stops then RunMacro("Remove Shape Stops", MacroOpts)
@@ -141,6 +151,97 @@ Macro "Transit Project Management" (MacroOpts)
   RunMacro("Delete RTS Files", temp_rts)
   DeleteDatabase(temp_hwy)
 EndMacro
+
+/*
+
+*/
+
+macro "Migrate Route System" (MacroOpts)
+	proj_list = MacroOpts.proj_list
+  master_rts = MacroOpts.master_rts 
+	output_rts_file = MacroOpts.output_rts_file
+	scen_hwy = MacroOpts.scen_hwy
+	out_dir = MacroOpts.out_dir
+		
+
+  // Export the scenario routes into a new RTS
+  // TODO: do this with the Table class once the improvements are migrated
+  // DataManager.CopyRouteSystem requires a filter (and not a selection set).
+  // This means we have to create a 1-hot field to easily select which routes
+  // to export.
+  tbl = CreateObject("Table", master_rts)
+  tbl.AddField({FieldName: "sel_temp"})
+  tbl = 0
+  dm = CreateObject("DataManager")
+  dm.AddDataSource("routes", {
+    DataType: "RS",
+    FileName: master_rts
+  })
+  layers = dm.GetRouteLayers("routes")
+  rlyr = layers.RouteLayer
+  
+  // Use the project list to create a selection set of scenario routes
+  ptbl = CreateObject("Table", proj_list)
+  v_pid = ptbl.ProjID
+  if TypeOf(v_pid[1]) <> "string" then v_pid = String(v_pid)
+  SetLayer(rlyr)
+  for pid in v_pid do
+    query = "Select * where ProjID = '" + pid + "'"
+    n = SelectByQuery("to_export", "more", query)
+    if n = 0 then Throw(
+      "TPM: Route with ProjID = '" + pid + "'' is not in the master route system."
+    )
+  end
+  v_one = Vector(n, "Double", {{"Constant", 1}})
+  SetDataVector(rlyr + "|to_export", "sel_temp", v_one, )
+  dm.CopyRouteSystem("routes", {
+    TargetRS: output_rts_file,
+    Filter: "sel_temp = 1"
+  })
+  dm = null
+
+  // Delete any existing error log files before modifying the route system
+	{drive, folder, name, ext} = SplitPath(output_rts_file)
+	link_err_file = drive + folder + name + "l.err"
+	if GetFileInfo(link_err_file) <> null then DeleteFile(link_err_file)
+	
+  // Point route system to scenario link layer
+  {nlyr_s, llyr_s} = GetDBLayers(scen_hwy)  
+	ModifyRouteSystem(output_rts_file, {{"Geography", scen_hwy, llyr_s}})
+	// TODO: develop a way to do this without a message box popping up.
+  map = CreateObject("Map", output_rts_file)
+
+	//if error occurred during migrating, parse the error log and report broken routes
+	broken_routes = null 
+	if GetFileInfo(link_err_file) <> null then do 
+
+		fp = OpenFile(link_err_file, "r")
+		while !FileAtEOF(fp) do 
+			line = ReadLine(fp)
+
+			pos1 = Position(line, "route ID")
+			pos2 = Position(line, "cannot be found")
+
+			if pos1 > 0 & pos2 > 0 & pos2 > pos1 then do 
+				route_id = Trim(SubString(line, pos1 + 9, pos2 - pos1-9))
+
+				if ArrayPosition(broken_routes, {route_id},) <= 0 then
+					broken_routes = broken_routes + {route_id}
+				end 
+			end
+		CloseFile(fp)
+  end 
+
+	return(broken_routes)
+endMacro 
+
+/*
+Prepares a new transit project list for just broken routes.
+*/
+
+Macro "Prepare Broken Routes" (MacroOpts)
+
+endmacro
 
 /*
 
