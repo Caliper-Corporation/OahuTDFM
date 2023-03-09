@@ -135,7 +135,6 @@ Macro "Transit Project Management" (MacroOpts)
   MacroOpts.delete_shape_stops = delete_shape_stops
 
   broken_routes = RunMacro("Migrate Route System", MacroOpts)
-  Throw()
   if broken_routes <> null then do
     MacroOpts.broken_routes = broken_routes
     RunMacro("Prepare Broken Routes", MacroOpts)
@@ -226,7 +225,7 @@ macro "Migrate Route System" (MacroOpts)
 				route_id = Trim(SubString(line, pos1 + 9, pos2 - pos1-9))
 
 				if ArrayPosition(broken_routes, {route_id},) <= 0 then
-					broken_routes = broken_routes + {route_id}
+					broken_routes = broken_routes + {s2i(route_id)}
 				end 
 			end
 		CloseFile(fp)
@@ -236,11 +235,47 @@ macro "Migrate Route System" (MacroOpts)
 endMacro 
 
 /*
-Prepares a new transit project list for just broken routes.
+Removes broken from the migrated route system and prepares a new transit project
+list for just broken routes. This new list will use the gtfs import/export
+procedures.
 */
 
 Macro "Prepare Broken Routes" (MacroOpts)
+	proj_list = MacroOpts.proj_list
+  master_rts = MacroOpts.master_rts 
+	output_rts_file = MacroOpts.output_rts_file
+	broken_routes = MacroOpts.broken_routes
 
+  // Open the route system and create a selection set of broken routes
+  // TODO: make silent
+  map = CreateObject("Map", output_rts_file)
+  {nlyr, llyr, rlyr, slyr} = map.GetLayerNames()
+  // TODO: use the table method once tc9 is updated
+  SetLayer(rlyr)
+  SelectByIDs("broken_routes", "several", broken_routes)
+  routes = CreateObject("Table", rlyr)
+  routes.ChangeSet("broken_routes")
+
+  // Get the broken route ids and delete them from the route system
+  v_proj_ids = routes.ProjID
+  v_names = routes.Route_Name
+  // if TypeOf(v_proj_ids[1]) <> "string" then v_proj_ids = String(v_proj_ids)
+  for name in v_names do
+    DeleteRoute(rlyr, name)
+  end
+
+  // Create a new projet list that is only of the broken routes
+  tbl = CreateObject("Table", proj_list)
+  for pid in v_proj_ids do
+    tbl.SelectByQuery({
+      SetName: "broken_routes",
+      Query: "ProjID = " + pid,
+      Operation: "more"
+    })
+  end
+  proj_list2 = Substitute(proj_list, ".csv", "_2.csv", )
+  tbl.Export({FileName: proj_list2})
+  Throw()
 endmacro
 
 /*
