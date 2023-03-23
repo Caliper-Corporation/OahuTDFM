@@ -198,14 +198,14 @@ macro "Migrate Route System" (MacroOpts)
 
   // Delete any existing error log files before modifying the route system
 	{drive, folder, name, ext} = SplitPath(output_rts_file)
-	link_err_file = drive + folder + name + "l.err"
+	link_err_file = drive + folder + name + ".err"
 	if GetFileInfo(link_err_file) <> null then DeleteFile(link_err_file)
 	
   // Point route system to scenario link layer
   {nlyr_s, llyr_s} = GetDBLayers(scen_hwy)  
 	ModifyRouteSystem(output_rts_file, {{"Geography", scen_hwy, llyr_s}})
-	// TODO: develop a way to do this without a message box popping up.
-  map = CreateObject("Map", output_rts_file)
+  layers = AddRouteSystemLayerToWorkspace("routes", output_rts_file, {{"ErrorFile", link_err_file}})
+  DropLayerFromWorkspace(layers[1])
 
 	//if error occurred during migrating, parse the error log and report broken routes
 	broken_routes = null 
@@ -214,6 +214,7 @@ macro "Migrate Route System" (MacroOpts)
 		fp = OpenFile(link_err_file, "r")
 		while !FileAtEOF(fp) do 
 			line = ReadLine(fp)
+      if Left(line, 4) = "Stop" then continue
 
 			pos1 = Position(line, "route ID")
 			pos2 = Position(line, "cannot be found")
