@@ -201,11 +201,13 @@ macro "Migrate Route System" (MacroOpts)
 	link_err_file = drive + folder + name + ".err"
 	if GetFileInfo(link_err_file) <> null then DeleteFile(link_err_file)
 	
-  // Point route system to scenario link layer
+  // Point route system to scenario link layer and check for errors
   {nlyr_s, llyr_s} = GetDBLayers(scen_hwy)  
 	ModifyRouteSystem(output_rts_file, {{"Geography", scen_hwy, llyr_s}})
   layers = AddRouteSystemLayerToWorkspace("routes", output_rts_file, {{"ErrorFile", link_err_file}})
   DropLayerFromWorkspace(layers[1])
+  DropLayerFromWorkspace(layers[4])
+  DropLayerFromWorkspace(layers[5])
 
 	//if error occurred during migrating, parse the error log and report broken routes
 	broken_routes = null 
