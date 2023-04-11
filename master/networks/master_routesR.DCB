@@ -7,7 +7,7 @@
 "FTAchecked",C,107,5,0,5,0,,"","",,"Copy",
 "TheBUSName",C,112,7,0,7,0,,"","",,"Copy",
 "RouteNumber",C,119,5,0,5,0,,"","",,"Copy",
-"Mode",R,124,8,0,8,2,,"","",,"Sum",
+"Mode",R,124,8,0,8,2,,"","4: Local Bus|5: Express Bus 1|6: Express Bus 2|7: Rail",,"Sum",
 "Fare",R,132,8,0,8,2,,"","",,"Sum",
 "EA_Headway",R,140,8,0,8,2,,"","",,"Sum",
 "AM_Headway",R,148,8,0,8,2,,"","",,"Sum",
