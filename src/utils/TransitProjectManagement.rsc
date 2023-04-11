@@ -819,7 +819,7 @@ Macro "Remove Shape Stops" (MacroOpts)
   {nlyr, llyr, rlyr, slyr} = map.GetLayerNames()
   stop_tbl = CreateObject("Table", slyr)
   stop_fields = stop_tbl.GetFieldNames()
-  if delete_shape_stops and stop_fields.position("shape_stop") <> 0 then do
+  if stop_fields.position("shape_stop") <> 0 then do
     n = stop_tbl.SelectByQuery({
       SetName: "to remove",
       Query: "shape_stop = 1",
