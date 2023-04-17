@@ -1,0 +1,114 @@
+---
+title: "On-Board Survey Processing"
+output: html_document
+date: "2023-04-12"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(dplyr.summarise.inform = FALSE)
+options(scipen = 999)
+
+library(tidyverse)
+library(readxl)
+```
+
+```{r, include=FALSE}
+tbl <- read_excel("data/_private/obs_survey/input/final_obs_response_data.xlsx")
+```
+
+```{r}
+translate_table <- function(tbl){
+  equiv_tbl <- read_csv("data/_private/obs_survey/input/equiv_table.csv")
+  
+  variables <- unique(equiv_tbl$VARIABLE)
+  col_names <- colnames(tbl)
+  for (variable in variables) {
+    if (!(variable %in% col_names)) next
+    
+    tmp <- equiv_tbl %>%
+      filter(VARIABLE == variable) %>%
+      select(CODE, EQUIV)
+
+    tbl <- tbl %>%
+      rename(temp = variable) %>%
+      left_join(tmp, by = c("temp" = "CODE")) %>%
+      mutate(temp = ifelse(is.na(EQUIV), temp, EQUIV)) %>%
+      select(-EQUIV) %>%
+      rename(!!variable := temp)
+  }
+  return(tbl)
+}
+```
+
+```{r, include=FALSE}
+translate_tbl <- translate_table(tbl)
+```
+
+
+```{r, include=FALSE}
+# Geocoding
+long <- translate_tbl %>%
+  pivot_longer(cols = c(
+    HomeCoordinates,
+    OriginCoordinates,
+    HomeCoordinates,
+    BoardCoord1,
+    BoardCoord2,
+    BoardCoord3,
+    BoardCoord4,
+    AlightCoord1,
+    AlightCoord2,
+    AlightCoord3,
+    AlightCoord4,
+    DestCoordinates
+  ),names_to = "column", values_to = "coord") 
+
+coords <- long %>%
+  select(coord) %>%
+  filter(!is.na(coord)) %>%
+  group_by(coord) %>%
+  slice(1) %>%
+  separate(coord, into = c("latitude", "longitude"), sep = ", ", remove = FALSE)
+write_csv(coords, "data/_private/obs_survey/output/coords.csv")
+
+# Used TC to geocode the points and create the following file
+tazs <- "data/_private/obs_survey/output/coords_with_tazs.csv"
+if (file.exists(geo_file)) {
+  geocoded <- read_csv(geo_file) %>%
+    select(coord, TAZ)
+}
+
+attach_tazs <- long %>%
+  left_join(geocoded, by = "coord") %>%
+  mutate(
+    column = gsub("Coordinates", "TAZ", column, fixed = TRUE),
+    column = gsub("Coord", "TAZ", column, fixed = TRUE)
+  ) %>%
+  select(-coord) %>%
+  pivot_wider(names_from = column, values_from = TAZ)
+```
+
+```{r}
+# Create PA TAZ fields
+create_pa <- attach_tazs %>%
+  mutate(
+    pa_flag = ifelse(DestType == "HOME" & OrigType != "HOME", 0, 1),
+    ProdTAZ = ifelse(pa_flag == 0, DestTAZ, OriginTAZ),
+    AttrTAZ = ifelse(pa_flag == 0, OriginTAZ, DestTAZ)
+  )
+```
+
+
+```{r, eval=FALSE}
+# Summarize by access mode, time of day, and P/A TAZ. This table was used to do
+# test assignments on the transit networks.
+test_assn <- create_pa %>%
+  filter(!is.na(AccMode)) %>%
+  group_by(AccMode, DAYPART, ProdTAZ, AttrTAZ) %>%
+  summarize(weight = sum(WeightLinked))
+write_csv(test_assn, "data/_private/obs_survey/output/test_assignment.csv")  
+```
+
