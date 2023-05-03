@@ -1059,19 +1059,23 @@ Macro "Create Simple Roadway Net" (MacroOpts)
   // Network Settings
   if centroid_qry <> null then do
 
-    centroid_qry = RunMacro("Normalize Query", centroid_qry)
+    // centroid_qry = RunMacro("Normalize Query", centroid_qry)
 
-    opts = null
-    opts.Input.Database = hwy_dbd
-    opts.Input.Network = net_file
-    opts.Input.[Centroids Set] = {
-      hwy_dbd + "|" + nlyr, nlyr,
-      "centroids", centroid_qry
-    }
-    ok = RunMacro("TCB Run Operation", "Highway Network Setting", opts, &Ret)
-    if !ok then Throw(
-      "Simple Network: Setting centroids failed"
-    )
+    // opts = null
+    // opts.Input.Database = hwy_dbd
+    // opts.Input.Network = net_file
+    // opts.Input.[Centroids Set] = {
+    //   hwy_dbd + "|" + nlyr, nlyr,
+    //   "centroids", centroid_qry
+    // }
+    // ok = RunMacro("TCB Run Operation", "Highway Network Setting", opts, &Ret)
+    // if !ok then Throw(
+    //   "Simple Network: Setting centroids failed"
+    // )
+
+    net = CreateObject("Network.Settings", {Network: nh})
+    net.CentroidFilter = centroid_qry
+    net.UseCentroids = "true"
   end
 
   // Workspace clean up.

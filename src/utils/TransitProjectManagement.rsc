@@ -30,7 +30,7 @@ Macro "test tpm"
   opts.master_rts = model_dir + "\\master\\networks\\master_routes.rts"
   opts.scen_hwy = scen_dir + "\\input\\networks\\scenario_links.dbd"
   opts.proj_list = scen_dir + "\\TransitProjectList.csv"
-  opts.centroid_qry = "[Zone Centroid] = 'Y'"
+  opts.centroid_qry = "Centroid = 1"
   opts.link_qry = "HCMType <> null"
   opts.output_rts_file = "scenario_routes.rts"
   opts.delete_shape_stops = "true"
@@ -58,7 +58,7 @@ Inputs
       String
       Query that defines centroids in the node layer. Centroids will be
       prevented from having stops tagged to them. Routes will also be prevented
-      from traveleing through them.
+      from traveleing through them. e.g. "Centroid = 1"
 
     link_qry
       Optional string
@@ -106,7 +106,6 @@ Macro "Transit Project Management" (MacroOpts)
   if scen_hwy = null then Throw("'scen_hwy' not provided")
   if proj_list = null then Throw("'proj_list' not provided")
   if centroid_qry = null then Throw("'centroid_qry' not provided")
-  centroid_qry = RunMacro("Normalize Query", centroid_qry)
   link_qry = RunMacro("Normalize Query", link_qry)
   if output_rts_file = null then output_rts_file = "ScenarioRoutes.rts"
   if delete_shape_stops = null then delete_shape_stops = "true"
@@ -326,6 +325,7 @@ Macro "Import from GTFS" (MacroOpts)
   master_rts = MacroOpts.master_rts
   output_rts_file = Substitute(MacroOpts.output_rts_file, ".rts", "_2.rts", )
   link_qry = MacroOpts.link_qry
+  centroid_qry = MacroOpts.centroid_qry
   delete_shape_stops = MacroOpts.delete_shape_stops
   
   // Create a network of the links to use
@@ -335,7 +335,8 @@ Macro "Import from GTFS" (MacroOpts)
   // importer already uses the route alignment, though.
   net_file = RunMacro("Create Simple Roadway Net", {
     hwy_dbd: scen_hwy,
-    link_qry: link_qry
+    link_qry: link_qry,
+    centroid_qry: centroid_qry
   })
 
   {drive, folder, , } = SplitPath(scen_hwy)
@@ -564,7 +565,6 @@ Macro "Check Scenario Route System" (MacroOpts)
   master_rts = MacroOpts.master_rts
   scen_hwy = MacroOpts.scen_hwy
   proj_list = MacroOpts.proj_list
-  centroid_qry = MacroOpts.centroid_qry
   output_rts_file = MacroOpts.output_rts_file
   out_dir = MacroOpts.out_dir
 
