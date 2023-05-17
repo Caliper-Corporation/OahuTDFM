@@ -1,0 +1,255 @@
+---
+title: "Household Survey Processing"
+output: html_document
+date: "2023-05-16"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(dplyr.summarise.inform = FALSE)
+options(scipen = 999)
+
+library(tidyverse)
+library(readxl)
+```
+
+```{r, include=FALSE}
+hh <- read_csv("data/_private/hh_survey/input/AddonHH_OahuV1draft.csv")
+per <- read_csv(
+  "data/_private/hh_survey/input/AddonPER_OahuV1draft.csv",
+  col_types = cols(SCHTYP_O = col_character())
+)
+trip <- read_csv("data/_private/hh_survey/input/AddonTRIP_OahuV1draft.csv")
+```
+
+```{r}
+translate_table <- function(tbl){
+  equiv_tbl <- read_csv("data/_private/hh_survey/input/equiv_table.csv")
+  
+  variables <- unique(equiv_tbl$VARIABLE)
+  col_names <- colnames(tbl)
+  for (variable in variables) {
+    if (!(variable %in% col_names)) next
+    
+    tmp <- equiv_tbl %>%
+      filter(VARIABLE == variable) %>%
+      select(CODE, EQUIV)
+
+    tbl <- tbl %>%
+      rename(temp = variable) %>%
+      left_join(tmp, by = c("temp" = "CODE")) %>%
+      mutate(temp = ifelse(is.na(EQUIV), temp, EQUIV)) %>%
+      select(-EQUIV) %>%
+      rename(!!variable := temp)
+  }
+  return(tbl)
+}
+```
+
+```{r, include=FALSE}
+translate_hh <- translate_table(hh)
+translate_per <- translate_table(per)
+translate_trip <- translate_table(trip)
+```
+
+# Checking the survey
+
+```{r}
+
+translate_trip %>%
+  group_by(LOOP_TRIP) %>%
+  summarize(count = n())
+
+translate_trip %>%
+  group_by(TRAVDAY) %>%
+  summarize(count = n())
+
+translate_hh %>%
+  group_by(FLAG100) %>%
+  summarize(count = n())
+
+translate_trip %>%
+  group_by(HOUSEID, PERSONID) %>%
+  mutate(check = ifelse(origin_LOCTYPE == "Home", 1, 0)) %>%
+  summarize(home_count = sum(check))
+
+```
+
+# Geocoding
+
+```{r, include=FALSE}
+hh_pts <- hh %>%
+  mutate(unique_id = paste(confirmedhome_longitude, confirmedhome_latitude, sep = "_")) %>%
+  select(
+    unique_id,
+    longitude = confirmedhome_longitude,
+    latitude = confirmedhome_latitude
+  )
+per_pts <- bind_rows(
+  per %>%
+    mutate(unique_id = paste(WORKADDRESS_Lon, WORKADDRESS_Lat, sep = "_")) %>%
+    select(unique_id, longitude = WORKADDRESS_Lon, latitude = WORKADDRESS_Lat),
+  per %>%
+    mutate(unique_id = paste(SCHOOLADDRESS_Lon, SCHOOLADDRESS_Lat, sep = "_")) %>%
+    select(unique_id, longitude = SCHOOLADDRESS_Lon, latitude = SCHOOLADDRESS_Lat)
+)
+trip_pts <- bind_rows(
+  trip %>%
+    mutate(unique_id = paste(origin_Lon, origin_Lat, sep = "_")) %>%
+    select(unique_id, longitude = origin_Lon, latitude = origin_Lat),
+  trip %>%
+    mutate(unique_id = paste(destination_Lon, destination_Lat, sep = "_")) %>%
+    select(unique_id, longitude = destination_Lon, latitude = destination_Lat)
+)
+
+# Use this table in TransCAD to geocode points to TAZs then read back in
+to_geocode <- bind_rows(hh_pts, per_pts, trip_pts) %>%
+  group_by(unique_id) %>%
+  slice(1)
+write_csv(to_geocode, "data/_private/hh_survey/output/to_geocode.csv")
+geocoded_pts <- read_csv("data/_private/hh_survey/output/geocoded_points.csv") %>%
+  select(unique_id, TAZ)
+
+hh_with_taz <- translate_hh %>%
+  mutate(unique_id = paste(confirmedhome_longitude, confirmedhome_latitude, sep = "_")) %>%
+  left_join(geocoded_pts, by = "unique_id") %>%
+  rename(HomeTAZ = TAZ) %>%
+  select(-unique_id)
+
+per_with_taz <- translate_per %>%
+  mutate(unique_id = paste(WORKADDRESS_Lon, WORKADDRESS_Lat, sep = "_")) %>%
+  left_join(geocoded_pts, by = "unique_id") %>%
+  rename(WorkTAZ = TAZ) %>%
+  mutate(unique_id = paste(SCHOOLADDRESS_Lon, SCHOOLADDRESS_Lat, sep = "_")) %>%
+  left_join(geocoded_pts, by = "unique_id") %>%
+  rename(SchoolTAZ = TAZ) %>%
+  select(-unique_id)
+
+trip_with_taz <- translate_trip %>%
+  mutate(unique_id = paste(origin_Lon, origin_Lat, sep = "_")) %>%
+  left_join(geocoded_pts, by = "unique_id") %>%
+  rename(OriginTAZ = TAZ) %>%
+  mutate(unique_id = paste(destination_Lon, destination_Lat, sep = "_")) %>%
+  left_join(geocoded_pts, by = "unique_id") %>%
+  rename(DestinationTAZ = TAZ) %>%
+  select(-unique_id)
+```
+
+
+# Convert to model modes
+
+```{r}
+convert_modes <- trip_with_taz %>%
+  mutate(
+    mode_model = case_when(
+      TRPTRANS == "auto" & NUMONTRP == 1 ~ "sov",
+      TRPTRANS == "auto" & NUMONTRP == 2 ~ "hov2",
+      TRPTRANS == "auto" & NUMONTRP >= 3 ~ "hov3",
+      TRUE ~ TRPTRANS
+    )
+  )
+```
+
+
+# ID Tours
+
+```{r}
+id_tours <- convert_modes %>%
+  filter(LOOP_TRIP == "Not a loop trip") %>%
+  arrange(HOUSEID, PERSONID, TRIPID) %>%
+  group_by(HOUSEID, PERSONID) %>%
+  mutate(
+    tour_start = case_when(
+      TRIPID == 1 ~ 1,
+      origin_LOCTYPE == "Home" ~ 1,
+      TRUE ~ 0
+    ),
+    tour_num = cumsum(tour_start)
+  ) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  mutate(
+    tour_type = case_when(
+      "Work" %in% WHYTO ~ "Work",
+      "School" %in% WHYTO ~ "School",
+      TRUE ~ "Other"
+    ),
+    tour_id = paste(HOUSEID, PERSONID, tour_num, sep = "_")
+  )
+
+# Mark tour anchor and intermediate stops
+mark_anchor <- id_tours %>%
+  mutate(
+    temp_dwel = ifelse(destination_LOCTYPE == "Home", 0, DWELTIME),
+    temp_dwel = ifelse(sum(temp_dwel) == 0 & TRIPID == 1, 1, temp_dwel),
+    anchor = ifelse(temp_dwel == max(temp_dwel), 100, 0),
+    anchor = case_when(
+      WHYTO == "Work" ~ anchor + 3,
+      WHYTO == "School" ~ anchor + 2,
+      TRUE ~ anchor
+    ),
+    anchor = ifelse(anchor == max(anchor), 1, 0),
+    check = cumsum(anchor),
+    anchor = ifelse(check > 1, 0, anchor),
+    int_stop = case_when(
+      anchor == 1 ~ 0,
+      TRIPID == 1 ~ 0,
+      TRIPID == max(TRIPID) ~ 0,
+      TRUE ~ 1
+    ),
+    # check == 0 means the stop is before anchor
+    int_stop_fwd = ifelse(check == 0, int_stop, 0),
+    int_stop_ret = ifelse(check == 1, int_stop, 0)
+  )
+
+id_tour_mode <- mark_anchor %>%
+  mutate(
+    primary_mode = case_when(
+      "rail" %in% mode_model ~ "rail",
+      "school_bus" %in% mode_model ~ "school_bus",
+      "bus" %in% mode_model ~ "bus",
+      "taxi" %in% mode_model ~ "taxi",
+      "tnc" %in% mode_model ~ "tnc",
+      "trolley" %in% mode_model ~ "trolley",
+      "hov3" %in% mode_model ~ "hov3",
+      "hov2" %in% mode_model ~ "hov2",
+      "sov" %in% mode_model ~ "sov",
+      "bike" %in% mode_model ~ "bike",
+      "walk" %in% mode_model ~ "walk",
+      TRUE ~ "other"
+    ),
+    temp = ifelse(mode_model == primary_mode, NA, mode_model),
+    secondary_mode = case_when(
+      "rail" %in% temp ~ "rail",
+      "school_bus" %in% temp ~ "school_bus",
+      "taxi" %in% temp ~ "taxi",
+      "tnc" %in% temp ~ "tnc",
+      "trolley" %in% temp ~ "trolley",
+      "hov3" %in% temp ~ "hov3",
+      "hov2" %in% temp ~ "hov2",
+      "sov" %in% temp ~ "sov",
+      "bike" %in% temp ~ "bike",
+      "walk" %in% temp ~ "walk",
+      TRUE ~ "other"
+    )
+  ) %>%
+  select(-temp)
+
+tour_file <- id_tour_mode %>%
+  group_by(tour_id) %>%
+  summarize(
+    HOUSEID = first(HOUSEID),
+    PERSONID = first(PERSONID),
+    tour_num = first(tour_num),
+    tour_type = first(tour_type),
+    tour_num = first(tour_num),
+    num_trips = n(),
+    anchor_time = ENDTIME_local[anchor == 1],
+    int_stop_fwd = sum(int_stop_fwd),
+    int_stop_ret = sum(int_stop_ret),
+    primary_mode = first(primary_mode),
+    secondary_mode = first(secondary_mode)
+  )
+```
+
