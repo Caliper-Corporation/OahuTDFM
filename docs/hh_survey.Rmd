@@ -112,7 +112,7 @@ write_csv(to_geocode, "data/_private/hh_survey/output/to_geocode.csv")
 geocoded_pts <- read_csv("data/_private/hh_survey/output/geocoded_points.csv") %>%
   select(unique_id, TAZ)
 
-hh_with_taz <- translate_hh %>%
+hh_with_tazs <- translate_hh %>%
   mutate(unique_id = paste(confirmedhome_longitude, confirmedhome_latitude, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(HomeTAZ = TAZ) %>%
@@ -137,6 +137,36 @@ trip_with_taz <- translate_trip %>%
   select(-unique_id)
 ```
 
+# Household Structure
+
+```{r}
+# one-hot person variables
+per_wrk_stat <- per_with_taz %>%
+  mutate(
+    WAdult = ifelse(WORKER == "Worker" & R_AGE > 17, 1, 0),
+    NWAdult = ifelse(WORKER != "Worker" & R_AGE > 17, 1, 0),
+    Kid = ifelse(R_AGE < 18, 1, 0),
+    PreSch = ifelse(R_AGE < 6, 1, 0),
+    Senior = ifelse(R_AGE > 75, 1, 0),
+    WORKER = case_when(
+      WORKER == "Worker" & EMPLOYMENT2 >= 32 ~ "FullTime",
+      WORKER == "Worker" & EMPLOYMENT2 < 32 ~ "PartTime",
+      TRUE ~ WORKER
+    )
+  )
+
+hhstructure <- per_wrk_stat %>%
+  group_by(HOUSEID) %>%
+  summarise(
+    WAdults = sum(WAdult), NWAdults = sum(NWAdult), HHKids = sum(Kid), 
+    HHPreSchs = sum(PreSch), HHSeniors = sum(Senior)
+  ) %>%
+  mutate(HHStructure = paste0("HH_", WAdults, NWAdults, HHKids))
+
+hh_with_structure <- hh_with_tazs %>%
+  left_join(hhstructure, by = "HOUSEID")
+```
+
 
 # Convert to model modes
 
@@ -156,7 +186,25 @@ convert_modes <- trip_with_taz %>%
 # ID Tours
 
 ```{r}
-id_tours <- convert_modes %>%
+# Split 'school' purpose into K12 and Univ based on student status
+split_k12_univ <- convert_modes %>%
+  left_join(
+    per_wrk_stat %>%
+      select(HOUSEID, PERSONID, STUDE),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  mutate(
+    WHYTO = case_when(
+      WHYTO != "School" ~ WHYTO,
+      STUDE == "K-12th grade including GED" ~ "K12",
+      STUDE == "Full-time college or university" ~ "Univ",
+      STUDE == "Part-time college or university" ~ "Univ",
+      STUDE == "Vocation/Technical/Trade School" ~ "Univ",
+      TRUE ~ "Other"
+    )
+  )
+
+id_tours <- split_k12_univ %>%
   filter(LOOP_TRIP == "Not a loop trip") %>%
   arrange(HOUSEID, PERSONID, TRIPID) %>%
   group_by(HOUSEID, PERSONID) %>%
@@ -172,11 +220,13 @@ id_tours <- convert_modes %>%
   mutate(
     tour_type = case_when(
       "Work" %in% WHYTO ~ "Work",
-      "School" %in% WHYTO ~ "School",
+      "Univ" %in% WHYTO ~ "Univ",
+      "K12" %in% WHYTO ~ "K12",
       TRUE ~ "Other"
     ),
     tour_id = paste(HOUSEID, PERSONID, tour_num, sep = "_")
   )
+
 
 # Mark tour anchor and intermediate stops
 mark_anchor <- id_tours %>%
@@ -186,7 +236,8 @@ mark_anchor <- id_tours %>%
     anchor = ifelse(temp_dwel == max(temp_dwel), 100, 0),
     anchor = case_when(
       WHYTO == "Work" ~ anchor + 3,
-      WHYTO == "School" ~ anchor + 2,
+      WHYTO == "Univ" ~ anchor + 2,
+      WHYTO == "K12" ~ anchor + 2,
       TRUE ~ anchor
     ),
     anchor = ifelse(anchor == max(anchor), 1, 0),
@@ -251,5 +302,75 @@ tour_file <- id_tour_mode %>%
     primary_mode = first(primary_mode),
     secondary_mode = first(secondary_mode)
   )
+```
+
+```{r}
+tours_by_hh <- tour_file %>%
+  group_by(HOUSEID, PERSONID, tour_type) %>%
+  summarize(count = n()) %>%
+  pivot_wider(
+    id_cols = c(HOUSEID, PERSONID), names_from = tour_type, 
+    values_from = count, values_fill = 0
+  ) %>%
+  mutate(WorkersThatDay = ifelse(Work > 0, 1, 0)) %>%
+  group_by(HOUSEID) %>%
+  summarize(across(Other:WorkersThatDay, ~ sum(.x))) %>%
+  rename_with(~ paste0(.x, "_tours"), Other:Univ)
+
+hh_add_tours <- hh_with_structure %>%
+  left_join(tours_by_hh, by = "HOUSEID") %>%
+  mutate(across(Other_tours:WorkersThatDay, ~replace_na(.x, 0))) %>%
+  relocate(WorkersThatDay, .after = WAdults) %>%
+  mutate(
+    BasicPattern = paste0(
+      "P_",
+      WorkersThatDay,
+      NUMADULT - WorkersThatDay, # adults not working that day,
+      HHKids
+    )
+  )
+```
+
+## Add tour summary to person file
+
+```{r}
+tours_by_per <- tour_file %>%
+  group_by(HOUSEID, PERSONID, tour_type) %>%
+  summarize(count = n()) %>%
+  pivot_wider(
+    id_cols = HOUSEID:PERSONID, names_from = tour_type, 
+    values_from = count, values_fill = 0
+  ) %>%
+  rename_with(~ paste0(.x, "_tours"), Other:Univ)
+
+per_add_tour_counts <- per_wrk_stat %>%
+  left_join(hh_with_tazs, by = "HOUSEID") %>%
+  left_join(tours_by_per, by = c("HOUSEID", "PERSONID")) %>%
+  mutate(across(Other_tours:Univ_tours, ~replace_na(.x, 0)))
+```
+
+```{r}
+# check to see how many people by work status are making 0 work tours
+per_add_tour_counts %>%
+  group_by(WORKER) %>%
+  summarize(total_persons = n()) %>%
+  left_join(
+    per_add_tour_counts %>%
+      filter(Work_tours == 0) %>%
+      group_by(WORKER) %>%
+      summarize(per_with_0work = n()),
+    by = "WORKER"
+  ) %>%
+  mutate(percent = per_with_0work / total_persons * 100) %>%
+  arrange(desc(total_persons)) %>%
+  View()
+```
+
+```{r}
+# Outputs
+write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv")
+write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv")
+write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv")
+write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv")
 ```
 
