@@ -215,17 +215,17 @@
         Args.HighwayInputDatabase = {
             "Type":"File",
             "Description":"Input highway database",
-            "Value":"%InputFolder%\\networks\\PeoriaStreets.DBD"
+            "Value":"%InputFolder%\\networks\\OahuStreets.DBD"
         }
         Args.TransitRouteInputs = {
             "Type":"File",
             "Description":"Input transit routes",
-            "Value":"%Input Folder%\\networks\\PeoriaRoutes.rts"
+            "Value":"%Input Folder%\\networks\\OahuRoutes.rts"
         }
         Args.TAZGeography = {
             "Type":"File",
             "Description":"Input TAZ Geography",
-            "Value":"%Input Folder%\\taz\\PeoriaZones.DBD"
+            "Value":"%Input Folder%\\taz\\OahuZones.DBD"
         }
         Args.Demographics = {
             "Type":"File",
@@ -235,7 +235,7 @@
         Args.SpeedCapacityLookup = {
             "Type":"File",
             "Description":"Speed and Capacity Lookup by Facility and Area Type Table",
-            "Value":"%Common Folder%\\PeoriaStreets_RoadClasses.bin"
+            "Value":"%Common Folder%\\OahuStreets_RoadClasses.bin"
         }
         Args.TransitModeTable = {
             "Type":"File",
@@ -253,17 +253,17 @@
         Args.HighwayDatabase = {
             "Type":"File",
             "Description":"Output highway database",
-            "Value":"%Output Folder%\\networks\\PeoriaStreetsOut.DBD"
+            "Value":"%Output Folder%\\networks\\OahuStreetsOut.DBD"
         }
         Args.TurnPenalties = {
             "Type":"File",
             "Description":"Turn Penalties Database",
-            "Value":"%Input Folder%\\networks\\PeoriaStreets_TurnPenalties.bin"
+            "Value":"%Input Folder%\\networks\\OahuStreets_TurnPenalties.bin"
         }
         Args.TransitRoutes = {
             "Type":"File",
             "Description":"Output transit routes",
-            "Value":"%Output Folder%\\networks\\PeoriaRoutesOut.rts"
+            "Value":"%Output Folder%\\networks\\OahuRoutesOut.rts"
         }
         Args.DemographicOutputs = {
             "Type":"File",

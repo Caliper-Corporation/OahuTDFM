@@ -155,7 +155,7 @@ endMacro
             - IS Stop before dropoffs:      O: 'Origin', D: FirstDropoffTAZ
             - IS Stop after dropoffs:       O: LastDropoffTAZ, D: 'Destination'
         
-        Note: Peoria model does not allow for 2 intermediate stops on mandatory tours
+        Note: Oahu model does not allow for 2 intermediate stops on mandatory tours
         Stop #2, Forward direction
         - No drop offs:                     O: Stop#1TAZ, D: 'Destination'
         - With drop offs:                   2 intermediate stops not allowed with dropoffs
@@ -166,7 +166,7 @@ endMacro
             - IS Stop before pickups:       O: 'Destination', D: FirstPickupTAZ
             - IS Stop after pickups:        O: LastPickupTAZ, D: 'Origin'
         
-        Note: Peoria model does not allow for 2 intermediate stops on mandatory tours
+        Note: Oahu model does not allow for 2 intermediate stops on mandatory tours
         Stop #2, Return direction
         - No pick ups:                      O: Stop#1TAZ, D: 'Origin'
         - With pick ups:                    2 intermediate stops not allowed with pickups

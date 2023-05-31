@@ -3,13 +3,13 @@ Macro "Model.Attributes" (Args,Result)
     Attributes = {
         {"BackgroundColor",{255,255,255}},
         {"BannerHeight", 90},
-        {"BannerPicture", "Supplemental\\bmp\\Peoria_logo.bmp"},
+        {"BannerPicture", "Supplemental\\bmp\\banner.bmp"},
         {"BannerWidth", 600},
         {"ResizePicture", 1},
         {"Base Scenario Name", "Base"},
         {"ClearLogFiles", 1},
         {"CloseOpenFiles", 1},
-        {"CodeUI", "ui\\PeoriaCode_ui.dbd"},
+        {"CodeUI", "ui\\ui.dbd"},
         {"DebugMode", 1},
         {"ExpandStages", "Side by Side"},
         {"HideBanner", 0},
@@ -74,7 +74,7 @@ Body:
     o = CreateObject("CC.Directory", RunMacro("FlowChart.ResolveValue", uiFolder, Args))
     o.Create()
 
-    RunMacro("CompileGISDKCode", {Source: srcFolder + "PeoriaCode.lst", UIDB: uiFolder + "PeoriaCode_ui.dbd", Silent: 0, ErrorMessage: "Error compiling Peoria Source Code"})
+    RunMacro("CompileGISDKCode", {Source: srcFolder + "_compile.lst", UIDB: uiFolder + "ui.dbd", Silent: 0, ErrorMessage: "Error compiling model source code"})
 
     if lower(GetMapUnits()) <> "miles" then
         MessageBox("Set the system units to miles before running the model", {Caption: "Warning", Icon: "Warning", Buttons: "yes"})

@@ -5,11 +5,11 @@ Macro "PopulationSynthesis" (Args)
 
     // Compute block group marginals after DatabaseUSA correction
     DBUSA_HHSize6P = {Type: 'Norm', Mean: 6.48, StdDev: 0.23, MinValue: 6, MaxValue: 8}
-    mSpec = {BGFile: Args.CensusBlockGroups, Filter: "InPeoria = 1", "DistributionHHSize6P": DBUSA_HHSize6P, OutputFile: Args.BGMarginals}
+    mSpec = {BGFile: Args.CensusBlockGroups, Filter: "InOahu = 1", "DistributionHHSize6P": DBUSA_HHSize6P, OutputFile: Args.BGMarginals}
     RunMacro("Create Marginals File", mSpec)
 
     // Compute HH marginals at the block level (using block group marginals)
-    nmSpec = {BlkFile: Args.CensusBlocks, Filter: "InPeoria = 1", MarginalsFile: Args.BGMarginals, OutputFile: Args.BlockMarginals}
+    nmSpec = {BlkFile: Args.CensusBlocks, Filter: "InOahu = 1", MarginalsFile: Args.BGMarginals, OutputFile: Args.BlockMarginals}
     RunMacro("Create Nested Marginals File", nmSpec)
 
     // Run synthesis and perform tabulations
@@ -128,7 +128,7 @@ endMacro
 */
 Macro "Create Marginals File"(mSpec)
     // Check for presence of required fields
-    mainFlds = {"ID", "PUMA", "InPeoria", "Households", "Population", "Population in GQ"}
+    mainFlds = {"ID", "PUMA", "InOahu", "Households", "Population", "Population in GQ"}
     hhSizeFlds = {"HH_1Person", "HH_2Person", "HH_3Person", "HH_4Person", 
                   "HH_5Person", "HH_6Person", "HH_7+Person"}
     hhOthFlds = {"HH_0Veh", "HH_1Veh", "HH_2Veh", "HH_3+Veh", 
@@ -265,7 +265,7 @@ endMacro
 */
 Macro "Create Nested Marginals File"(nmSpec)
     // Open the census block file and export relevant fields
-    flds = {"ID", "BG_ID", "TAZ_ID", "InPeoria", "HU_Occupied"}
+    flds = {"ID", "BG_ID", "TAZ_ID", "InOahu", "HU_Occupied"}
     RunMacro("Check Fields", {File: nmSpec.BlkFile, Fields: flds})
     
     blkObj = CreateObject("Table", nmSpec.BlkFile)

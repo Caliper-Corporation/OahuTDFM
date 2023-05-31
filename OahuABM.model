@@ -1,5 +1,5 @@
 
-Macro "PeoriaABM" (Args)
+Macro "OahuABM" (Args)
 Body:
     // model = FlowChart( { StartNodes } , { EndNodes } , Description)
     model = FlowChart({"Population Synthesis"}, {Reports},)
@@ -182,7 +182,7 @@ EndMacro
 
 Macro "ABM Core" (Args,Result)
     Attributes = {
-        {"Description", "Peoria ABM"},
+        {"Description", "Oahu ABM"},
         {"Height", 45},
         {"Picture", "bmp\\plantour_v3.bmp"},
         {"TextStyle", "Left"}
@@ -251,7 +251,7 @@ EndMacro
 
 Macro "Mandatory Tours" (Args,Result)
     Attributes = {
-        {"Description", "Peoria ABM"},
+        {"Description", "Oahu ABM"},
         {"Height", 45},
         {"Picture", "bmp\\plantour_v3.bmp"},
         {"TextStyle", "Left"}
@@ -357,7 +357,7 @@ EndMacro
 
 Macro "Mandatory Stops" (Args,Result)
     Attributes = {
-        {"Description", "Peoria ABM"},
+        {"Description", "Oahu ABM"},
         {"Height", 45},
         {"Picture", "bmp\\plantour_v3.bmp"},
         {"TextStyle", "Left"}
