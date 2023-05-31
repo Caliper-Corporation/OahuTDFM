@@ -68,7 +68,7 @@ Macro "Model.OnModelLoad" (Args,Results)
 Body:
     flowchart = RunMacro("GetFlowChart")
     {drive , path , name , ext} = SplitPath(flowchart.UI)
-    uiFolder = drive + path + "ui\\"
+    uiFolder = drive + path + "\\SourceCode\\ui\\"
     srcFolder = drive + path + "sourcecode\\"
 
     o = CreateObject("CC.Directory", RunMacro("FlowChart.ResolveValue", uiFolder, Args))
