@@ -11,3 +11,7 @@ Utilities.rsc
 MandatoryModeChoice.rsc
 SchoolDropOffPickUp.rsc
 ToursAndTrips.rsc
+CreateScenario.rsc
+utils/RoadwayProjectManagement.rsc
+utils/TransitProjectManagement.rsc
+utils/utils.rsc
