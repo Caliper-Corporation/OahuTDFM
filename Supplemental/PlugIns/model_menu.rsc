@@ -44,10 +44,10 @@ Class "Visualize.Menu.Items"
 EndClass
 
 
-MenuItem "TRMG2 Menu Item" text: "TRMG2"
-    menu "TRMG2 Menu"
+MenuItem "Oahu Menu Item" text: "Oahu"
+    menu "Oahu Menu"
 
-menu "TRMG2 Menu"
+menu "Oahu Menu"
     init do
     enditem
 
@@ -77,12 +77,12 @@ menu "TRMG2 Menu"
     separator
 
     MenuItem "Utils" text: "Utilities"
-        menu "TRMG2 Utilities"
+        menu "Oahu Utilities"
     
     MenuItem "Calibrators" text: "Calibrators"
-        menu "TRMG2 Calibrators"
+        menu "Oahu Calibrators"
 endMenu 
-menu "TRMG2 Utilities"
+menu "Oahu Utilities"
     init do
     enditem
 
@@ -230,7 +230,7 @@ menu "Performance Measures"
     enditem
 
 endMenu
-menu "TRMG2 Calibrators"
+menu "Oahu Calibrators"
     init do
     enditem
 
