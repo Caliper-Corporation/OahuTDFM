@@ -10,6 +10,7 @@
         "Parameters": ["Supplemental\\Parameters\\Common.parameters"],
         "Styles": ["Supplemental\\Styles\\Common.styles"],
         "Scenarios": "PeoriaABM.scenarios",
-        "Plugins": ["Supplemental\\PlugIns\\Plugins.rsc"]
+        "Plugins": ["Supplemental\\PlugIns\\Plugins.rsc"],
+        "Menus": ["Supplemental\\Plugins\\model_menu.rsc"]
     }
 }
