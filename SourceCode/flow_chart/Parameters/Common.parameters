@@ -249,12 +249,12 @@
         Args.[Master SE] = {
             "Type":"File",
             "Description":"Master SED Demographics",
-            "Value":"%Master Folder%\\sedata\\TAZDemographics.bin"
+            "Value":"%Master Folder%\\sedata\\base_2022.bin"
         }        
         Args.Demographics = {
             "Type":"File",
             "Description":"Input SED Demographics",
-            "Value":"%Input Folder%\\taz\\TAZDemographics.bin"
+            "Value":"%Input Folder%\\sedata\\scenario_se.bin"
         }
         Args.SpeedCapacityLookup = {
             "Type":"File",

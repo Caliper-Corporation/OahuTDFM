@@ -24,8 +24,7 @@ Macro "Create Scenario" (Args)
     RunMacro("Check for Creation Files", Args)
     RunMacro("Create Folder Structure", Args)
     RunMacro("Copy TAZ", Args)
-    // TODO: need se data
-    // RunMacro("Create Scenario SE", Args)
+    RunMacro("Create Scenario SE", Args)
     RunMacro("Create Scenario Roadway", Args)
     RunMacro("Create Scenario Transit", Args)
   end
@@ -148,7 +147,7 @@ Macro "Create Scenario SE" (Args)
 
   // Export se data into the scenario folder
   master_se = OpenTable("master_se", "FFB", {Args.[Master SE]})
-  scen_se = Args.[Input SE]
+  scen_se = Args.Demographics
   if GetFileInfo(scen_se) <> null then DeleteTableFiles("FFB", scen_se, )
   ExportView(
     master_se + "|",
