@@ -9,7 +9,7 @@ Macro "Model.Attributes" (Args,Result)
         {"Base Scenario Name", "Base"},
         {"ClearLogFiles", 1},
         {"CloseOpenFiles", 1},
-        {"CodeUI", "ui\\ui.dbd"},
+        {"CodeUI", "SourceCode\\ui\\ui.dbd"},
         {"DebugMode", 1},
         {"ExpandStages", "Side by Side"},
         {"HideBanner", 0},

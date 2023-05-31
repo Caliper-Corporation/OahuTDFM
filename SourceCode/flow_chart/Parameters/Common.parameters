@@ -4,17 +4,21 @@
             "Type":"Folder",
             "Value":"%Model Folder%"
         }
+        Args.[Master Folder] = {
+            "Type":"Folder",
+            "Value":"%Base Folder%\\master"
+        }
         Args.[Data Folder] = {
             "Type":"Folder",
             "Value":"%Model Folder%\\Data"
         }
-        Args.ScenarioSubFolder = {
-            "Type":"hidden",
-            "Value":"BaseYear"
+        Args.[Scenarios Folder] = {
+            "Type":"Folder",
+            "Value":"%Base Folder%\\scenarios"
         }
         Args.[Scenario Folder] = {
             "Type":"Folder",
-            "Value":"%Data Folder%\\%ScenarioSubFolder%"
+            "Value":"%Scenarios Folder%\\base_2022"
         }
         Args.[Common Folder] = {
             "Type":"Folder",
@@ -212,21 +216,41 @@
 	
 	Section = "GEO Master Data"
 	
+        Args.[Master Links] = {
+            "Type":"File",
+            "Description":"Master highway database",
+            "Value":"%Master Folder%\\networks\\master_links.dbd"
+        }
         Args.HighwayInputDatabase = {
             "Type":"File",
             "Description":"Input highway database",
-            "Value":"%InputFolder%\\networks\\OahuStreets.DBD"
+            "Value":"%InputFolder%\\networks\\scenario_links.dbd"
+        }
+        Args.[Master Routes] = {
+            "Type":"File",
+            "Description":"Master transit routes",
+            "Value":"%Master Folder%\\networks\\master_routes.rts"
         }
         Args.TransitRouteInputs = {
             "Type":"File",
             "Description":"Input transit routes",
-            "Value":"%Input Folder%\\networks\\OahuRoutes.rts"
+            "Value":"%Input Folder%\\networks\\scenario_routes.rts"
+        }
+        Args.[Master TAZs] = {
+            "Type":"File",
+            "Description":"Master TAZ Geography",
+            "Value":"%Master Folder%\\tazs\\master_tazs.dbd"
         }
         Args.TAZGeography = {
             "Type":"File",
             "Description":"Input TAZ Geography",
-            "Value":"%Input Folder%\\taz\\OahuZones.DBD"
+            "Value":"%Input Folder%\\tazs\\scenario_tazs.dbd"
         }
+        Args.[Master SE] = {
+            "Type":"File",
+            "Description":"Master SED Demographics",
+            "Value":"%Master Folder%\\sedata\\TAZDemographics.bin"
+        }        
         Args.Demographics = {
             "Type":"File",
             "Description":"Input SED Demographics",

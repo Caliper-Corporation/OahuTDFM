@@ -24,7 +24,8 @@ Macro "Create Scenario" (Args)
     RunMacro("Check for Creation Files", Args)
     RunMacro("Create Folder Structure", Args)
     RunMacro("Copy TAZ", Args)
-    RunMacro("Create Scenario SE", Args)
+    // TODO: need se data
+    // RunMacro("Create Scenario SE", Args)
     RunMacro("Create Scenario Roadway", Args)
     RunMacro("Create Scenario Transit", Args)
   end
@@ -67,44 +68,44 @@ Macro "Create Folder Structure" (Args)
   opts.copy_files = "true"
   RunMacro("Copy Directory", opts)
 
-  // Array of output directories to create
-  a_dir = {
-    "/accessibility",
-    "/airport",
-    "/tazs",
-    "/sedata",
-    "/networks",
-    "/skims/roadway",
-    "/skims/transit",
-    "/skims/nonmotorized",
-    "/external",
-    "/cv",
-    "/university",
-    "/resident/disagg_model",
-    "/resident/population_synthesis",
-    "/resident/dc",
-    "/resident/mode",
-    "/resident/mode/probabilities",
-    "/resident/parking",
-    "/resident/mode/logsums",
-    "/resident/mode/utilities",
-    "/resident/mode/model_files",
-    "/resident/nhb/generation",
-    "/resident/nhb/dc",
-    "/resident/nonmotorized",
-    "/resident/trip_matrices",
-    "/assignment",
-    "/assignment/transit",
-    "/assignment/roadway",
-    "/_summaries",
-    "/_summaries/trip_conservation",
-    "/_summaries/MOVES"
-  }
+  // // Array of output directories to create
+  // a_dir = {
+  //   "/accessibility",
+  //   "/airport",
+  //   "/tazs",
+  //   "/sedata",
+  //   "/networks",
+  //   "/skims/roadway",
+  //   "/skims/transit",
+  //   "/skims/nonmotorized",
+  //   "/external",
+  //   "/cv",
+  //   "/university",
+  //   "/resident/disagg_model",
+  //   "/resident/population_synthesis",
+  //   "/resident/dc",
+  //   "/resident/mode",
+  //   "/resident/mode/probabilities",
+  //   "/resident/parking",
+  //   "/resident/mode/logsums",
+  //   "/resident/mode/utilities",
+  //   "/resident/mode/model_files",
+  //   "/resident/nhb/generation",
+  //   "/resident/nhb/dc",
+  //   "/resident/nonmotorized",
+  //   "/resident/trip_matrices",
+  //   "/assignment",
+  //   "/assignment/transit",
+  //   "/assignment/roadway",
+  //   "/_summaries",
+  //   "/_summaries/trip_conservation",
+  //   "/_summaries/MOVES"
+  // }
 
-  for d = 1 to a_dir.length do
-    dir = Args.[Output Folder] + a_dir[d]
-    RunMacro("Create Directory", dir)
-  end
+  // for d = 1 to a_dir.length do
+  //   dir = Args.[Output Folder] + a_dir[d]
+  //   RunMacro("Create Directory", dir)
+  // end
 
 EndMacro
 
@@ -123,7 +124,7 @@ Macro "Copy TAZ" (Args)
   end
 
   // Create the TAZ file
-  CopyDatabase(Args.[Master TAZs], Args.[Input TAZs])
+  CopyDatabase(Args.[Master TAZs], Args.TAZGeography)
 
 EndMacro
 
@@ -176,7 +177,7 @@ Macro "Create Scenario Roadway" (Args)
 
   // Copy the master roadway network into the scenario folder
   master_hwy = Args.[Master Links]
-  scen_hwy = Args.[Input Links]
+  scen_hwy = Args.HighwayInputDatabase
   if GetFileInfo(scen_hwy) <> null then DeleteFile(scen_hwy)
   CopyDatabase(master_hwy, scen_hwy)
 
@@ -199,14 +200,14 @@ EndMacro
 Macro "Create Scenario Transit" (Args)
 
   // Remove any RTS files in the directory
-  scen_rts = Args.[Input Routes]
+  scen_rts = Args.TransitRouteInputs
   if GetFileInfo(scen_rts) <> null then DeleteRouteSystem(scen_rts)
 
   // Create scenario RTS using project manager
   scen_dir = Args.[Scenario Folder]
   opts = null
   opts.master_rts = Args.[Master Routes]
-  opts.scen_hwy = Args.[Input Links]
+  opts.scen_hwy = Args.HighwayInputDatabase
   opts.proj_list = scen_dir + "/TransitProjectList.csv"
   opts.centroid_qry = "Centroid = 1"
   opts.link_qry = "HCMType <> null and HCMType <> 'CC'"
