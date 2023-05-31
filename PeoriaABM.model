@@ -1,0 +1,464 @@
+
+Macro "PeoriaABM" (Args)
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Population Synthesis"}, {Reports},)
+    
+    // Nodes
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    
+    FlowChartNode(model,"Population Synthesis",,,)
+    FlowChartNode(model,"Preprocess and Build Networks",,,)
+    FlowChartNode(model,"Skims and Accessibilities",,,)
+    FlowChartNode(model,"ABM Core",,,)
+    FlowChartModel(model,"Supplementary Models",,,)
+    FlowChartNode(model,"Auto Assignments",,,)
+    FlowChartNode(model,"Convergence",,,)
+    FlowChartNode(model,"Public Transit Assignments",,,)
+    FlowChartNode(model,"Reports",,,)
+    
+    // Links
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    
+    FlowChartLink(model,"Population Synthesis","Preprocess and Build Networks",True,,)
+    FlowChartLink(model,"Preprocess and Build Networks","Skims and Accessibilities",True,,)
+    FlowChartLink(model,"Skims and Accessibilities","ABM Core",True,,)
+    FlowChartLink(model,"ABM Core","Supplementary Models",True,,)
+    FlowChartLink(model,"Supplementary Models","Auto Assignments",True,,)
+    FlowChartLink(model,"Auto Assignments","Convergence",True,,)
+    FlowChartLink(model,"Convergence","Skims and Accessibilities",2,,1)
+    FlowChartLink(model,"Convergence","Public Transit Assignments",True,,)
+    FlowChartLink(model,"Public Transit Assignments","Reports",True,,)
+
+    Return(model)
+EndMacro
+
+
+Macro "Population Synthesis" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"PopulationSynthesis"}},
+        {"Picture", "bmp\\planpeoplehouse_v3.bmp"},
+        {"PicturePosition", "CenterRight"},
+        {"TextStyle", "Left"}
+    }
+Data:
+    InSections({"Population Synthesis|Inputs"})
+    OutSections({"Population Synthesis|Outputs"})
+EndMacro
+
+
+Macro "Preprocess and Build Networks" (Args,Result)
+    Attributes = {
+        {"Picture", "bmp\\plan_config_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayInputDatabase] })
+    In({ Args.[TransitRouteInputs] })
+    In({ Args.[TAZGeography] })
+    In({ Args.[Demographics] })
+    Out({ Args.[HighwayNetwork] })
+    Out({ Args.[HighwayDatabase] })
+    Out({ Args.[TransitRoutes] })
+    Out({ Args.[DemographicOutputs] })
+Body:
+    model = FlowChart({ "Preprocess Databases" },{ "Build Networks" },"Group steps")
+    //
+    // Nodes
+    FlowChartNode(model,"Preprocess Databases",,,)
+    FlowChartNode(model,"Build Networks",,,)
+    //
+    // Links
+    FlowChartLink(model,"Preprocess Databases","Build Networks",False,,)
+    Return(model)
+EndMacro
+
+
+Macro "Preprocess Databases" (Args,Result)
+    Attributes = {
+        {"Picture", "bmp\\plansubarea_v3.bmp"},
+        {"MacroName", "PreprocessData"}
+    }
+Data:
+    In({ Args.[HighwayInputDatabase] })
+    In({ Args.[TransitRouteInputs] })
+    In({ Args.[TAZGeography] })
+    In({ Args.[Demographics] })
+    Out({ Args.[HighwayDatabase] })
+    Out({ Args.[TransitRoutes] })
+    Out({ Args.[DemographicOutputs] })
+EndMacro
+
+
+Macro "Build Networks" (Args,Result)
+    Attributes = {
+        {"MacroName", "BuildNetworks"},
+        {"Picture", "bmp\\plan_config_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    Out({ Args.[HighwayNetwork] })
+    Out({ Args.[TransitNetwork] })
+EndMacro
+
+
+Macro "Skims and Accessibilities" (Args,Result)
+    Attributes = {
+        {"Picture", "bmp\\planskim_v3.bmp"}
+    }
+Data:
+    InSections({"Accessibility|Mode Logsums|Mandatory",
+                "Accessibility|Destination Logsums|Auto",
+                "Accessibility|Destination Logsums|Non Motorized",
+                "Accessibility|Destination Logsums|Public Transport"})
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    OutSections({"Skims|Motorized",
+                 "Skims|Public Transport",
+                 "Skims|NonMotorized",
+                 "Accessibility|Output"})
+Body:
+    model = FlowChart({ "Skim Matrices" },{ "Accessibilities" },"Group steps")
+    //
+    // Nodes
+    FlowChartNode(model,"Skim Matrices",,,)
+    FlowChartNode(model,"TAZ Accessibility",,,)
+    FlowChartNode(model,"Mandatory Accessibility",,,)
+    //
+    // Links
+    FlowChartLink(model,"Skim Matrices","TAZ Accessibility",False,,)
+    FlowChartLink(model,"TAZ Accessibility","Mandatory Accessibility",False,,)
+    Return(model)
+EndMacro
+
+
+Macro "Skim Matrices" (Args,Result)
+    Attributes = {
+        {"MacroName", "HighwayAndTransitSkim"},
+        {"Picture", "bmp\\planskim_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    In({ Args.[HighwayNetwork] })
+    In({ Args.[TransitNetwork] })
+    OutSections({"Skims|Motorized",
+                 "Skims|Public Transport",
+                 "Skims|NonMotorized"})
+EndMacro
+
+
+Macro "TAZ Accessibility" (Args,Result)
+    Attributes = {
+        {"MacroName", "CalculateAccessibilities"},
+        {"Picture", "bmp\\planpeoplehouse_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    In({ Args.[HighwaySkim] })
+    In({ Args.[TransitWalkSkim] })
+    In({ Args.[WalkSkim] })
+    In({ Args.[DemographicOutputs] })
+    Out({ Args.[AccessibilitiesOutputs] })
+EndMacro
+
+
+Macro "Mandatory Accessibility" (Args,Result)
+    Attributes = {
+        {"MacroName", "Mandatory Accessibility"},
+        {"Picture", "bmp\\planpeoplehouse_v3.bmp"}
+    }
+Data:
+    InSections({"Accessibility|Mode Logsums|Mandatory",
+                "Accessibility|Destination Logsums|Auto",
+                "Accessibility|Destination Logsums|Non Motorized",
+                "Accessibility|Destination Logsums|Public Transport"})
+    Out({ Args.[MandatoryModeAccessibility] })
+    Out({ Args.[MandatoryDestAccessibility] })
+EndMacro
+
+
+Macro "ABM Core" (Args,Result)
+    Attributes = {
+        {"Description", "Peoria ABM"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"ABM Preprocess"},{"Mandatory Tours"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"ABM Preprocess",,,)
+    FlowChartNode(model,"LongTermChoices",,,)
+    FlowChartModel(model,"Mandatory Tours",,,)
+    FlowChartModel(model,"Mandatory Stops",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"ABM Preprocess","LongTermChoices",True,,)
+    FlowChartLink(model,"LongTermChoices","Mandatory Tours",True,,)
+    FlowChartLink(model,"Mandatory Tours","Mandatory Stops",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "ABM Preprocess" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"ABM Preprocess"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+EndMacro
+
+
+Macro "LongTermChoices" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Driver License",
+                        "Auto Ownership",
+                        "Worker Models",
+                        "Mandatory Participation",
+                        "Work Location",
+                        "Univ Location",
+                        "School Location",
+                        "Daycare Location"}},
+                    {"Picture", "bmp\\report.bmp"},
+                    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"Long Term Choices|Auto Ownership",
+                "Long Term Choices|Driver License",
+                "Long Term Choices|Mandatory Participation|Daycare Status",
+                "Long Term Choices|Mandatory Participation|School Status",
+                "Long Term Choices|Mandatory Participation|University Status",
+                "Long Term Choices|Worker Models|Remote Work",
+                "Long Term Choices|Worker Models|Work Attendance",
+                "Long Term Choices|Worker Models|Worker Category"})
+    In({ Args.[WorkLocSize] })
+    In({ Args.[WorkLocUtility] })
+    In({ Args.[WorkSPFlag] })
+    In({ Args.[UnivLocUtility] })
+    In({ Args.[UnivSPFlag] })
+    In({ Args.[SchoolLocUtility] })
+    In({ Args.[SchoolSPFlag] })
+    In({ Args.[DaycareLocUtility] })
+EndMacro
+
+
+Macro "Mandatory Tours" (Args,Result)
+    Attributes = {
+        {"Description", "Peoria ABM"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Tour Frequency"},{"Mandatory Tour Diary"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"Tour Frequency",,,)
+    FlowChartModel(model,"Activity Duration",,,)
+    FlowChartModel(model,"Activity Start",,,)
+    FlowChartModel(model,"Tour Mode",,,)
+    FlowChartModel(model,"Mandatory Tour Diary",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"Tour Frequency","Activity Duration",True,,)
+    FlowChartLink(model,"Activity Duration","Activity Start",True,,)
+    FlowChartLink(model,"Activity Start","Tour Mode",True,,)
+    FlowChartLink(model,"Tour Mode","Mandatory Tour Diary",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "Tour Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Work Tours Frequency",
+                        "Univ Tours Frequency"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Frequency|Work",
+                "MandatoryTours|Frequency|University"})
+EndMacro
+
+
+Macro "Activity Duration" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"FullTime Work Act Dur",
+                       "PartTime Work Act Dur",
+                       "University Act Dur",
+                       "School Act Dur"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Activity Duration|Full Time Workers",
+                "MandatoryTours|Activity Duration|Part Time Workers",
+                "MandatoryTours|Activity Duration|University",
+                "MandatoryTours|Activity Duration|School"})
+EndMacro
+
+
+Macro "Activity Start" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"FullTime Work Start",
+                       "PartTime Work Start",
+                       "University Start",
+                       "School Start"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Activity Start Time|Full Time Workers",
+                "MandatoryTours|Activity Start Time|Part Time Workers",
+                "MandatoryTours|Activity Start Time|University",
+                "MandatoryTours|Activity Start Time|School"})
+EndMacro
+
+
+Macro "Tour Mode" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Mandatory Mode Choice"}},
+        {"Picture", "bmp\\planmodesplit_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Tour Mode|Work|Modes",
+                "MandatoryTours|Tour Mode|Work|Utility",
+                "MandatoryTours|Tour Mode|University|Modes",
+                "MandatoryTours|Tour Mode|University|Utility",
+                "MandatoryTours|Tour Mode|School|Modes",
+                "MandatoryTours|Tour Mode|School|Utility"})
+EndMacro
+
+
+Macro "Mandatory Tour Diary" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Create Mandatory Tour File"}},
+        {"Picture", "bmp\\planreport_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    OutSections({"Tours and Trips"})
+EndMacro
+
+
+Macro "Mandatory Stops" (Args,Result)
+    Attributes = {
+        {"Description", "Peoria ABM"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Stops Frequency"},{"Stops Scheduling"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"Stops Frequency",,,)
+    FlowChartModel(model,"Stops Destination",,,)
+    FlowChartModel(model,"Stops Duration",,,)
+    FlowChartModel(model,"Stops Scheduling",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"Stops Frequency","Stops Destination",True,,)
+    FlowChartLink(model,"Stops Destination","Stops Duration",True,,)
+    FlowChartLink(model,"Stops Duration","Stops Scheduling",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "Stops Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Mandatory Stops Frequency"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryStops|Frequency|Work Tours",
+                "MandatoryStops|Frequency|Univ Tours"})
+EndMacro
+
+
+Macro "Stops Destination" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"MandatoryStops Destination"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryStops|Destination|Size Variable",
+                "MandatoryStops|Destination|Utility"})
+EndMacro
+
+
+
+Macro "Stops Duration" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"MandatoryStops Duration"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryStops|Duration|Work Tours",
+                "MandatoryStops|Duration|Univ Tours"})
+EndMacro
+
+
+
+Macro "Stops Scheduling" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"MandatoryStops Scheduling"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+EndMacro
+
+
+/*
+Macro "Report.Population Synthesis" (Args,Result)
+    Attributes = {
+        {"MacroName", "ReportPopSynth"}
+    }
+EndMacro
+*/
+Macro "Convergence" (Args, Result)
+    Attributes = {
+        {"Height", 100},
+        {"Picture", "bmp\\planiteration_v3.bmp"},
+        {"PicturePosition", "Center"},
+        {"Shape", "Decision"},
+        {"Text", " "},
+        {"Width", 100},
+        {"FillColor",{192,96,0}},
+        {"FillColor2",{192,96,0}}
+    }
+Body:
+    if Args.Iteration = null then Args.Iteration = 1
+    if Args.MaxIterations = null then Args.MaxIterations = 1
+    if Args.Iteration < Args.MaxIterations then
+        retValue = 2
+    else
+        retValue = 1
+    
+    Args.Iteration = Args.Iteration + 1
+    Return(retValue)
+EndMacro
+

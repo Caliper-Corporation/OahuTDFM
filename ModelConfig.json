@@ -1,0 +1,15 @@
+{
+    "Model": {
+        "Description": [
+            "The main model is PeoriaABM.model",
+            "This system has only one model file"
+        ],
+        "Author": "Caliper Corporation",
+        "Version": "2022.1",
+        "Name": "PeoriaABM.model",
+        "Parameters": ["Supplemental\\Parameters\\Common.parameters"],
+        "Styles": ["Supplemental\\Styles\\Common.styles"],
+        "Scenarios": "PeoriaABM.scenarios",
+        "Plugins": ["Supplemental\\PlugIns\\Plugins.rsc"]
+    }
+}
