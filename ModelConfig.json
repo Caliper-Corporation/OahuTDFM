@@ -7,10 +7,10 @@
         "Author": "Caliper Corporation",
         "Version": "2022.1",
         "Name": "OahuABM.model",
-        "Parameters": ["Supplemental\\Parameters\\Common.parameters"],
-        "Styles": ["Supplemental\\Styles\\Common.styles"],
+        "Parameters": ["SourceCode\\flow_chart\\Parameters\\Common.parameters"],
+        "Styles": ["SourceCode\\flow_chart\\Styles\\Common.styles"],
         "Scenarios": "OahuABM.scenarios",
-        "Plugins": ["Supplemental\\PlugIns\\Plugins.rsc"],
-        "Menus": ["Supplemental\\Plugins\\model_menu.rsc"]
+        "Plugins": ["SourceCode\\flow_chart\\PlugIns\\Plugins.rsc"],
+        "Menus": ["SourceCode\\flow_chart\\Plugins\\model_menu.rsc"]
     }
 }

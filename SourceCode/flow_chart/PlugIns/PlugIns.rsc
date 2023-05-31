@@ -3,7 +3,7 @@ Macro "Model.Attributes" (Args,Result)
     Attributes = {
         {"BackgroundColor",{255,255,255}},
         {"BannerHeight", 90},
-        {"BannerPicture", "Supplemental\\bmp\\banner.bmp"},
+        {"BannerPicture", "SourceCode\\flow_chart\\bmp\\banner.bmp"},
         {"BannerWidth", 600},
         {"ResizePicture", 1},
         {"Base Scenario Name", "Base"},
