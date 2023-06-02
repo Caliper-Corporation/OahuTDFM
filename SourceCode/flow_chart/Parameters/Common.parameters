@@ -89,16 +89,6 @@
 	
 	Section = "Population Synthesis|Inputs"
 	
-        Args.CensusBlockGroups = {
-            "Type":"File",
-            "Caption":"Block group marginals",
-            "Value":"%Input Folder%\\Population\\Marginals\\2020_Census Block_Group_ACS_PopSyn.bin"
-        }
-        Args.CensusBlocks = {
-            "Type":"File",
-            "Caption":"Block marginals",
-            "Value":"%Input Folder%\\Population\\Marginals\\2020_Census Block.bin"
-        }
         Args.PUMS_Households = {
             "Type":"File",
             "Caption":"PUMS Household seed",
@@ -130,6 +120,26 @@
             "Caption":"Tolerance",
             "Description":"Convergence Threshold",
             "Value":0.001
+        }
+        Args.IncomeCurves = { 
+            "Type":"File" , 
+            "Value":"%Input Folder%\\resident\\disagg_model\\income_curves.csv", 
+            "Description":"Disaggregate income curves." 
+        }
+        Args.SizeCurves = { 
+            "Type":"File" , 
+            "Value":"%Input Folder%\\resident\\disagg_model\\size_curves.csv", 
+            "Description":"Disaggregate household size curves." 
+        }
+        Args.WorkerCurves = { 
+            "Type":"File" , 
+            "Value":"%Input Folder%\\resident\\disagg_model\\worker_curves.csv", 
+            "Description":"Disaggregate worker curves." 
+        }
+        Args.RegionalMedianIncome = { 
+            "Type":"int" , 
+            "Value":65317, 
+            "Description":"Median income of the TRM region" 
         }
 	
 	Section = "Population Synthesis|Dorm Synthesis"
@@ -171,26 +181,6 @@
 	
 	Section = "Population Synthesis|Outputs"
 	
-        Args.HHSeed = {
-            "Type":"File",
-            "Caption":"Processed household seed",
-            "Value":"%Output Folder%\\Population\\Intermediate\\HHSeed.bin"
-        }
-        Args.PersonSeed = {
-            "Type":"File",
-            "Caption":"Processed person seed",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PersonSeed.bin"
-        }
-        Args.BGMarginals = {
-            "Type":"File",
-            "Caption":"Processed marginal file",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Marginals.bin"
-        }
-        Args.BlockMarginals = {
-            "Type":"File",
-            "Caption":"Processed nested marginal file",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Nested_Marginals.bin"
-        }
         Args.Households = {
             "Type":"File",
             "Caption":"Synthetic household file",
@@ -203,16 +193,8 @@
             "Description":"Persons",
             "Value":"%Output Folder%\\Population\\Persons.bin"
         }
-        Args.SQLDB = {
-            "Type":"hidden",
-            "Caption":"SQL DB for reporting",
-            "Value":"%Output Folder%\\Population\\PopSQL.db"
-        }
-        Args.BGTabulations = {
-            "Type":"File",
-            "Caption":"Output block group tabulations",
-            "Value":"%Output Folder%\\Population\\PopSyn_BGTabulations.bin"
-        }
+        Args.SEDMarginals = { "Type":"File" , "Value":"%Output Folder%\\resident\\disagg_model\\SEDMarginals.bin", "Description":"Table of output marginals from the disagg model." }
+        Args.[Synthesized Tabulations] = { "Type":"File" , "Value":"%Output Folder%\\resident\\population_synthesis\\Synthesized_Tabulations.bin", "Description":"Summary tabulations of the synthetic population." }
 	
 	Section = "GEO Master Data"
 	

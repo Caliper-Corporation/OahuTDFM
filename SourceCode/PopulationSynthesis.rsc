@@ -2,20 +2,12 @@
 
 */
 
-Macro "Disaggregate Curves" (Args)
+Macro "PopulationSynthesis" (Args)
     RunMacro("DisaggregateSED", Args)
-    return(1)
-endmacro
-
-Macro "IPU Synthesis" (Args)
-    RunMacro("Synthesize Population", Args)
-    RunMacro("PopSynth Post Process", Args)
-    return(1)
-endmacro
-
-Macro "Auto Ownership" (Args)
-    RunMacro("Create AO Features", Args)
-    RunMacro("Calculate Auto Ownership", Args)
+    // RunMacro("Synthesize Population", Args)
+    // RunMacro("PopSynth Post Process", Args)
+    // RunMacro("Create AO Features", Args)
+    // RunMacro("Calculate Auto Ownership", Args)
     return(1)
 endmacro
 
@@ -27,7 +19,7 @@ Creates output file defined by 'Args.SEDMarginals'
 Macro "DisaggregateSED"(Args)
 
     // Open SED Data and check table for missing fields
-    obj = CreateObject("AddTables", {TableName: Args.SE})
+    obj = CreateObject("AddTables", {TableName: Args.Demographics})
     vwSED = obj.TableView
     flds = {"TAZ", "Type", "HH", "HH_Pop", "Median_Inc", "Pct_Worker", "Pct_Child", "Pct_Senior"}
     expOpts.[Additional Fields] = {{"Kids", "Integer", 12,,,,},
@@ -42,7 +34,7 @@ Macro "DisaggregateSED"(Args)
 
     // Run models to disaggregate curves
     // 1. ==== Size
-    opt = {View: vw, Curve: Args.SizeCurves, KeyExpression: "HH_Pop/HH", LookupField: "avg_size"}
+    opt = {View: vw, Curve: Args.SizeCurves, KeyExpression: "(Population-GroupQuarterPopulation)/OccupiedHH", LookupField: "avg_size"}
     RunMacro("Disaggregate SE HH Data", opt)
 
     // 2. ==== Income
@@ -50,11 +42,12 @@ Macro "DisaggregateSED"(Args)
     RunMacro("Disaggregate SE HH Data", opt)
 
     // 3. ==== Workers
-    opt = {View: vw, Curve: Args.WorkerCurves, KeyExpression: "((Pct_Worker/100)*HH_Pop)/HH", LookupField: "avg_workers"}
+    opt = {View: vw, Curve: Args.WorkerCurves, KeyExpression: "((Pct_Worker/100)*(Population-GroupQuarterPopulation))/OccupiedHH", LookupField: "avg_workers"}
     RunMacro("Disaggregate SE HH Data", opt)
 
     // Fill number of kids, adults and seniors
-    vecs = GetDataVectors(vw + '|', {"HH_Pop", "Pct_Child", "Pct_Senior"}, {OptArray: 1})
+    vecs = GetDataVectors(vw + '|', {"Population", "GroupQuarterPopulation", "Pct_Child", "Pct_Senior"}, {OptArray: 1})
+    vecs.HH_Pop = vecs.Population - vecs.GroupQuarterPopulation
     vecsSet = null
     vecsSet.Kids = r2i(vecs.HH_Pop * vecs.Pct_Child/100)
     vecsSet.Seniors = r2i(vecs.HH_Pop * vecs.Pct_Senior/100)
@@ -167,8 +160,8 @@ Macro "Synthesize Population"(Args)
     o.RandomSeed = 314159
     
     // Define Seed Data. Specify relationship between HH file and TAZ and between HH and Person file
-    o.HouseholdFile({FileName: Args.[PUMS HH Seed], /*Filter: "NP <= 10",*/ ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
-    o.PersonFile({FileName: Args.[PUMS Person Seed], ID: "PersonID", HHID: "HHID"})
+    o.HouseholdFile({FileName: Args.PUMS_Households, /*Filter: "NP <= 10",*/ ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
+    o.PersonFile({FileName: Args.PUMS_Persons, ID: "PersonID", HHID: "HHID"})
     
     // Define the marginals data (Disaggregated SED marginals)
     marginalData = {FileName: Args.SEDMarginals, Filter: "HH > 0", ID: "TAZ", MatchingID: "PUMA5"}
@@ -236,7 +229,7 @@ Macro "Synthesize Population"(Args)
     outputFolder = Args.[Output Folder] + "\\resident\\population_synthesis\\"
     o.IPUIncidenceOutputFile = outputFolder + "IPUIncidence.bin"
     o.ExportIPUWeights(outputFolder + "IPUWeights")
-    o.Tolerance = 0.01
+    o.Tolerance = Args.PopSynTolerance
     ret_value = o.Run()
 endMacro
 

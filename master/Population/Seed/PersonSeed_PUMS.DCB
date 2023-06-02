@@ -1,0 +1,17 @@
+
+75,codepage=65001
+"PERID",I,1,4,0,8,0,,"","",,"Sum",
+"HHID",I,5,4,0,8,0,,"","",,"Sum",
+"RT",C,9,3,0,3,0,,"","",,"Copy",
+"Worker",I,12,4,0,8,0,,"","",,"Sum",
+"SERIALNO",C,16,20,0,20,0,,"","",,"Sum",
+"DIVISION",I,36,4,0,11,0,,"","",,"Sum",
+"SPORDER",I,40,4,0,11,0,,"","",,"Sum",
+"PUMA",I,44,4,0,11,0,,"","",,"Sum",
+"REGION",I,48,4,0,11,0,,"","",,"Sum",
+"ST",I,52,4,0,11,0,,"","",,"Sum",
+"AGEP",I,56,4,0,11,0,,"","",,"Sum",
+"COW",I,60,4,0,11,0,,"","",,"Sum",
+"SEX",I,64,4,0,11,0,,"","Person Gender|1. Male|2. Female",,"Sum",
+"INDP",I,68,4,0,11,0,,"","Industry recode for 2018 and later based on 2017 IND codes.|Refer PUMS dictionary for complete description",,"Sum",
+"ADJINC",I,72,4,0,11,0,,"","",,"Sum",
