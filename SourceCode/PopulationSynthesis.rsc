@@ -21,7 +21,7 @@ Macro "DisaggregateSED"(Args)
     // Open SED Data and check table for missing fields
     obj = CreateObject("AddTables", {TableName: Args.Demographics})
     vwSED = obj.TableView
-    flds = {"TAZ", "Type", "HH", "HH_Pop", "Median_Inc", "Pct_Worker", "Pct_Child", "Pct_Senior"}
+    flds = {"TAZ", "OccupiedHH", "Population", "GroupQuarterPopulation", "Median_Inc", "Pct_Worker", "Pct_Child", "Pct_Senior"}
     expOpts.[Additional Fields] = {{"Kids", "Integer", 12,,,,},
                                    {"AdultsUnder65", "Integer", 12,,,,},
                                    {"Seniors", "Integer", 12,,,,},
@@ -55,7 +55,7 @@ Macro "DisaggregateSED"(Args)
     SetDataVectors(vw + '|', vecsSet,)
 
     // Fill PUMA5 field using PUMA info from the master TAZ database
-    objLyrs = CreateObject("AddDBLayers", {FileName: Args.TAZs})
+    objLyrs = CreateObject("AddDBLayers", {FileName: Args.TAZGeography})
     {TAZLayer} = objLyrs.Layers
     vwJ = JoinViews("SED_TAZ", GetFieldFullSpec(vw, "TAZ"), GetFieldFullSpec(TAZLayer, "ID"),)
     v = GetDataVector(vwJ + "|", "PUMA",)
@@ -126,16 +126,16 @@ Macro "Disaggregate SE HH Data"(opt)
     // Join SED Data to Lookup and compute values
     vecsOut = null
     vwJ = JoinViews("SEDLookup", GetFieldFullSpec(vw, exprFinal), GetFieldFullSpec(vwC, exprL),)
-    vecs = GetDataVectors(vwJ + "|", {"HH"} + categoryFlds, {OptArray: 1})
-    vTotal = Vector(vecs.HH.Length, "Long", {{"Constant", 0}})
+    vecs = GetDataVectors(vwJ + "|", {"OccupiedHH"} + categoryFlds, {OptArray: 1})
+    vTotal = Vector(vecs.OccupiedHH.Length, "Long", {{"Constant", 0}})
     for i = 2 to categoryFlds.length do // Do not compute for first category yet, hence the 2.
         fld = categoryFlds[i]
-        vVal = r2i(vecs.HH * vecs.(fld))    // Intentional truncation of decimal part
+        vVal = r2i(vecs.OccupiedHH * vecs.(fld))    // Intentional truncation of decimal part
         vecsOut.("HH_" + fld) = nz(vVal)
         vTotal = vTotal + nz(vVal)      
     end
     finalFld = categoryFlds[1]
-    vecsOut.("HH_" + finalFld) = nz(vecs.HH) - vTotal // Done to maintain clean marginals that exactly sum up to HH
+    vecsOut.("HH_" + finalFld) = nz(vecs.OccupiedHH) - vTotal // Done to maintain clean marginals that exactly sum up to HH
     SetDataVectors(vwJ + "|", vecsOut,)
     CloseView(vwJ)
     objC = null

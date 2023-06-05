@@ -92,12 +92,12 @@
         Args.PUMS_Households = {
             "Type":"File",
             "Caption":"PUMS Household seed",
-            "Value":"%Input Folder%\\Population\\Seed\\HH_Seed.bin"
+            "Value":"%Input Folder%\\Population\\Seed\\HHSeed_PUMS.bin"
         }
         Args.PUMS_Persons = {
             "Type":"File",
             "Caption":"PUMS Person seed",
-            "Value":"%Input Folder%\\Population\\Seed\\Person_Seed.bin"
+            "Value":"%Input Folder%\\Population\\Seed\\PersonSeed_PUMS.bin"
         }
         Args.PUMS_WorkIndustryCodes = {
             "Type":"File",
@@ -123,17 +123,17 @@
         }
         Args.IncomeCurves = { 
             "Type":"File" , 
-            "Value":"%Input Folder%\\resident\\disagg_model\\income_curves.csv", 
+            "Value":"%Input Folder%\\Population\\disagg_model\\income_curves.csv", 
             "Description":"Disaggregate income curves." 
         }
         Args.SizeCurves = { 
             "Type":"File" , 
-            "Value":"%Input Folder%\\resident\\disagg_model\\size_curves.csv", 
+            "Value":"%Input Folder%\\Population\\disagg_model\\size_curves.csv", 
             "Description":"Disaggregate household size curves." 
         }
         Args.WorkerCurves = { 
             "Type":"File" , 
-            "Value":"%Input Folder%\\resident\\disagg_model\\worker_curves.csv", 
+            "Value":"%Input Folder%\\Population\\disagg_model\\worker_curves.csv", 
             "Description":"Disaggregate worker curves." 
         }
         Args.RegionalMedianIncome = { 
@@ -193,7 +193,7 @@
             "Description":"Persons",
             "Value":"%Output Folder%\\Population\\Persons.bin"
         }
-        Args.SEDMarginals = { "Type":"File" , "Value":"%Output Folder%\\resident\\disagg_model\\SEDMarginals.bin", "Description":"Table of output marginals from the disagg model." }
+        Args.SEDMarginals = { "Type":"File" , "Value":"%Output Folder%\\Population\\SEDMarginals.bin", "Description":"Table of output marginals from the disagg model." }
         Args.[Synthesized Tabulations] = { "Type":"File" , "Value":"%Output Folder%\\resident\\population_synthesis\\Synthesized_Tabulations.bin", "Description":"Summary tabulations of the synthetic population." }
 	
 	Section = "GEO Master Data"
