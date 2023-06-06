@@ -292,7 +292,48 @@
                                                             {Name: "120 - 180 m",   Type: "real",    Fixed: "false"}}
                                         })
 
-    Styles.PctSlider  = Pme.RealSlider({Min: 0.0, Max: 100.0})
+    Styles.SubTourFreqUtility = Pme.Table({Height: 20, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "25%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "45%"},
+                                                            {Name: "Coefficient","Type":"real","Width":"10%","Decimals":"4"},
+                                                            {Name: "One Tour",   Type: "boolean",    Fixed: "false"},
+															                              {Name: "No Tour",   Type: "boolean",    Fixed: "false"}}
+                                        })
+
+    Styles.SubTourDurUtility = Pme.Table({Height: 15, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "5 - 30",   Type: "real",    Fixed: "false"},
+															                              {Name: "30 - 60",   Type: "real",    Fixed: "false"},
+                                                            {Name: "60 - 90",   Type: "real",    Fixed: "false"},
+                                                            {Name: "90 - 120",   Type: "real",    Fixed: "false"},
+                                                            {Name: "120 - 150",   Type: "real",    Fixed: "false"}}
+                                        })
+
+    Styles.SubTourStartUtility = Pme.Table({Height: 15, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "9 AM - 10 AM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "10 AM - 11 AM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "11 AM - 12 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "12 PM - 1 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "1 PM - 2 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "2 PM - 3 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "3 PM - 4 PM",   Type: "real",    Fixed: "false"}}
+                                        })
+
+    Styles.SubTourModeUtility = Pme.Table({Height: 10, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
+                                                            {Name: "Coefficient","Type":"real","Width":"10%","Decimals":"4"},
+                                                            {Name: "AutoDriver",   Type: "boolean",    Fixed: "false"},
+															                              {Name: "AutoPass",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Walk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Bike",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                        })
+
+  Styles.PctSlider  = Pme.RealSlider({Min: 0.0, Max: 100.0})
 
   Styles.lanecapStyle = Pme.Table(RunMacro("Extend Object", all_tables,
       {"Height":13,

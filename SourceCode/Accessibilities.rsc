@@ -140,8 +140,8 @@ macro "CalculateAccessibilities" (Args, Results)
     for time in times do
 
         // open transit skim matrix
-        PTSkim = Args.TransitWalkSkim
-        AutoSkim = Args.HighwaySkim
+        PTSkim = Args.TransitWalkSkimAM
+        AutoSkim = Args.HighwaySkimAM
         // make employment and retail employment vectors row based
         PTMat = CreateObject("Matrix", PTSkim)
         PTMat.SetRowIndex("InternalTAZ")

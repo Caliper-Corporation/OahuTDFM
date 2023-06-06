@@ -296,12 +296,22 @@
             "Description":"Output highway network graph",
             "Value":"%OutputSkims%\\highwaynet.net"
         }
-        Args.HighwaySkim = {
+        Args.HighwaySkimAM = {
             "Type":"File",
-            "Description":"Highway Skim Matrix",
-            "Value":"%OutputSkims%\\HighwaySkim.mtx"
+            "Description":"AM Highway Skim Matrix",
+            "Value":"%OutputSkims%\\HighwaySkimAM.mtx"
         }
-	
+        Args.HighwaySkimPM = {
+            "Type":"File",
+            "Description":"PM Highway Skim Matrix",
+            "Value":"%OutputSkims%\\HighwaySkimPM.mtx"
+        }
+        Args.HighwaySkimOP = {
+            "Type":"File",
+            "Description":"OP Highway Skim Matrix",
+            "Value":"%OutputSkims%\\HighwaySkimOP.mtx"
+        }
+
 	Section = "Skims|Public Transport"
 	
         Args.TransitNetwork = {
@@ -309,15 +319,35 @@
             "Description":"Output transit network graph",
             "Value":"%OutputSkims%\\TransitNetwork.tnw"
         }
-        Args.TransitWalkSkim = {
+        Args.TransitWalkSkimAM = {
             "Type":"File",
-            "Description":"Transit Walk Skim Matrix",
-            "Value":"%OutputSkims%\\TransitWalkSkim.mtx"
+            "Description":"Transit Walk Skim Matrix AM",
+            "Value":"%OutputSkims%\\TransitWalkSkimAM.mtx"
         }
-        Args.TransitDriveSkim = {
+        Args.TransitDriveSkimAM = {
             "Type":"File",
-            "Description":"Transit Drive Skim Matrix",
-            "Value":"%OutputSkims%\\TransitDriveSkim.mtx"
+            "Description":"Transit Drive Skim Matrix AM",
+            "Value":"%OutputSkims%\\TransitDriveSkimAM.mtx"
+        }
+        Args.TransitWalkSkimPM = {
+            "Type":"File",
+            "Description":"Transit Walk Skim Matrix PM",
+            "Value":"%OutputSkims%\\TransitWalkSkimPM.mtx"
+        }
+        Args.TransitDriveSkimPM = {
+            "Type":"File",
+            "Description":"Transit Drive Skim Matrix PM",
+            "Value":"%OutputSkims%\\TransitDriveSkimPM.mtx"
+        }
+        Args.TransitWalkSkimOP = {
+            "Type":"File",
+            "Description":"Transit Walk Skim Matrix OP",
+            "Value":"%OutputSkims%\\TransitWalkSkimOP.mtx"
+        }
+        Args.TransitDriveSkimOP = {
+            "Type":"File",
+            "Description":"Transit Drive Skim Matrix OP",
+            "Value":"%OutputSkims%\\TransitDriveSkimOP.mtx"
         }
 	
 	Section = "Skims|NonMotorized"
@@ -1380,8 +1410,153 @@
                 {"ASC","Constant",-0.06613,0.1653,-0.03583,-0.2177,0.2083,-0.1517,-1.114,-0.8084,null}}
         }
 
-	Section = "Tours and Trips"
+    Section = "SubTours|Frequency"
+        Args.SubTourChoiceUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ Subtour Choice",
+            "Description":"SubTourChoiceUtility",
+            "Style":"SubTourFreqUtility",
+            "Value":{
+                {"ASC","Constant",2.875,0,1},
+                {"Male","TourData.Gender = 1",-0.124,0,1},
+                {"Two Plus Workers","TourData.Workers >= 2",0.5779,0,1},
+                {"HH with Kids","TourData.Kids > 0",-0.3034,0,1},
+                {"Kids Per Non Working Adult","TourData.Kids/(TourData.Adults - TourData.Workers)",0.805,0,1},
+                {"High Income HH","TourData.IncomeLevel = 3",-1.307,0,1},
+                {"Medium Income HH","TourData.IncomeLevel = 2",-1.124,0,1},
+                {"Vehicles Per Adult (Licensed)","(TourData.Vehicles/TourData.Adults)*(TourData.License = 1)",-0.2015,0,1},
+                {"Is Main Work Tour Auto?","TourData.ForwardModeCode <= 2",0.2953,0,1},
+                {"Work less than 5 miles from Home","AutoSkim.Distance < 5",-0.5709,0,1},
+                {"Work less than 5 minutes from Home","AutoSkim.Time < 5",0.1474,0,1},
+                {"Work Start Time earlier than 10 AM","TourData.ActivityStartTime < 600",-0.3855,0,1},
+                {"Work Duration less than 10 hours","TourData.ActivityDuration < 600",1.713,0,1},
+                {"Same Work and Home TAZ","TourData.Origin = TourData.Destination",1.498,0,1}}
+        }
+        Args.SubTourChoiceAvail = {
+            "Type":"array",
+            "Caption":"Work Based Subtour Availability",
+            "Description":"SubTourChoiceAvail",
+            "Style":"Availability",
+            "Value":{
+                {"One Tour","TourData.ActivityDuration >= 90 and TourData.DestArrTime >= 420 and TourData.DestDepTime <= 1140"}}
+        }
 	
+	Section = "SubTours|Destination"
+        Args.SubTourSizeVar = {
+            "Type":"array",
+            "Caption":"Size Variable for Destination choice for Work/Univ SubTours",
+            "Description":"SubTourSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Emp_HealthCare",2.818},
+                {"Emp_Services",2.818},
+                {"Emp_FinanceRealEstate",3.361},
+                {"Emp_Education",1.945},
+                {"Emp_Wholesale",3.589},
+                {"Emp_Retail",3.589},
+                {"Emp_Agriculture",0.1273},
+                {"Emp_Manufacturing",0.1273},
+                {"Emp_TransportConstruction",0.1273},
+                {"TotalEmploymentDensity",-6.9106},
+                {"TransitStopDensity",1.411}}
+        }
+	
+        Args.SubTourDestUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Destination Utility",
+            "Description":"SubTourDestUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"OPTime from WorkTAZ to DestTAZ and back","2*AutoSkim.Time",-0.2387},
+                {"Excess OPTime (above) over 15 min","(2*AutoSkim.Time > 15)*(2*AutoSkim.Time - 15)",0.1537},
+                {"Excess OPTime (above) over 30 min","(2*AutoSkim.Time > 30)*(2*AutoSkim.Time - 30)",0.04135},
+                {"HH Density","TAZ4Ds.HouseholdDensity.D/1000",-0.0515},
+                {"Employment Density","TAZ4Ds.TotalEmploymentDensity.D/1000",-0.002837},
+                {"Is chosen TAZ same as mandatory destination?","Intrazonal.IZ",0.5973}}
+        }
+	
+	Section = "SubTours|Duration"
+        Args.SubTourDurUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Duration Utility",
+            "Style":"SubTourDurUtility",
+            "Value":{
+                {"ASC","Constant",1.932,1.216,0.7729,-0.4421,null},
+                {"HH With Kids","TourData.Kids > 0",null,0.3176,null,null,null},
+                {"High Income HH","TourData.IncomeLevel = 3",null,null,0.5996,0.5996,null},
+                {"Auto Work Tour","TourData.ForwardModeCode <= 2",null,null,1.048,1.048,null},
+                {"HH Size 4+","TourData.HHSize >= 4",null,null,-1.227,-1.227,null},
+                {"Work To Stop Distance > 10 miles","AutoSkim.Distance > 10",null,null,2.7,2.7,null},
+                {"Work To Stop Distance < 5 miles","AutoSkim.Distance < 5",null,1.443,null,null,null},
+                {"Work To Stop Travel Time < 5 min","AutoSkim.Time < 5",1.61,null,null,null,null},
+                {"Work To Stop Travel Time > 10 minutes","AutoSkim.Time > 10",null,null,-1.732,-1.732,null}}
+        }
+        Args.SubTourDurAvail = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Duration Availability",
+            "Description":"SubTourDurAvailability",
+            "Style":"Availability",
+            "Value":{
+                {"30 - 60","TourData.ActivityDuration - 2*AutoSkim.Time > 60"},
+                {"60 - 90","TourData.ActivityDuration - 2*AutoSkim.Time > 90"},
+                {"90 - 120","TourData.ActivityDuration - 2*AutoSkim.Time > 120"},
+                {"120 - 150","TourData.ActivityDuration - 2*AutoSkim.Time > 150"}}
+        }
+	
+	Section = "SubTours|Start Time"
+        Args.SubTourStartAlts = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Start Time Alternatives",
+            "Description":"SubTourStartAlts",
+            "Style":"AlternativesList",
+            "Value":{
+                {"7 - 8",null,4.0679},
+                {"8 - 9",null,-6.4256},
+                {"9 - 10","9 AM - 10 AM",4.9349},
+                {"10 - 11","10 AM - 11 AM",-3.3322},
+                {"11 - 12","11 AM - 12 PM",1.9677},
+                {"12 - 13","12 PM - 1 PM",4.195},
+                {"13 - 14","1 PM - 2 PM",-9.6924},
+                {"14 - 15","2 PM - 3 PM",4.502},
+                {"15 - 16","3 PM - 4 PM",1.1935},
+                {"16 - 17",null,-0.2452},
+                {"17 - 18",null,4.4404},
+                {"18 - 19",null,-9.6833}}
+        }
+        Args.SubTourStartUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Start Time Utility",
+            "Style":"SubTourStartUtility",
+            "Value":{
+                {"Low Income","TourData.IncomeLevel = 1",-1.097,-1.097,null,null,null,0.4355,0.4355},
+                {"Medium Income","TourData.IncomeLevel = 2",null,null,1.987,1.192,0.6766,null,null},
+                {"High Income","TourData.IncomeLevel = 3",null,null,1.54,1.672,0.9906,null,null},
+                {"HH With Kids","TourData.Kids > 0",null,null,null,null,null,0.4348,0.4348},
+                {"Work To Stop Distance > 10 miles","AutoSkim.Distance > 10",null,null,null,null,null,-1.262,-1.262},
+                {"SubTour Duration (0-30)","TourData.SubTourActDuration < 30",null,null,-0.6677,-0.06911,null,null,null},
+                {"SubTour Duration (30-60)","TourData.SubTourActDuration >= 30 and TourData.SubTourActDuration < 60",null,null,0.4087,1.513,null,null,null},
+                {"SubTour Duration 1 to 2 hr","TourData.SubTourActDuration >= 60 and TourData.SubTourActDuration < 120",null,null,null,null,-0.1391,null,null},
+                {"SubTour Duration 2 hr+","TourData.SubTourActDuration >= 120",1.695,1.695,null,null,null,null,null}}
+        }
+	
+	Section = "SubTours|Mode"
+        Args.SubTourModeUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Mode Utility",
+            "Style":"SubTourModeUtility",
+            "Value":{
+                {"ASC Auto Driver","Constant",5.218,1,0,0,0,0},
+                {"ASC Auto Passenger","Constant",1.696,0,1,0,0,0},
+                {"ASC Walk","Constant",0.5358,0,0,1,0,0},
+                {"ASC Bike","Constant",0.5358,0,0,0,1,0},
+                {"WorkTAZ same as StopTAZ","TourData.Destination = TourData.SubTourTAZ",2.872,0,0,1,1,0},
+                {"Distance if greater than 0.5 mile","(WalkSkim.Distance > 0.5)*WalkSkim.Distance",-3.088,0,0,1,0,0},
+                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99,0,0,1,0,0},
+                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99,0,0,0,1,0}}
+        }
+
+
+	Section = "Tours and Trips"
         Args.WorkCarpoolOccupancy = {
             "Type":"double",
             "Caption":"Occupancy factor for work carpool trips",

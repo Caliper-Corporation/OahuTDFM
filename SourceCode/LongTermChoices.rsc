@@ -278,7 +278,7 @@ Macro "Work Location"(Args)
         obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
         obj.AddTableSource({SourceName: "WorkDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
-        obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "ModeAccessibility", File: Args.MandatoryModeAccessibility, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddPrimarySpec({Name: "PersonHH", Filter: "WorkIndustry = " + indCode, OField: "TAZID"})
         obj.AddUtility(utilSpec)
@@ -315,7 +315,7 @@ Macro "Work Location"(Args)
             DField: "WorkTAZ",
             FillField: "HometoWorkTime",
             Filter: "WorkIndustry <= 10",
-            Matrix: {Name: Args.HighwaySkim, Core: "Time"}}
+            Matrix: {Name: Args.HighwaySkimAM, Core: "Time"}}
     RunMacro("Fill from matrix", spec)
 
     Return(true)
@@ -342,7 +342,7 @@ Macro "Univ Location"(Args)
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
     obj.AddTableSource({SourceName: "UnivDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
-    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "AttendUniv = 1 and UnivGQStudent <> 1", OField: "TAZID"})
     obj.AddUtility({UtilityFunction: Args.UnivLocUtility})
     obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
@@ -372,7 +372,7 @@ Macro "Univ Location"(Args)
             DField: "UnivTAZ",
             FillField: "HometoUnivTime",
             Filter: "AttendUniv = 1",
-            Matrix: {Name: Args.HighwaySkim, Core: "Time"}}
+            Matrix: {Name: Args.HighwaySkimAM, Core: "Time"}}
     RunMacro("Fill from matrix", spec)
 
     Return(true)
@@ -448,7 +448,7 @@ Macro "School Location"(Args)
         obj.AddTableSource({SourceName: "SchoolDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
         obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
-        obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddPrimarySpec({Name: "PersonHH", Filter: filters[i], OField: "TAZID"})
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
@@ -483,7 +483,7 @@ Macro "School Location"(Args)
             DField: "SchoolTAZ",
             FillField: "HometoSchoolTime",
             Filter: "AttendSchool = 1",
-            Matrix: {Name: Args.HighwaySkim, Core: "Time"}}
+            Matrix: {Name: Args.HighwaySkimAM, Core: "Time"}}
     RunMacro("Fill from matrix", spec)
 
     Return(true)
@@ -507,7 +507,7 @@ Macro "Daycare Location"(Args)
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\DaycareLocation.dcm"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
-    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "AttendDaycare = 1", OField: "TAZID"})
     obj.AddUtility(utilSpec)
     obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
@@ -523,7 +523,7 @@ Macro "Daycare Location"(Args)
             DField: "SchoolTAZ",
             FillField: "HometoSchoolTime",
             Filter: "AttendDaycare = 1",
-            Matrix: {Name: Args.HighwaySkim, Core: "Time"}}
+            Matrix: {Name: Args.HighwaySkimAM, Core: "Time"}}
     RunMacro("Fill from matrix", spec)
 
     Return(true)

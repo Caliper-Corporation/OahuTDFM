@@ -16,7 +16,9 @@ macro "HighwayNetworkSkim" (Args)
 
     LineDB = Args.HighwayDatabase
     netfile = Args.HighwayNetwork
-    hwyskimfile = Args.HighwaySkim
+    AMhwyskimfile = Args.HighwaySkimAM
+    PMhwyskimfile = Args.HighwaySkimPM
+    OPhwyskimfile = Args.HighwaySkimOP
     walkskimfile = Args.WalkSkim
     bikeskimfile = Args.BikeSkim
     
@@ -27,15 +29,52 @@ macro "HighwayNetworkSkim" (Args)
     TAZData = Args.DemographicOutputs
     dem = CreateObject("Table", TAZData)
 
-    obj = CreateObject("Network.Skims")
-    obj.LoadNetwork (netfile)
-    obj.LayerDB = LineDB
-    obj.Origins ="Centroid <> null"
-    obj.Destinations = "Centroid <> null"
-    obj.Minimize = "FreeFlowTime"
-    obj.AddSkimField({"Length", "All"})
-    obj.OutputMatrix({MatrixFile: hwyskimfile, Matrix: "HighwaySkim"})
-    ok = obj.Run()
+    SkimFiles = {AMhwyskimfile, PMhwyskimfile, OPhwyskimfile}
+    SkimVar = {"AMTime", "PMTime", "OPTime"}
+    for i = 1 to SkimFiles.length do
+        hwyskimfile = SkimFiles[i]
+        skimvar = SkimVar[i]
+        obj = CreateObject("Network.Skims")
+        obj.LoadNetwork (netfile)
+        obj.LayerDB = LineDB
+        obj.Origins ="Centroid <> null"
+        obj.Destinations = "Centroid <> null"
+        obj.Minimize = skimvar
+        obj.AddSkimField({"Length", "All"})
+        obj.OutputMatrix({MatrixFile: hwyskimfile, Matrix: "HighwaySkim"})
+        ok = obj.Run()
+
+        obj = null
+        obj = CreateObject("Distribution.Intrazonal")
+        obj.SetMatrix({MatrixFile:hwyskimfile, Matrix: skimvar})
+        obj.OperationType = "Replace"
+        obj.TreatMissingAsZero = false
+        obj.Neighbours = 3
+        obj.Factor = 0.5
+        ret_value = obj.Run()
+        if !ret_value then goto quit
+
+        obj = null
+        obj = CreateObject("Distribution.Intrazonal")
+        obj.SetMatrix({MatrixFile:hwyskimfile, Matrix: "Length (Skim)"})
+        obj.OperationType = "Replace"
+        obj.TreatMissingAsZero = false
+        obj.Neighbours = 3
+        obj.Factor = 0.5
+        ok = obj.Run()
+
+        m = CreateObject("Matrix", hwyskimfile)
+        currCoreNames = m.GetCoreNames()
+        m.RenameCores({CurrentNames: currCoreNames, NewNames: {"Time", "Distance"}})
+        idx = m.AddIndex({IndexName: "TAZ",
+                    ViewName: NodeLayer, Dimension: "Both",
+                    OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+        idxint = m.AddIndex({IndexName: "InternalTAZ",
+                    ViewName: NodeLayer, Dimension: "Both",
+                    OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
+            
+    end
+
 
     obj = CreateObject("Network.Skims")
     obj.LoadNetwork (netfile)
@@ -56,26 +95,6 @@ macro "HighwayNetworkSkim" (Args)
     obj.AddSkimField({"Length", "All"})
     obj.OutputMatrix({MatrixFile: bikeskimfile, Matrix: "BikeSkim"})
     ok = obj.Run()
-
-    obj = null
-    obj = CreateObject("Distribution.Intrazonal")
-    obj.SetMatrix({MatrixFile:hwyskimfile, Matrix: "FreeFlowTime"})
-    obj.OperationType = "Replace"
-    obj.TreatMissingAsZero = false
-    obj.Neighbours = 3
-    obj.Factor = 0.5
-    ret_value = obj.Run()
-    if !ret_value then goto quit
-
-    obj = null
-    obj = CreateObject("Distribution.Intrazonal")
-    obj.SetMatrix({MatrixFile:hwyskimfile, Matrix: "Length (Skim)"})
-    obj.OperationType = "Replace"
-    obj.TreatMissingAsZero = false
-    obj.Neighbours = 3
-    obj.Factor = 0.5
-    ok = obj.Run()
-    if !ok then goto quit
 
     obj = null
     obj = CreateObject("Distribution.Intrazonal")
@@ -117,17 +136,6 @@ macro "HighwayNetworkSkim" (Args)
     ret_value = obj.Run()
     if !ret_value then goto quit
 
-    m = CreateObject("Matrix", hwyskimfile)
-    currCoreNames = m.GetCoreNames()
-    m.RenameCores({CurrentNames: currCoreNames, NewNames: {"Time", "Distance"}})
-    idx = m.AddIndex({IndexName: "TAZ",
-                ViewName: NodeLayer, Dimension: "Both",
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
-    idxint = m.AddIndex({IndexName: "InternalTAZ",
-                ViewName: NodeLayer, Dimension: "Both",
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
-            
-
     m = CreateObject("Matrix", walkskimfile)
     m.RenameCores({CurrentNames: {"WalkTime", "Length (Skim)"}, NewNames: {"Time", "Distance"}})
     idx = m.AddIndex({IndexName: "TAZ",
@@ -161,23 +169,30 @@ macro "TransitNetworkSkim" (Args)
     NodeLayer = Node.GetView()
 
 
-    classes = {"Walk", "Drive"}
+    classes = {"WalkAM", "DriveAM", "WalkPM", "DrivePM", "WalkOP", "DriveOP"}
 
     WalkSkim = Args.TransitWalkSkim
     DriveSkim = Args.TransitDriveSkim
+    WalkSkimAM = Args.TransitWalkSkimAM
+    DriveSkimAM = Args.TransitDriveSkimAM
+    WalkSkimPM = Args.TransitWalkSkimPM
+    DriveSkimPM = Args.TransitDriveSkimPM
+    WalkSkimOP = Args.TransitWalkSkimOP
+    DriveSkimOP = Args.TransitDriveSkimOP
 
-    SkimMatrices = {WalkSkim, DriveSkim}
 
+    SkimMatrices = {WalkSkimAM, DriveSkimAM, WalkSkimPM, DriveSkimPM, WalkSkimOP, DriveSkimOP}
+    Impedances = {"TransitTimeAM", "TransitTimeAM", "TransitTimePM", "TransitTimePM", "TransitTimeOP", "TransitTimeOP"}
     for i = 1 to classes.length do
         cls = classes[i]
-  
+        Impedance = Impedances[i]
 
         o = CreateObject("Network.SetPublicPathFinder", {RS: RouteSystem, NetworkName: TransitTNW})
-        o.UserClasses = {"Walk", "Drive"}
+        o.UserClasses = classes
         o.CurrentClass = cls
         o.DriveTime = "Time"
         o.CentroidFilter = "Centroid <> null"
-        o.LinkImpedance = "TransitTime"
+        o.LinkImpedance = Impedance
         o.Parameters({
         MaxTripCost: 999,
         MaxTransfers: 3,
@@ -231,7 +246,7 @@ macro "TransitNetworkSkim" (Args)
         RouteXFareField: "Fare"
         })
         o.DriveAccess({
-        InUse: {false, true},
+        InUse: {false, true, false, true, false, true},
         MaxDriveTime: 20,
         MaxParkToStopTime: 5,
         ParkingNodes: "ParkAndRideLot = 1"

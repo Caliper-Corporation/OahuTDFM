@@ -5,7 +5,7 @@ Macro "Work Tours Frequency"(Args)
     obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: "Work Tours Frequency"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\Work_MandatoryTours.mdl"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "TravelToWork = 1", OField: "TAZID", DField: "WorkTAZ"})
     obj.AddUtility({UtilityFunction: Args.WorkMandatoryFreqUtility})
     obj.AddOutputSpec({ChoicesField: "NumberWorkTours"})
@@ -27,7 +27,7 @@ Macro "Univ Tours Frequency"(Args)
     obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: "University Tours Frequency"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\Univ_MandatoryTours.mdl"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "AttendUniv = 1", OField: "TAZID", DField: "UnivTAZ"})
     obj.AddUtility({UtilityFunction: Args.UnivMandatoryFreqUtility})
     obj.AddOutputSpec({ChoicesField: "NumberUnivTours"})
@@ -436,7 +436,7 @@ Macro "Mandatory Activity Time"(Args, Opts)
     // Basic Check
     if Opts.Utility = null or Opts.ModelName = null or Opts.ModelFile = null or filter = null
         or Opts.DestField or Opts.ChoiceField = null then
-            Throw("Invalid inputs to macro 'Activity Time Choice'")
+            Throw("Invalid inputs to macro 'Mandatory Activity Time'")
 
     // Get Utility Options
     utilOpts = null
@@ -450,8 +450,8 @@ Macro "Mandatory Activity Time"(Args, Opts)
     obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: Opts.ModelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\" + Opts.ModelFile
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddMatrixSource({SourceName: "AMAutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-    obj.AddMatrixSource({SourceName: "OPAutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "AMAutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "OPAutoSkim", File: Args.HighwaySkimOP, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: filter, OField: "TAZID", DField: Opts.DestField})
     if Opts.Alternatives <> null then
         obj.AddAlternatives({AlternativesList: Opts.Alternatives})

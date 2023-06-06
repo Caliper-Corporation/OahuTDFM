@@ -76,6 +76,12 @@ macro "CalculateHighwaySpeedsAndCapacities" (Args, Result)
     {FieldName: "BAFreeFlowSpeed"}, 
     {FieldName: "ABFreeFlowTime"}, 
     {FieldName: "BAFreeFlowTime"}, 
+    {FieldName: "ABAMTime"}, 
+    {FieldName: "BAAMTime"}, 
+    {FieldName: "ABPMTime"}, 
+    {FieldName: "BAPMTime"}, 
+    {FieldName: "ABOPTime"}, 
+    {FieldName: "BAOPTime"}, 
     {FieldName: "ABHourlyCapacity"}, 
     {FieldName: "BAHourlyCapacity"}, 
     {FieldName: "ABAlpha"}, 
@@ -100,6 +106,12 @@ macro "CalculateHighwaySpeedsAndCapacities" (Args, Result)
     join.BAFreeFlowSpeed = join.FreeFlowSpeed
     join.ABFreeFlowTime = join.Length / join.ABFreeFlowSpeed * 60   
     join.BAFreeFlowTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.ABAMTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAAMTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.ABPMTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAPMTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.ABOPTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAOPTime = join.Length / join.BAFreeFlowSpeed * 60   
     join = null
 
     quit:
@@ -127,7 +139,19 @@ macro "CalculateTransitSpeeds" (Args, Result)
     {FieldName: "ABTransitSpeed"}, 
     {FieldName: "BATransitSpeed"}, 
     {FieldName: "ABTransitTime"}, 
-    {FieldName: "BATransitTime"} 
+    {FieldName: "BATransitTime"}, 
+    {FieldName: "ABTransitSpeedAM"}, 
+    {FieldName: "BATransitSpeedAM"}, 
+    {FieldName: "ABTransitTimeAM"}, 
+    {FieldName: "BATransitTimeAM"}, 
+    {FieldName: "ABTransitSpeedPM"}, 
+    {FieldName: "BATransitSpeedPM"}, 
+    {FieldName: "ABTransitTimePM"}, 
+    {FieldName: "BATransitTimePM"}, 
+    {FieldName: "ABTransitSpeedOP"}, 
+    {FieldName: "BATransitSpeedOP"}, 
+    {FieldName: "ABTransitTimeOP"}, 
+    {FieldName: "BATransitTimeOP"} 
    }
     Line.AddFields({Fields: fields})
     Line.ABWalkTime = Line.Length / WalkSpeed * 60
@@ -144,6 +168,18 @@ macro "CalculateTransitSpeeds" (Args, Result)
     join.BATransitSpeed = join.BAFreeFlowSpeed / join.BATransitFactor
     join.ABTransitTime = join.Length / join.ABTransitSpeed * 60
     join.BATransitTime = join.Length / join.BATransitSpeed * 60
+    join.ABTransitSpeedAM = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeedAM = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimeAM = join.Length / join.ABTransitSpeedAM * 60
+    join.BATransitTimeAM = join.Length / join.BATransitSpeedAM * 60
+    join.ABTransitSpeedPM = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeedPM = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimePM = join.Length / join.ABTransitSpeedPM * 60
+    join.BATransitTimePM = join.Length / join.BATransitSpeedPM * 60
+    join.ABTransitSpeedOP = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeedOP = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimeOP = join.Length / join.ABTransitSpeedOP * 60
+    join.BATransitTimeOP = join.Length / join.BATransitSpeedOP * 60
 
     RS = CreateObject("Table", {FileName: RouteSystem, LayerType: "Route"})
     RouteLayer = RS.GetView()
@@ -181,6 +217,9 @@ macro "BuildHighwayNetwork" (Args)
     netObj.LayerDB = LineDB
     netObj.Filter =  "Class <> 'Rail'" 
     netObj.AddLinkField({Name: "FreeFlowTime", Field: {"ABFreeFlowTime", "BAFreeFlowTime"}})
+    netObj.AddLinkField({Name: "AMTime", Field: {"ABAMTime", "BAAMTime"}})
+    netObj.AddLinkField({Name: "PMTime", Field: {"ABPMTime", "BAPMTime"}})
+    netObj.AddLinkField({Name: "OPTime", Field: {"ABOPTime", "BAOPTime"}})
     netObj.AddLinkField({Name: "HourlyCapacity", Field: {"ABHourlyCapacity", "BAHourlyCapacity"}})
     netObj.AddLinkField({Name: "WalkTime", Field: {"ABWalkTime", "BAWalkTime"}})
     netObj.AddLinkField({Name: "BikeTime", Field: {"ABBikeTime", "BABikeTime"}})
@@ -220,7 +259,13 @@ macro "BuildTransitNetwork" (Args)
     netObj.AddRouteField({Name: "OffpeakHeadway", Field: "OffpeakHeadway"})
     netObj.AddRouteField({Name: "Fare", Field: "Fare"})
     netObj.AddLinkField({Name: "TransitTime", TransitFields: {"ABTransitTime", "BATransitTime"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+    netObj.AddLinkField({Name: "TransitTimeAM", TransitFields: {"ABTransitTimeAM", "BATransitTimeAM"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+    netObj.AddLinkField({Name: "TransitTimePM", TransitFields: {"ABTransitTimePM", "BATransitTimePM"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+    netObj.AddLinkField({Name: "TransitTimeOP", TransitFields: {"ABTransitTimeOP", "BATransitTimeOP"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
     netObj.AddLinkField({Name: "Time", TransitFields: {"ABFreeflowTime", "BAFreeFlowTime"}, NonTransitFields: {"ABFreeflowTime", "BAFreeFlowTime"}})
+    netObj.AddLinkField({Name: "AMTime", TransitFields: {"ABAMTime", "BAAMTime"}, NonTransitFields: {"ABAMTime", "BAAMTime"}})
+    netObj.AddLinkField({Name: "PMTime", TransitFields: {"ABPMTime", "BAPMTime"}, NonTransitFields: {"ABPMTime", "BAPMTime"}})
+    netObj.AddLinkField({Name: "OPTime", TransitFields: {"ABOPTime", "BAOPTime"}, NonTransitFields: {"ABOPTime", "BAOPTime"}})
     netObj.Run()
 
        quit:

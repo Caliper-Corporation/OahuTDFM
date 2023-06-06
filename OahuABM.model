@@ -157,8 +157,8 @@ Macro "TAZ Accessibility" (Args,Result)
 Data:
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
-    In({ Args.[HighwaySkim] })
-    In({ Args.[TransitWalkSkim] })
+    In({ Args.[HighwaySkimAM] })
+    In({ Args.[TransitWalkSkimAM] })
     In({ Args.[WalkSkim] })
     In({ Args.[DemographicOutputs] })
     Out({ Args.[AccessibilitiesOutputs] })
@@ -189,18 +189,20 @@ Macro "ABM Core" (Args,Result)
     }
 Body:
     // model = FlowChart( { StartNodes } , { EndNodes } , Description)
-    model = FlowChart({"ABM Preprocess"},{"Mandatory Tours"},"Group steps")
+    model = FlowChart({"ABM Preprocess"},{"SubTour Models"},"Group steps")
     
     // FlowChartNode(model,NodeName,MacroName,UI,Description)
     FlowChartModel(model,"ABM Preprocess",,,)
     FlowChartNode(model,"LongTermChoices",,,)
     FlowChartModel(model,"Mandatory Tours",,,)
     FlowChartModel(model,"Mandatory Stops",,,)
+    FlowChartModel(model,"SubTour Models",,,)
     
     // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
     FlowChartLink(model,"ABM Preprocess","LongTermChoices",True,,)
     FlowChartLink(model,"LongTermChoices","Mandatory Tours",True,,)
     FlowChartLink(model,"Mandatory Tours","Mandatory Stops",True,,)
+    FlowChartLink(model,"Mandatory Stops","SubTour Models",True,,)
     Return(model)
 EndMacro
 
@@ -431,6 +433,27 @@ Macro "Stops Scheduling" (Args,Result)
 Data:
 EndMacro
 
+
+Macro "SubTour Models" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"SubTour Setup",
+                       "SubTour Frequency",
+                       "SubTour Destination",
+                       "SubTour Duration",
+                       "SubTour StartTime",
+                       "SubTour Mode",
+                       "SubTour PostProcess"}},
+        {"Picture", "bmp\\report.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"SubTours|Frequency",
+                "SubTours|Destination",
+                "SubTours|Duration",
+                "SubTours|Start Time",
+                "SubTours|Mode"})
+EndMacro
 
 /*
 Macro "Report.Population Synthesis" (Args,Result)

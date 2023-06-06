@@ -58,7 +58,7 @@ Macro "Mandatory Stops Choice"(Args, spec)
     obj = CreateObject("PMEChoiceModel", {ModelName: purpose + " Mandatory Stops"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\" + tag + ".mdl"
     obj.AddTableSource({SourceName: "TourData", View: vwJ, IDField: "TourID"})
-    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "TourData", Filter: filter, OField: "Origin", DField: "Destination"})
     obj.AddUtility({UtilityFunction: spec.Utility})
     obj.AddOutputSpec({ChoicesField: spec.ChoicesField})
@@ -155,7 +155,7 @@ endMacro
             - IS Stop before dropoffs:      O: 'Origin', D: FirstDropoffTAZ
             - IS Stop after dropoffs:       O: LastDropoffTAZ, D: 'Destination'
         
-        Note: Oahu model does not allow for 2 intermediate stops on mandatory tours
+        Note: Peoria model does not allow for 2 intermediate stops on mandatory tours
         Stop #2, Forward direction
         - No drop offs:                     O: Stop#1TAZ, D: 'Destination'
         - With drop offs:                   2 intermediate stops not allowed with dropoffs
@@ -166,7 +166,7 @@ endMacro
             - IS Stop before pickups:       O: 'Destination', D: FirstPickupTAZ
             - IS Stop after pickups:        O: LastPickupTAZ, D: 'Origin'
         
-        Note: Oahu model does not allow for 2 intermediate stops on mandatory tours
+        Note: Peoria model does not allow for 2 intermediate stops on mandatory tours
         Stop #2, Return direction
         - No pick ups:                      O: Stop#1TAZ, D: 'Origin'
         - With pick ups:                    2 intermediate stops not allowed with pickups
@@ -247,7 +247,7 @@ Macro "Calculate Delta TT"(Args, spec)
     vwTmp = ExportView(vwT + "|DeltaCalc", "MEM", "TempForDeltaCalc", {"TourID", ODInfo.Origin, ODInfo.Destination},)
 
     // Need to copy matrix with only the relevant indices
-    skimMat = Args.HighwaySkim // Need to replace by period specific skims when available
+    skimMat = Args.("HighwaySkim" + period)
     m = OpenMatrix(skimMat,)
     mc = CreateMatrixCurrency(m, "Time", "InternalTAZ", "InternalTAZ",)
     mtxTemp = GetTempPath() + "TempSkim.mtx"
@@ -313,7 +313,7 @@ Macro "Intermediate Stop DC"(Args, spec)
         obj.AddTableSource({SourceName: "TourData", View: vwT, IDField: "TourID"})
         obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
         obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
-        obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + period), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddMatrixSource({SourceName: "DeltaTT", File: deltaTT, PersonBased: 1})
         obj.AddMatrixSource({SourceName: "DeltaDist", File: deltaDist, PersonBased: 1})
@@ -345,6 +345,7 @@ Macro "MandatoryStops Duration"(Args)
             spec.Type = type
             spec.Direction = dir
             spec.ToursView = vwJ
+            spec.RandomSeed = 4099981 + 10*types.position(type) + dirs.position(dir)
             RunMacro("Mandatory Duration Choice", Args, spec)
             pbar.Step()
         end
@@ -373,6 +374,7 @@ Macro "Mandatory Duration Choice"(Args, spec)
                     AvailabilityExpressions: Args.StopDurAvail, 
                     SubstituteStrings: {{"<dir>", dir}}})
     obj.AddOutputSpec({ChoicesField: dir + "StopDurChoice"})
+    obj.RandomSeed = spec.RandomSeed
     obj.ReportShares = 1
     ret = obj.Evaluate()
     if !ret then

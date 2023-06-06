@@ -26,7 +26,7 @@ Macro "Create Mandatory Tour File"(Args)
     periods = {"AM", "PM", "OP"}
     skimArgs = {TimePeriods: Args.TimePeriods}
     for p in periods do
-        mObj.(p) = CreateObject("Matrix", Args.HighwaySkim)
+        mObj.(p) = CreateObject("Matrix", Args.("HighwaySkim" + p))
         mObj.(p).SetIndex({RowIndex: "TAZ", ColIndex: "TAZ"})
         skimArgs.(p) = mObj.(p).Time
     end

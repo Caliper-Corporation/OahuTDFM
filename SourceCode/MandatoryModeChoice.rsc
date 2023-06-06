@@ -273,9 +273,9 @@ Macro "Evaluate Mode Choice"(Args, spec)
         if set = null or set.Size = 0 then
             continue
 
-        autoSkimFile = Args.HighwaySkim
-        ptWalkSkimFile = Args.TransitWalkSkim
-        ptDriveSkimFile = Args.TransitDriveSkim
+        autoSkimFile = Args.("HighwaySkim" + tod)
+        ptWalkSkimFile = Args.("TransitWalkSkim" + tod)
+        ptDriveSkimFile = Args.("TransitDriveSkim" + tod)
         
         // Run Model and populate results
         tag = category + "_" + tod + "_Mode" + direction

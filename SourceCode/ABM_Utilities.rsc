@@ -228,6 +228,7 @@ Macro "Simulate Time"(opt)
     end
 
     vInput = GetDataVector(viewSet, opt.InputField,)
+    SetRandomSeed(999983)
     vUniform = RandSamples(vInput.Length, "Uniform",)
     temp = v2a(vInput).Map(do (f) Return(ParseString(f, " -")) end)
     // vL and vR are vectors containing the main choice interval start and end values
@@ -246,6 +247,7 @@ Macro "Simulate Time"(opt)
         params = null
         params.population = categories
         params.weight = wgts
+        SetRandomSeed(1099997)
         vSamples = RandSamples(vInput.Length, "Discrete", params) // The chosen hourly profile categories
         
         temp = v2a(vSamples).Map(do (f) Return(ParseString(f, " -")) end)
@@ -292,15 +294,15 @@ Macro "Fill Travel Times"(Args, spec)
 
     // Define skim files: Change this spec after skims by mode are produced by the model.
     skimSpec = null
-    skimSpec.Auto.AM = {File: Args.HighwaySkim, Core: "Time"}
-    skimSpec.Auto.PM = {File: Args.HighwaySkim, Core: "Time"}
-    skimSpec.Auto.OP = {File: Args.HighwaySkim, Core: "Time"}
-    skimSpec.PTWalk.AM = {File: Args.TransitWalkSkim, Core: "Total Time"}
-    skimSpec.PTWalk.PM = {File: Args.TransitWalkSkim, Core: "Total Time"}
-    skimSpec.PTWalk.OP = {File: Args.TransitWalkSkim, Core: "Total Time"}
-    skimSpec.PTDrive.AM = {File: Args.TransitDriveSkim, Core: "Total Time"}
-    skimSpec.PTDrive.PM = {File: Args.TransitDriveSkim, Core: "Total Time"}
-    skimSpec.PTDrive.OP = {File: Args.TransitDriveSkim, Core: "Total Time"}
+    skimSpec.Auto.AM = {File: Args.HighwaySkimAM, Core: "Time"}
+    skimSpec.Auto.PM = {File: Args.HighwaySkimPM, Core: "Time"}
+    skimSpec.Auto.OP = {File: Args.HighwaySkimOP, Core: "Time"}
+    skimSpec.PTWalk.AM = {File: Args.TransitWalkSkimAM, Core: "Total Time"}
+    skimSpec.PTWalk.PM = {File: Args.TransitWalkSkimPM, Core: "Total Time"}
+    skimSpec.PTWalk.OP = {File: Args.TransitWalkSkimOP, Core: "Total Time"}
+    skimSpec.PTDrive.AM = {File: Args.TransitDriveSkimAM, Core: "Total Time"}
+    skimSpec.PTDrive.PM = {File: Args.TransitDriveSkimPM, Core: "Total Time"}
+    skimSpec.PTDrive.OP = {File: Args.TransitDriveSkimOP, Core: "Total Time"}
     skimSpec.Walk = {File: Args.WalkSkim, Core: "Time"}
     skimSpec.Bike = {File: Args.BikeSkim, Core: "Time"}
 
