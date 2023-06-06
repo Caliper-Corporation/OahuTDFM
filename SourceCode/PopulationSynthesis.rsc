@@ -3,8 +3,8 @@
 */
 
 Macro "PopulationSynthesis" (Args)
-    RunMacro("DisaggregateSED", Args)
-    // RunMacro("Synthesize Population", Args)
+    // RunMacro("DisaggregateSED", Args)
+    RunMacro("Synthesize Population", Args)
     // RunMacro("PopSynth Post Process", Args)
     // RunMacro("Create AO Features", Args)
     // RunMacro("Calculate Auto Ownership", Args)
@@ -160,11 +160,11 @@ Macro "Synthesize Population"(Args)
     o.RandomSeed = 314159
     
     // Define Seed Data. Specify relationship between HH file and TAZ and between HH and Person file
-    o.HouseholdFile({FileName: Args.PUMS_Households, /*Filter: "NP <= 10",*/ ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
-    o.PersonFile({FileName: Args.PUMS_Persons, ID: "PersonID", HHID: "HHID"})
+    o.HouseholdFile({FileName: Args.PUMS_Households, ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
+    o.PersonFile({FileName: Args.PUMS_Persons, ID: "PERID", HHID: "HHID"})
     
     // Define the marginals data (Disaggregated SED marginals)
-    marginalData = {FileName: Args.SEDMarginals, Filter: "HH > 0", ID: "TAZ", MatchingID: "PUMA5"}
+    marginalData = {FileName: Args.SEDMarginals, Filter: "OccupiedHH > 0", ID: "TAZ", MatchingID: "PUMA5"}
     o.MarginalFile(marginalData)     
     o.IPUMarginalFile(marginalData)             
 
@@ -222,11 +222,11 @@ Macro "Synthesize Population"(Args)
     o.ReportExtraHouseholdField("HINCP", "HHInc")
     o.OutputPersonsFile = Args.Persons
     o.ReportExtraPersonsField("SEX", "gender") // Add extra field from Person Seed and change the name
-    o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
-    o.ReportExtraPersonsField("ESR", "EmploymentStatus")
+    // o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
+    // o.ReportExtraPersonsField("ESR", "EmploymentStatus")
     
     // Optional IPU by-products
-    outputFolder = Args.[Output Folder] + "\\resident\\population_synthesis\\"
+    outputFolder = Args.[Output Folder] + "\\Population\\"
     o.IPUIncidenceOutputFile = outputFolder + "IPUIncidence.bin"
     o.ExportIPUWeights(outputFolder + "IPUWeights")
     o.Tolerance = Args.PopSynTolerance
