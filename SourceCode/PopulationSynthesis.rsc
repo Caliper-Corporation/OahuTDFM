@@ -5,7 +5,7 @@
 Macro "PopulationSynthesis" (Args)
     // RunMacro("DisaggregateSED", Args)
     RunMacro("Synthesize Population", Args)
-    // RunMacro("PopSynth Post Process", Args)
+    RunMacro("PopSynth Post Process", Args)
     // RunMacro("Create AO Features", Args)
     // RunMacro("Calculate Auto Ownership", Args)
     return(1)
@@ -223,7 +223,7 @@ Macro "Synthesize Population"(Args)
     o.OutputPersonsFile = Args.Persons
     o.ReportExtraPersonsField("SEX", "gender") // Add extra field from Person Seed and change the name
     // o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
-    // o.ReportExtraPersonsField("ESR", "EmploymentStatus")
+    o.ReportExtraPersonsField("ESR", "EmploymentStatus")
     
     // Optional IPU by-products
     outputFolder = Args.[Output Folder] + "\\Population\\"

@@ -1,5 +1,5 @@
 
-75,codepage=65001
+79
 "PERID",I,1,4,0,8,0,,"","",,"Sum",
 "HHID",I,5,4,0,8,0,,"","",,"Sum",
 "RT",C,9,3,0,3,0,,"","",,"Copy",
@@ -15,3 +15,4 @@
 "SEX",I,64,4,0,11,0,,"","Person Gender|1. Male|2. Female",,"Sum",
 "INDP",I,68,4,0,11,0,,"","Industry recode for 2018 and later based on 2017 IND codes.|Refer PUMS dictionary for complete description",,"Sum",
 "ADJINC",I,72,4,0,11,0,,"","",,"Sum",
+"ESR",I,76,4,0,11,0,,"","",,"Sum",
