@@ -194,7 +194,7 @@
             "Value":"%Output Folder%\\Population\\Persons.bin"
         }
         Args.SEDMarginals = { "Type":"File" , "Value":"%Output Folder%\\Population\\SEDMarginals.bin", "Description":"Table of output marginals from the disagg model." }
-        Args.[Synthesized Tabulations] = { "Type":"File" , "Value":"%Output Folder%\\resident\\population_synthesis\\Synthesized_Tabulations.bin", "Description":"Summary tabulations of the synthetic population." }
+        Args.[Synthesized Tabulations] = { "Type":"File" , "Value":"%Output Folder%\\Population\\Synthesized_Tabulations.bin", "Description":"Summary tabulations of the synthetic population." }
 	
 	Section = "GEO Master Data"
 	

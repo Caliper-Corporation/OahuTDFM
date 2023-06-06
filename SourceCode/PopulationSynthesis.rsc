@@ -3,11 +3,9 @@
 */
 
 Macro "PopulationSynthesis" (Args)
-    // RunMacro("DisaggregateSED", Args)
+    RunMacro("DisaggregateSED", Args)
     RunMacro("Synthesize Population", Args)
     RunMacro("PopSynth Post Process", Args)
-    // RunMacro("Create AO Features", Args)
-    // RunMacro("Calculate Auto Ownership", Args)
     return(1)
 endmacro
 
@@ -399,72 +397,3 @@ Macro "Create Output HH Expressions"(vw_hhM, specs)
     end
     Return(aggflds)
 endMacro
-
-/*
-Creates any additional fields needed by the AO choice model
-*/
-
-Macro "Create AO Features" (Args)
-
-    hh_file = Args.Households
-
-    hh_vw = OpenTable("hh", "FFB", {hh_file})
-    a_fields =  {
-        {"Income1", "Integer", 10, ,,,, "HH is IncomeCategory 1"},
-        {"Income2", "Integer", 10, ,,,, "HH is IncomeCategory 2"},
-        {"Income3", "Integer", 10, ,,,, "HH is IncomeCategory 3"},
-        {"Income4", "Integer", 10, ,,,, "HH is IncomeCategory 4"}
-    }
-    RunMacro("Add Fields", {view: hh_vw, a_fields: a_fields})
-
-    v_inccat = GetDataVector(hh_vw + "|", "IncomeCategory", )
-    data.[Income1] = if v_inccat = 1 then 1 else 0
-    data.[Income2] = if v_inccat = 2 then 1 else 0
-    data.[Income3] = if v_inccat = 3 then 1 else 0
-    data.[Income4] = if v_inccat = 4 then 1 else 0
-    SetDataVectors(hh_vw + "|", data, )
-    CloseView(hh_vw)
-endmacro
-
-Macro "Calculate Auto Ownership" (Args, trip_types)
-
-    scen_dir = Args.[Scenario Folder]
-    ao_coeffs = Args.AOCoeffs
-    output_dir = Args.[Output Folder] + "/resident/population_synthesis"
-    hh_file = Args.Households
-
-    hh_vw = OpenTable("hh", "FFB", {hh_file})
-    a_fields =  {
-        {"Autos", "Integer", 10, ,,,, "HH Autos. Result of AO model."}
-    }
-    RunMacro("Add Fields", {view: hh_vw, a_fields: a_fields})
-    CloseView(hh_vw)
-    
-    primary_spec = {Name: "hh", OField: "ZoneID"}
-    obj = CreateObject("PMEChoiceModel", {ModelName: "ao"})
-    obj.OutputModelFile = output_dir + "\\auto_ownership.mdl"
-    obj.AddTableSource({
-        SourceName: "hh",
-        File: output_dir + "\\Synthesized_HHs.bin",
-        IDField: "HouseholdID"
-    })
-    obj.AddTableSource({
-        SourceName: "se",
-        File: scen_dir + "\\output\\sedata\\scenario_se.bin",
-        IDField: "TAZ"
-    })
-    util = RunMacro("Import MC Spec", ao_coeffs)
-    obj.AddUtility({UtilityFunction: util})
-    obj.AddPrimarySpec(primary_spec)
-    obj.AddOutputSpec({ChoicesField: "Autos"})
-    obj.RandomSeed = 314159
-    obj.Evaluate()
-
-    // Convert coded field/string pairs to simple integers
-    hh_vw = OpenTable("hh", "FFB", {hh_file})
-    DetachTableTranslation(hh_vw)
-    v1 = GetDataVector(hh_vw + "|", "Autos", )
-    v2 = v1 - 1
-    SetDataVector(hh_vw + "|", "Autos", v2, )
-    CloseView(hh_vw)
-endmacro
