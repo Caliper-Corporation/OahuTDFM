@@ -553,12 +553,6 @@ Macro "Update Scenario Attributes" (MacroOpts)
   n = TagRouteStopsWithNode(rlyr,,"Node_ID",.2)
 EndMacro
 
-  // Tag stops to nodes within
-  a_field = {{"Node_ID", "Integer", 10, , , , , "ID of node closest to stop"}}
-  RunMacro("Add Fields", {view: slyr, a_fields: a_field})
-  n = TagRouteStopsWithNode(rlyr,,"Node_ID",.2)
-EndMacro
-
 /*
 Creates a CSV with stats on how well the route system transfer did
 */
