@@ -16,8 +16,15 @@ Macro "Oahu Steps" (Args)
   Args.HighwayInputDatabase = Args.[Input Folder] + "\\networks\\scenario_links.dbd"
   Args.[Master Routes] = Args.[Master Folder] + "\\networks\\master_routes.rts"
   Args.TransitRouteInputs = Args.[Input Folder] + "\\networks\\scenario_routes.rts"
+  
+  // RunMacro("Create Scenario", Args)
 
-  RunMacro("Create Scenario", Args)
+  Args.SEDMarginals = Args.[Output Folder] + "\\Population\\SEDMarginals.bin"
+  Args.SizeCurves = Args.[Input Folder] + "\\Population\\disagg_model\\size_curves.csv"
+  Args.IncomeCurves = Args.[Input Folder] + "\\Population\\disagg_model\\income_curves.csv"
+  Args.WorkerCurves = Args.[Input Folder] + "\\Population\\disagg_model\\worker_curves.csv"
+  Args.RegionalMedianIncome = 50000
+
   // RunMacro("PopulationSynthesis Oahu", Args)
   // RunMacro("Network Calculations", Args)
   return(1)
