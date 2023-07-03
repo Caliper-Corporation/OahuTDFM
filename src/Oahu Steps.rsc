@@ -12,11 +12,14 @@ Macro "Oahu Steps" (Args)
   Args.TAZGeography = Args.[Input Folder] + "\\tazs\\scenario_tazs.dbd"
   Args.[Master SE] = Args.[Master Folder] + "\\sedata\\base_2020.bin"
   Args.Demographics = Args.[Input Folder] + "\\sedata\\scenario_se.bin"
+  Args.DemographicOutputs = Args.[Output Folder] + "\\sedata\\scenario_se.bin"
   Args.[Master Links] = Args.[Master Folder] + "\\networks\\master_links.dbd"
   Args.HighwayInputDatabase = Args.[Input Folder] + "\\networks\\scenario_links.dbd"
+  Args.HighwayDatabase = Args.[Output Folder] + "\\networks\\scenario_links.dbd"
   Args.[Master Routes] = Args.[Master Folder] + "\\networks\\master_routes.rts"
   Args.TransitRouteInputs = Args.[Input Folder] + "\\networks\\scenario_routes.rts"
-  RunMacro("Create Scenario", Args)
+  Args.TransitRoutes = Args.[Output Folder] + "\\networks\\scenario_routes.rts"
+  // RunMacro("Create Scenario", Args)
 
   Args.SEDMarginals = Args.[Output Folder] + "\\Population\\SEDMarginals.bin"
   Args.SizeCurves = Args.[Input Folder] + "\\Population\\disagg_model\\size_curves.csv"
@@ -28,8 +31,16 @@ Macro "Oahu Steps" (Args)
   Args.Households = Args.[Output Folder] + "\\Population\\Households.bin"
   Args.Persons = Args.[Output Folder] + "\\Population\\Persons.bin"
   Args.PopSynTolerance = .001
-  RunMacro("PopulationSynthesis Oahu", Args)
+  // RunMacro("PopulationSynthesis Oahu", Args)
 
-  // RunMacro("Network Calculations", Args)
+  Args.SpeedCapacityLookup = Args.[Input Folder] + "\\networks\\speed_and_capacity.csv"
+  Args.AreaTypes = {
+    {AreaType: "Rural", Density: 0, Buffer: 0},
+    {AreaType: "Suburban", Density: 1000, Buffer: .5},
+    {AreaType: "Urban", Density: 10000, Buffer: .5},
+    {AreaType: "Downtown", Density: 25000, Buffer: .25}
+  }
+  RunMacro("Network Calculations", Args)
+  
   return(1)
 endmacro

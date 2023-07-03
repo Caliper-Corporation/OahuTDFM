@@ -68,43 +68,15 @@ Macro "Create Folder Structure" (Args)
   RunMacro("Copy Directory", opts)
 
   // // Array of output directories to create
-  // a_dir = {
-  //   "/accessibility",
-  //   "/airport",
-  //   "/tazs",
-  //   "/sedata",
-  //   "/networks",
-  //   "/skims/roadway",
-  //   "/skims/transit",
-  //   "/skims/nonmotorized",
-  //   "/external",
-  //   "/cv",
-  //   "/university",
-  //   "/resident/disagg_model",
-  //   "/resident/population_synthesis",
-  //   "/resident/dc",
-  //   "/resident/mode",
-  //   "/resident/mode/probabilities",
-  //   "/resident/parking",
-  //   "/resident/mode/logsums",
-  //   "/resident/mode/utilities",
-  //   "/resident/mode/model_files",
-  //   "/resident/nhb/generation",
-  //   "/resident/nhb/dc",
-  //   "/resident/nonmotorized",
-  //   "/resident/trip_matrices",
-  //   "/assignment",
-  //   "/assignment/transit",
-  //   "/assignment/roadway",
-  //   "/_summaries",
-  //   "/_summaries/trip_conservation",
-  //   "/_summaries/MOVES"
-  // }
-
-  // for d = 1 to a_dir.length do
-  //   dir = Args.[Output Folder] + a_dir[d]
-  //   RunMacro("Create Directory", dir)
-  // end
+  a_dir = {
+    "/tazs",
+    "/sedata",
+    "/networks"
+  }
+  for d = 1 to a_dir.length do
+    dir = Args.[Output Folder] + a_dir[d]
+    RunMacro("Create Directory", dir)
+  end
 
 EndMacro
 

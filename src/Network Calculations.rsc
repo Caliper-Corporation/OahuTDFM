@@ -1,4 +1,311 @@
 /*
+
+*/
+
+Macro "Network Calculations" (Args)
+    RunMacro("CopyDataToOutputFolder", Args)
+    RunMacro("Determine Area Type", Args)
+    RunMacro("Speeds and Capacities", Args)
+    return(1)
+endmacro
+
+/*
+Prepares input options for the AreaType.rsc library of tools, which
+tags TAZs and Links with area types.
+*/
+
+Macro "Determine Area Type" (Args)
+
+    scen_dir = Args.[Scenario Folder]
+    taz_dbd = Args.TAZGeography
+    se_bin = Args.DemographicOutputs
+    hwy_dbd = Args.HighwayDatabase
+    area_tbl = Args.AreaTypes
+
+    // Get area from TAZ layer
+    {map, {taz_lyr}} = RunMacro("Create Map", {file: taz_dbd})
+
+    // Calculate total employment and density
+    se_vw = OpenTable("se", "FFB", {se_bin, })
+    a_fields =  {
+        // {"TotalEmp", "Integer", 10, ,,,, "Total employment"},
+        {"Density", "Real", 10, 2,,,, "Density used in area type calculation.|Considers HH and Emp."},
+        {"AreaType", "Character", 10,,,,, "Area Type"},
+        {"ATSmoothed", "Integer", 10,,,,, "Whether or not the area type was smoothed"},
+        {"EmpDensity", "Real", 10, 2,,,, "Employment density. Used in some DC models.|TotalEmp / Area."}
+    }
+    RunMacro("Add Fields", {view: se_vw, a_fields: a_fields})
+
+    // Join the se to TAZ
+    jv = JoinViews("jv", taz_lyr + ".ID", se_vw + ".TAZ", )
+
+    data = GetDataVectors(
+        jv + "|",
+        {
+            "Area",
+            "Population",
+            "GroupQuarterPopulation",
+            "TotalEmployment"
+        },
+        {OptArray: TRUE, "Missing as Zero": TRUE}
+    )
+    tot_emp = data.TotalEmployment
+    data.HH_POP = data.Population - data.GroupQuarterPopulation
+    factor = data.HH_POP.sum() / tot_emp.sum()
+    density = (data.HH_POP + tot_emp * factor) / data.area
+    emp_density = tot_emp / data.area
+    areatype = Vector(density.length, "String", )
+    for i = 1 to area_tbl.length do
+        name = area_tbl[i].AreaType
+        cutoff = area_tbl[i].Density
+        areatype = if density >= cutoff then name else areatype
+    end
+    // SetDataVector(jv + "|", "TotalEmp", tot_emp, )
+    SetDataVector(jv + "|", se_vw + ".Density", density, )
+    SetDataVector(jv + "|", se_vw + ".AreaType", areatype, )
+    SetDataVector(jv + "|", se_vw + ".EmpDensity", emp_density, )
+
+    views.se_vw = se_vw
+    views.jv = jv
+    views.taz_lyr = taz_lyr
+    RunMacro("Smooth Area Type", Args, map, views)
+    RunMacro("Tag Highway with Area Type", Args, map, views)
+
+    CloseView(jv)
+    CloseView(se_vw)
+    CloseMap(map)
+EndMacro
+
+/*
+Uses buffers to smooth the boundaries between the different area types.
+*/
+
+Macro "Smooth Area Type" (Args, map, views)
+    
+    taz_dbd = Args.TAZGeography
+    area_tbl = Args.AreaTypes
+    se_vw = views.se_vw
+    jv = views.jv
+    taz_lyr = views.taz_lyr
+
+    // This smoothing operation uses Enclosed inclusion
+    if GetSelectInclusion() = "Intersecting" then do
+        reset_inclusion = TRUE
+        SetSelectInclusion("Enclosed")
+    end
+
+    // Loop over the area types in reverse order (e.g. Urban to Rural)
+    // Skip the last (least dense) area type (usually "Rural") as those do
+    // not require buffering.
+    for t = area_tbl.length to 2 step -1 do
+        type = area_tbl[t].AreaType
+        buffer = area_tbl[t].Buffer
+
+        // Select TAZs of current type
+        SetView(jv)
+        query = "Select * where " + se_vw + ".AreaType = '" + type + "'"
+        n = SelectByQuery("selection", "Several", query)
+
+        if n > 0 then do
+            // Create a temporary buffer (deleted at end of macro)
+            // and add to map.
+            a_path = SplitPath(taz_dbd)
+            bufferDBD = a_path[1] + a_path[2] + "ATbuffer.dbd"
+            CreateBuffers(bufferDBD, "buffer", {"selection"}, "Value", {buffer},)
+            bLyr = AddLayer(map,"buffer",bufferDBD,"buffer")
+
+            // Select zones within the 1 mile buffer that have not already
+            // been smoothed.
+            SetLayer(taz_lyr)
+            n2 = SelectByVicinity("in_buffer", "several", "buffer|", , )
+            qry = "Select * where ATSmoothed = 1"
+            n2 = SelectByQuery("in_buffer", "Less", qry)
+
+            if n2 > 0 then do
+            // Set those zones' area type to the current type and mark
+            // them as smoothed
+            opts = null
+            opts.Constant = type
+            v_atype = Vector(n2, "String", opts)
+            opts = null
+            opts.Constant = 1
+            v_smoothed = Vector(n2, "Long", opts)
+            SetDataVector(
+                jv + "|in_buffer", se_vw + "." + "AreaType", v_atype,
+            )
+            SetDataVector(
+                jv + "|in_buffer", se_vw + "." + "ATSmoothed", v_smoothed,
+            )
+            end
+
+            DropLayer(map, bLyr)
+            DeleteDatabase(bufferDBD)
+        end
+    end
+
+    if reset_inclusion then SetSelectInclusion("Intersecting")
+EndMacro
+
+/*
+Tags highway links with the area type of the TAZ they are nearest to.
+*/
+
+Macro "Tag Highway with Area Type" (Args, map, views)
+
+    hwy_dbd = Args.HighwayDatabase
+    area_tbl = Args.AreaTypes
+    se_vw = views.se_vw
+    jv = views.jv
+    taz_lyr = views.taz_lyr
+
+    // This smoothing operation uses intersecting inclusion.
+    // This prevents links inbetween urban and surban from remaining rural.
+    if GetSelectInclusion() = "Enclosed" then do
+        reset_inclusion = "true"
+        SetSelectInclusion("Intersecting")
+    end
+
+    // Add highway links to map and add AreaType field
+    hwy_dbd = hwy_dbd
+    {nLayer, llyr} = GetDBLayers(hwy_dbd)
+    llyr = AddLayer(map, llyr, hwy_dbd, llyr)
+    a_fields = {{"AreaType", "Character", 10, }}
+    RunMacro("Add Fields", {view: llyr, a_fields: a_fields})
+    SetLayer(llyr)
+    SelectByQuery("primary", "several", "Select * where DTWB contains 'D' or DTWB contains 'T'")
+
+    // Loop over each area type starting with most dense.  Skip the first.
+    // All remaining links after this loop will be tagged with the lowest
+    // area type. Secondary links (walk network) not tagged.
+    for t = area_tbl.length to 2 step -1 do
+        type = area_tbl[t].AreaType
+
+        // Select TAZs of current type
+        SetView(jv)
+        query = "Select * where " + se_vw + ".AreaType = '" + type + "'"
+        n = SelectByQuery("selection", "Several", query)
+
+        if n > 0 then do
+            // Create buffer and add it to the map
+            buffer_dbd = GetTempFileName(".dbd")
+            opts = null
+            opts.Exterior = "Merged"
+            opts.Interior = "Merged"
+            CreateBuffers(buffer_dbd, "buffer", {"selection"}, "Value", {100/5280}, )
+            bLyr = AddLayer(map, "buffer", buffer_dbd, "buffer")
+
+            // Select links within the buffer that haven't been updated already
+            SetLayer(llyr)
+            n2 = SelectByVicinity(
+                "links", "several", taz_lyr + "|selection", 0, 
+                {"Source And": "primary"}
+            )
+            query = "Select * where AreaType <> null"
+            n2 = SelectByQuery("links", "Less", query)
+
+            // Remove buffer from map
+            DropLayer(map, bLyr)
+
+            if n2 > 0 then do
+                // For these links, update their area type
+                v_at = Vector(n2, "String", {{"Constant", type}})
+                SetDataVector(llyr + "|links", "AreaType", v_at, )
+            end
+        end
+    end
+
+    // Select all remaining links and assign them to the
+    // first (lowest density) area type.
+    SetLayer(llyr)
+    query = "Select * where AreaType = null and (DTWB contains 'D' or DTWB contains 'T')"
+    n = SelectByQuery("links", "Several", query)
+    if n > 0 then do
+        type = area_tbl[1].AreaType
+        v_at = Vector(n, "String", {{"Constant", type}})
+        SetDataVector(llyr + "|links", "AreaType", v_at, )
+    end
+
+    // If this script modified the user setting for inclusion, change it back.
+    if reset_inclusion = "true" then SetSelectInclusion("Enclosed")
+EndMacro
+
+macro "Speeds and Capacities" (Args, Result)
+    ret_value = 1
+    // input data files
+    LineDB = Args.HighwayDatabase
+    Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
+    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
+    fields = {
+    {FieldName: "ABSpeedLimit"}, 
+    {FieldName: "BASpeedLimit"}, 
+    {FieldName: "ABFreeFlowSpeed"}, 
+    {FieldName: "BAFreeFlowSpeed"}, 
+    {FieldName: "ABFreeFlowTime"}, 
+    {FieldName: "BAFreeFlowTime"}, 
+    {FieldName: "ABAMTime"}, 
+    {FieldName: "BAAMTime"}, 
+    {FieldName: "ABPMTime"}, 
+    {FieldName: "BAPMTime"}, 
+    {FieldName: "ABOPTime"}, 
+    {FieldName: "BAOPTime"}, 
+    {FieldName: "cap_phpl"}, 
+    {FieldName: "ABHourlyCapacityAM"}, 
+    {FieldName: "BAHourlyCapacityAM"},  
+    {FieldName: "ABHourlyCapacityMD"}, 
+    {FieldName: "BAHourlyCapacityMD"},  
+    {FieldName: "ABHourlyCapacityPM"}, 
+    {FieldName: "BAHourlyCapacityPM"},  
+    {FieldName: "ABHourlyCapacityNT"}, 
+    {FieldName: "BAHourlyCapacityNT"},  
+    {FieldName: "ABAlpha"}, 
+    {FieldName: "BAAlpha"}, 
+    {FieldName: "ABBeta"}, 
+    {FieldName: "BABeta"}
+   }
+    Line.AddFields({Fields: fields})
+
+    SpeedCap = Args.SpeedCapacityLookup
+    SC = CreateObject("Table", SpeedCap)
+    join = Line.Join({Table: SC, LeftFields: {"HCMType", "AreaType", "HCMMedian"}, RightFields: {"HCMType", "AreaType", "HCMMedian"}})
+    join.cap_phpl = join.cape_phpl
+    periods = {"AM", "MD", "PM", "NT"}
+    for period in periods do
+        join.("ABHourlyCapacity" + period) = if join.("AB_LANE" + period) <> null and join.Dir >= 0 
+            then join.cape_phpl * join.("AB_LANE" + period) 
+            else if join.("AB_LANE" + period) = null and join.Dir = -1 
+                then null 
+                else join.cape_phpl
+        join.("BAHourlyCapacity" + period) = if join.("BA_LANE" + period) <> null and join.Dir <= 0 
+            then join.cape_phpl * join.("BA_LANE" + period) 
+            else if join.("BA_LANE" + period) = null and join.Dir = 1 
+                then null 
+                else join.cape_phpl
+    end
+    join.ABAlpha = join.Alpha
+    join.BAAlpha = join.Alpha
+    join.ABBeta = join.Beta
+    join.BABeta = join.Beta
+    join.ABSpeedLimit = join.PostedSpeed
+    join.BASpeedLimit = join.PostedSpeed
+    join.ABFreeFlowSpeed = join.PostedSpeed + join.ModifyPosted
+    join.BAFreeFlowSpeed = join.PostedSpeed + join.ModifyPosted
+    join.ABFreeFlowTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAFreeFlowTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.ABAMTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAAMTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.ABPMTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAPMTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.ABOPTime = join.Length / join.ABFreeFlowSpeed * 60   
+    join.BAOPTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join = null
+
+    quit:
+    Return(ret_value)
+
+
+endmacro
+
+/*
     04/13/2023 - modified code such that the three access modes (walk, knr, pnr) become user classes 
     04/20/2023 - use updated database with mode flag fields T,D,W
     04/21/2023 - created skimming code
