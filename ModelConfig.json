@@ -1,16 +1,16 @@
 {
     "Model": {
         "Description": [
-            "The main model is OahuABM.model",
+            "The main model is PeoriaABM.model",
             "This system has only one model file"
         ],
         "Author": "Caliper Corporation",
         "Version": "2022.1",
-        "Name": "OahuABM.model",
-        "Parameters": ["SourceCode\\flow_chart\\Parameters\\Common.parameters"],
-        "Styles": ["SourceCode\\flow_chart\\Styles\\Common.styles"],
-        "Scenarios": "OahuABM.scenarios",
-        "Plugins": ["SourceCode\\flow_chart\\PlugIns\\Plugins.rsc"],
-        "Menus": ["SourceCode\\flow_chart\\Plugins\\model_menu.rsc"]
+        "Name": "PeoriaABM.model",
+        "Parameters": ["Supplemental\\Parameters\\Common.parameters"],
+        "Styles": ["Supplemental\\Styles\\Common.styles"],
+        "Scenarios": "PeoriaABM.scenarios",
+        "Plugins": ["Supplemental\\PlugIns\\Plugins.rsc"],
+        "Menus":["Supplemental\\Menu\\Peoria_Menu.rsc"]
     }
 }

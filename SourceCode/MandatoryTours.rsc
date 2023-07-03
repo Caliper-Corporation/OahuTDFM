@@ -52,7 +52,7 @@ Macro "FullTime Work Act Dur"(Args)
 
     // First Tour
     Opts = {abmManager: abm,
-            ModelName: "Full Time Workers: Work Tour 1 Duration",
+            ModelName: "FTWorkDuration1",
             ModelFile: "FTWorkers_MandatoryDuration.mdl",
             Filter: "WorkerCategory = 1 and WorkAttendance = 1", // Include WFH workers here
             DestField: "WorkTAZ", 
@@ -67,7 +67,7 @@ Macro "FullTime Work Act Dur"(Args)
 
     // Second Tour
     Opts = {abmManager: abm,
-            ModelName: "Full Time Workers: Work Tour 2 Duration",
+            ModelName: "FTWorkDuration2",
             ModelFile: "FTWorkers_MandatoryDuration2.mdl",
             Filter: "WorkerCategory = 1 and NumberWorkTours = 2",   // No need to consider WFH here
             DestField: "WorkTAZ", 
@@ -93,7 +93,7 @@ Macro "University Act Dur"(Args)
 
     // First Tour
     Opts = {abmManager: abm,
-            ModelName: "University Tour 1 Duration",
+            ModelName: "UnivDuration1",
             ModelFile: "Univ_MandatoryDuration.mdl",
             Filter: "AttendUniv = 1",
             DestField: "UnivTAZ", 
@@ -108,7 +108,7 @@ Macro "University Act Dur"(Args)
 
     // Second Tour
     Opts = {abmManager: abm,
-            ModelName: "University Tour 2 Duration",
+            ModelName: "UnivDuration2",
             ModelFile: "Univ_MandatoryDuration2.mdl",
             Filter: "AttendUniv = 1 and NumberUnivTours = 2",
             DestField: "UnivTAZ", 
@@ -135,7 +135,7 @@ Macro "PartTime Work Act Dur"(Args)
 
     // First Tour
     Opts = {abmManager: abm,
-            ModelName: "Part Time Workers: Work Tour 1 Duration",
+            ModelName: "PTWorkDuration1",
             ModelFile: "PTWorkers_MandatoryDuration.mdl",
             Filter: "WorkerCategory = 2 and WorkAttendance = 1",    // Note, WFH workers will have a duration
             DestField: "WorkTAZ", 
@@ -149,7 +149,7 @@ Macro "PartTime Work Act Dur"(Args)
 
     // Second Tour
     Opts = {abmManager: abm,
-            ModelName: "Part Time Workers: Work Tour 2 Duration",
+            ModelName: "PTWorkDuration2",
             ModelFile: "PTWorkers_MandatoryDuration.mdl",
             Filter: "WorkerCategory = 2 and NumberWorkTours = 2", // No need to consider WFH here
             DestField: "WorkTAZ", 
@@ -174,7 +174,7 @@ Macro "School Act Dur"(Args)
                         "50-60":  0.15}
 
     Opts = {abmManager: abm,
-            ModelName: "School Tour Duration",
+            ModelName: "SchoolDuration",
             ModelFile: "School_Duration.mdl",
             Filter: "(AttendSchool = 1 or AttendDaycare = 1)",
             DestField: "SchoolTAZ", 
@@ -203,7 +203,7 @@ Macro "FullTime Work Start"(Args)
 
     // Run Start Model for first tour
     Opts = {abmManager: abm,
-            ModelName: "Full Time Workers: Work Tour 1 Start Time",
+            ModelName: "FTWorkStartTime1",
             ModelTag: "Work1",
             ModelFile: "FTWorkers_StartTime1.mdl",
             Filter: "WorkerCategory = 1 and WorkAttendance = 1", // This includes WFH
@@ -227,7 +227,7 @@ Macro "FullTime Work Start"(Args)
 
     // Run Start Model for second tour
     Opts = {abmManager: abm,
-            ModelName: "Full Time Workers: Work Tour 2 Start Time",
+            ModelName: "FTWorkStartTime2",
             ModelTag: "Work2",
             ModelFile: "FTWorkers_StartTime2.mdl",
             Filter: "WorkerCategory = 1 and NumberWorkTours = 2",
@@ -255,7 +255,7 @@ Macro "University Start"(Args)
 
     // 1st University tour for persons who do not work
     Opts = {abmManager: abm,
-            ModelName: "University Tour Start Hour",
+            ModelName: "UnivStartTime1",
             ModelTag: "Univ1",
             ModelFile: "Univ_StartTime1.mdl",
             Filter: "AttendUniv = 1 and WorkAttendance <> 1",
@@ -279,7 +279,7 @@ Macro "University Start"(Args)
 
     // Run Start Model for second tour
     Opts = {abmManager: abm,
-            ModelName: "University Tour Start Hour",
+            ModelName: "UnivStartTime2",
             ModelTag: "Univ2",
             ModelFile: "Univ_StartTime2.mdl",
             Filter: "AttendUniv = 1 and NumberUnivTours > 1",
@@ -303,7 +303,7 @@ Macro "University Start"(Args)
 
     // Run Start Model Ist university tour for persons who also work
     Opts = {abmManager: abm,
-            ModelName: "University Tour Start Hour",
+            ModelName: "UnivStartTime1",
             ModelTag: "Univ1",
             ModelFile: "Univ_StartTime1_Wrk.mdl",
             Filter: "AttendUniv = 1 and WorkAttendance = 1",
@@ -334,7 +334,7 @@ Macro "PartTime Work Start"(Args)
 
     // Run Start Model for first tour
     Opts = {abmManager: abm,
-            ModelName: "Part Time Workers: Work Tour 1 Start Time",
+            ModelName: "PTWorkStartTime1",
             ModelTag: "Work1",
             ModelFile: "PTWorkers_StartTime1.mdl",
             Filter: "WorkerCategory = 2 and WorkAttendance = 1 and AttendSchool <> 1",
@@ -358,7 +358,7 @@ Macro "PartTime Work Start"(Args)
 
     // Run Start Model for second tour
     Opts = {abmManager: abm,
-            ModelName: "Part Time Workers: Work Tour 2 Start Time",
+            ModelName: "PTWorkStartTime2",
             ModelTag: "Work2",
             ModelFile: "PTWorkers_StartTime2.mdl",
             Filter: "WorkerCategory = 2 and NumberWorkTours = 2 and AttendSchool <> 1",
@@ -385,7 +385,7 @@ Macro "School Start"(Args)
                         "40-60":  0.40}
 
     Opts = {abmManager: abm,
-            ModelName: "School Tour Start Hour",
+            ModelName: "SchoolStartTime",
             ModelTag: "School",
             ModelFile: "School_StartTime.mdl",
             Filter: "(AttendSchool = 1 or AttendDaycare = 1)",
@@ -409,7 +409,7 @@ Macro "School Start"(Args)
 
     // Run Start Model for first part time work tour after completion of school tour
     Opts = {abmManager: abm,
-            ModelName: "PTWorkers who attend School: Work Tour 1 Start Time",
+            ModelName: "PTWorkStartTime1",
             ModelTag: "Work1",
             ModelFile: "PTWorkersSch_StartTime.mdl",
             Filter: "WorkerCategory = 2 and WorkAttendance = 1 and AttendSchool = 1",
@@ -447,7 +447,7 @@ Macro "Mandatory Activity Time"(Args, Opts)
         utilOpts.AvailabilityExpressions = Opts.Availabilities
     
     // Run Model and populate results
-    obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: Opts.ModelName})
+    obj = CreateObject("PMEChoiceModel", {ModelName: Opts.ModelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\" + Opts.ModelFile
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddMatrixSource({SourceName: "AMAutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})

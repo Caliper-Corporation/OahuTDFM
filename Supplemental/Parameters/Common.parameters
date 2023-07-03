@@ -4,21 +4,17 @@
             "Type":"Folder",
             "Value":"%Model Folder%"
         }
-        Args.[Master Folder] = {
-            "Type":"Folder",
-            "Value":"%Base Folder%\\master"
-        }
         Args.[Data Folder] = {
             "Type":"Folder",
             "Value":"%Model Folder%\\Data"
         }
-        Args.[Scenarios Folder] = {
-            "Type":"Folder",
-            "Value":"%Base Folder%\\scenarios"
+        Args.ScenarioSubFolder = {
+            "Type":"hidden",
+            "Value":"BaseYear"
         }
         Args.[Scenario Folder] = {
             "Type":"Folder",
-            "Value":"%Scenarios Folder%\\base_2022"
+            "Value":"%Data Folder%\\%ScenarioSubFolder%"
         }
         Args.[Common Folder] = {
             "Type":"Folder",
@@ -89,15 +85,25 @@
 	
 	Section = "Population Synthesis|Inputs"
 	
+        Args.CensusBlockGroups = {
+            "Type":"File",
+            "Caption":"Block group marginals",
+            "Value":"%Input Folder%\\Population\\Marginals\\2020_Census Block_Group_ACS_PopSyn.bin"
+        }
+        Args.CensusBlocks = {
+            "Type":"File",
+            "Caption":"Block marginals",
+            "Value":"%Input Folder%\\Population\\Marginals\\2020_Census Block.bin"
+        }
         Args.PUMS_Households = {
             "Type":"File",
             "Caption":"PUMS Household seed",
-            "Value":"%Input Folder%\\Population\\Seed\\HHSeed_PUMS.bin"
+            "Value":"%Input Folder%\\Population\\Seed\\HH_Seed.bin"
         }
         Args.PUMS_Persons = {
             "Type":"File",
             "Caption":"PUMS Person seed",
-            "Value":"%Input Folder%\\Population\\Seed\\PersonSeed_PUMS.bin"
+            "Value":"%Input Folder%\\Population\\Seed\\Person_Seed.bin"
         }
         Args.PUMS_WorkIndustryCodes = {
             "Type":"File",
@@ -120,26 +126,6 @@
             "Caption":"Tolerance",
             "Description":"Convergence Threshold",
             "Value":0.001
-        }
-        Args.IncomeCurves = { 
-            "Type":"File" , 
-            "Value":"%Input Folder%\\Population\\disagg_model\\income_curves.csv", 
-            "Description":"Disaggregate income curves." 
-        }
-        Args.SizeCurves = { 
-            "Type":"File" , 
-            "Value":"%Input Folder%\\Population\\disagg_model\\size_curves.csv", 
-            "Description":"Disaggregate household size curves." 
-        }
-        Args.WorkerCurves = { 
-            "Type":"File" , 
-            "Value":"%Input Folder%\\Population\\disagg_model\\worker_curves.csv", 
-            "Description":"Disaggregate worker curves." 
-        }
-        Args.RegionalMedianIncome = { 
-            "Type":"int" , 
-            "Value":65317, 
-            "Description":"Median income of the TRM region" 
         }
 	
 	Section = "Population Synthesis|Dorm Synthesis"
@@ -181,6 +167,26 @@
 	
 	Section = "Population Synthesis|Outputs"
 	
+        Args.HHSeed = {
+            "Type":"File",
+            "Caption":"Processed household seed",
+            "Value":"%Output Folder%\\Population\\Intermediate\\HHSeed.bin"
+        }
+        Args.PersonSeed = {
+            "Type":"File",
+            "Caption":"Processed person seed",
+            "Value":"%Output Folder%\\Population\\Intermediate\\PersonSeed.bin"
+        }
+        Args.BGMarginals = {
+            "Type":"File",
+            "Caption":"Processed marginal file",
+            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Marginals.bin"
+        }
+        Args.BlockMarginals = {
+            "Type":"File",
+            "Caption":"Processed nested marginal file",
+            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Nested_Marginals.bin"
+        }
         Args.Households = {
             "Type":"File",
             "Caption":"Synthetic household file",
@@ -193,55 +199,43 @@
             "Description":"Persons",
             "Value":"%Output Folder%\\Population\\Persons.bin"
         }
-        Args.SEDMarginals = { "Type":"File" , "Value":"%Output Folder%\\Population\\SEDMarginals.bin", "Description":"Table of output marginals from the disagg model." }
-        Args.[Synthesized Tabulations] = { "Type":"File" , "Value":"%Output Folder%\\Population\\Synthesized_Tabulations.bin", "Description":"Summary tabulations of the synthetic population." }
+        Args.SQLDB = {
+            "Type":"hidden",
+            "Caption":"SQL DB for reporting",
+            "Value":"%Output Folder%\\Population\\PopSQL.db"
+        }
+        Args.BGTabulations = {
+            "Type":"File",
+            "Caption":"Output block group tabulations",
+            "Value":"%Output Folder%\\Population\\PopSyn_BGTabulations.bin"
+        }
 	
 	Section = "GEO Master Data"
 	
-        Args.[Master Links] = {
-            "Type":"File",
-            "Description":"Master highway database",
-            "Value":"%Master Folder%\\networks\\master_links.dbd"
-        }
         Args.HighwayInputDatabase = {
             "Type":"File",
             "Description":"Input highway database",
-            "Value":"%InputFolder%\\networks\\scenario_links.dbd"
-        }
-        Args.[Master Routes] = {
-            "Type":"File",
-            "Description":"Master transit routes",
-            "Value":"%Master Folder%\\networks\\master_routes.rts"
+            "Value":"%InputFolder%\\networks\\PeoriaStreets.DBD"
         }
         Args.TransitRouteInputs = {
             "Type":"File",
             "Description":"Input transit routes",
-            "Value":"%Input Folder%\\networks\\scenario_routes.rts"
-        }
-        Args.[Master TAZs] = {
-            "Type":"File",
-            "Description":"Master TAZ Geography",
-            "Value":"%Master Folder%\\tazs\\master_tazs.dbd"
+            "Value":"%Input Folder%\\networks\\PeoriaRoutes.rts"
         }
         Args.TAZGeography = {
             "Type":"File",
             "Description":"Input TAZ Geography",
-            "Value":"%Input Folder%\\tazs\\scenario_tazs.dbd"
+            "Value":"%Input Folder%\\taz\\PeoriaZones.DBD"
         }
-        Args.[Master SE] = {
-            "Type":"File",
-            "Description":"Master SED Demographics",
-            "Value":"%Master Folder%\\sedata\\base_2022.bin"
-        }        
         Args.Demographics = {
             "Type":"File",
             "Description":"Input SED Demographics",
-            "Value":"%Input Folder%\\sedata\\scenario_se.bin"
+            "Value":"%Input Folder%\\taz\\TAZDemographics.bin"
         }
         Args.SpeedCapacityLookup = {
             "Type":"File",
             "Description":"Speed and Capacity Lookup by Facility and Area Type Table",
-            "Value":"%Common Folder%\\OahuStreets_RoadClasses.bin"
+            "Value":"%Common Folder%\\PeoriaStreets_RoadClasses.bin"
         }
         Args.TransitModeTable = {
             "Type":"File",
@@ -259,17 +253,17 @@
         Args.HighwayDatabase = {
             "Type":"File",
             "Description":"Output highway database",
-            "Value":"%Output Folder%\\networks\\OahuStreetsOut.DBD"
+            "Value":"%Output Folder%\\networks\\PeoriaStreetsOut.DBD"
         }
         Args.TurnPenalties = {
             "Type":"File",
             "Description":"Turn Penalties Database",
-            "Value":"%Input Folder%\\networks\\OahuStreets_TurnPenalties.bin"
+            "Value":"%Input Folder%\\networks\\PeoriaStreets_TurnPenalties.bin"
         }
         Args.TransitRoutes = {
             "Type":"File",
             "Description":"Output transit routes",
-            "Value":"%Output Folder%\\networks\\OahuRoutesOut.rts"
+            "Value":"%Output Folder%\\networks\\PeoriaRoutesOut.rts"
         }
         Args.DemographicOutputs = {
             "Type":"File",
@@ -839,7 +833,7 @@
             "Value":{
                 {"Medium-High Income","PersonHH.IncomeLevel <> 1",null,0.270599,0.270599,0.270599,null,null,null,null},
                 {"Low Income with 2+ kids","PersonHH.IncomeLevel = 1 and PersonHH.Kids > 1",null,null,null,null,-0.410538,-0.410538,null,null},
-                {"Kids per Worker","PersonHH.Kids/PersonHH.Workers",null,null,null,null,null,0.214923,0.214923,null},
+                {"Kids per Worker","if PersonHH.Workers > 0 then PersonHH.Kids/PersonHH.Workers else 0",null,null,null,null,null,0.214923,0.214923,null},
                 {"Two Work Tours","PersonHH.NumberWorkTours = 2",null,null,2.37279,2.37279,-99,-99,-99,-99},
                 {"Also attend university","PersonHH.AttendUniv = 1",null,null,null,null,null,-99,-99,-99}}
         }
@@ -1421,10 +1415,10 @@
                 {"Male","TourData.Gender = 1",-0.124,0,1},
                 {"Two Plus Workers","TourData.Workers >= 2",0.5779,0,1},
                 {"HH with Kids","TourData.Kids > 0",-0.3034,0,1},
-                {"Kids Per Non Working Adult","TourData.Kids/(TourData.Adults - TourData.Workers)",0.805,0,1},
+                {"Kids Per Non Working Adult","if TourData.Adults = TourData.Workers then 0 else TourData.Kids/(TourData.Adults - TourData.Workers)",0.805,0,1},
                 {"High Income HH","TourData.IncomeLevel = 3",-1.307,0,1},
                 {"Medium Income HH","TourData.IncomeLevel = 2",-1.124,0,1},
-                {"Vehicles Per Adult (Licensed)","(TourData.Vehicles/TourData.Adults)*(TourData.License = 1)",-0.2015,0,1},
+                {"Vehicles Per Adult (Licensed)","if TourData.Adults = 0 then 0 else (TourData.Vehicles/TourData.Adults)*(TourData.License = 1)",-0.2015,0,1},
                 {"Is Main Work Tour Auto?","TourData.ForwardModeCode <= 2",0.2953,0,1},
                 {"Work less than 5 miles from Home","AutoSkim.Distance < 5",-0.5709,0,1},
                 {"Work less than 5 minutes from Home","AutoSkim.Time < 5",0.1474,0,1},

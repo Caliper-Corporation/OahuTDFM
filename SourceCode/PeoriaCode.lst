@@ -6,13 +6,10 @@ Initialization.rsc
 Skimming.rsc
 ModeDestinationAccessibilities.rsc
 MandatoryTours.rsc
-SubTours.rsc
 MandatoryStops.rsc
 Utilities.rsc
 MandatoryModeChoice.rsc
 SchoolDropOffPickUp.rsc
 ToursAndTrips.rsc
-CreateScenario.rsc
-utils/RoadwayProjectManagement.rsc
-utils/TransitProjectManagement.rsc
-utils/utils.rsc
+SubTours.rsc
+Calibration.rsc

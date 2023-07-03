@@ -39,3 +39,9 @@ Macro "Compute Intrazonal Matrix"(Args)
 
     return(true)
 endMacro
+
+
+Macro "NotImplemented"(Args)
+    ShowMessage("Not yet implemented")
+    Return(1)
+endMacro

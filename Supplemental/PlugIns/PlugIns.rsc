@@ -3,13 +3,13 @@ Macro "Model.Attributes" (Args,Result)
     Attributes = {
         {"BackgroundColor",{255,255,255}},
         {"BannerHeight", 90},
-        {"BannerPicture", "SourceCode\\flow_chart\\bmp\\banner.bmp"},
+        {"BannerPicture", "Supplemental\\bmp\\Peoria_logo.bmp"},
         {"BannerWidth", 600},
         {"ResizePicture", 1},
         {"Base Scenario Name", "Base"},
         {"ClearLogFiles", 1},
         {"CloseOpenFiles", 1},
-        {"CodeUI", "SourceCode\\ui\\ui.dbd"},
+        {"CodeUI", "ui\\PeoriaCode_ui.dbd"},
         {"DebugMode", 1},
         {"ExpandStages", "Side by Side"},
         {"HideBanner", 0},
@@ -68,13 +68,13 @@ Macro "Model.OnModelLoad" (Args,Results)
 Body:
     flowchart = RunMacro("GetFlowChart")
     {drive , path , name , ext} = SplitPath(flowchart.UI)
-    uiFolder = drive + path + "\\SourceCode\\ui\\"
+    uiFolder = drive + path + "ui\\"
     srcFolder = drive + path + "sourcecode\\"
 
     o = CreateObject("CC.Directory", RunMacro("FlowChart.ResolveValue", uiFolder, Args))
     o.Create()
 
-    RunMacro("CompileGISDKCode", {Source: srcFolder + "_compile.lst", UIDB: uiFolder + "ui.dbd", Silent: 0, ErrorMessage: "Error compiling model source code"})
+    RunMacro("CompileGISDKCode", {Source: srcFolder + "PeoriaCode.lst", UIDB: uiFolder + "PeoriaCode_ui.dbd", Silent: 0, ErrorMessage: "Error compiling Peoria Source Code"})
 
     if lower(GetMapUnits()) <> "miles" then
         MessageBox("Set the system units to miles before running the model", {Caption: "Warning", Icon: "Warning", Buttons: "yes"})

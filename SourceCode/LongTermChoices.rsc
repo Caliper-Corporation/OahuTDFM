@@ -50,7 +50,7 @@ Macro "Auto Ownership"(Args)
     ret = obj.Evaluate()
     if !ret then
         Throw("Running 'Auto Availability' choice model failed.")
-    args.[AutoOwnership Spec] = CopyArray(ret) // For calibration purposes
+    Args.[AutoOwnership Spec] = CopyArray(ret) // For calibration purposes
 
     // Since the choice model returns 1 for '0 Autos', 2 for '1 Auto' etc, subtract one from the output field
     //abm.[HH.Autos] = abm.[HH.Autos] - 1
@@ -76,7 +76,7 @@ Macro "Worker Category"(Args)
     vwTAZ4Ds = objT.GetView()
 
     // Run Model and populate results
-    modelName = "Worker Category"
+    modelName = "WorkerCategory"
     obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\WorkerCategory.mdl"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})

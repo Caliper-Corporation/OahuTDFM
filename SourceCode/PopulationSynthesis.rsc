@@ -1,399 +1,883 @@
-/*
-
-*/
-
 Macro "PopulationSynthesis" (Args)
-    RunMacro("DisaggregateSED", Args)
-    RunMacro("Synthesize Population", Args)
-    RunMacro("PopSynth Post Process", Args)
-    return(1)
+
+    // Check fields
+    RunMacro("Prepare Seed Data", Args)
+
+    // Compute block group marginals after DatabaseUSA correction
+    DBUSA_HHSize6P = {Type: 'Norm', Mean: 6.48, StdDev: 0.23, MinValue: 6, MaxValue: 8}
+    mSpec = {BGFile: Args.CensusBlockGroups, Filter: "InPeoria = 1", "DistributionHHSize6P": DBUSA_HHSize6P, OutputFile: Args.BGMarginals}
+    RunMacro("Create Marginals File", mSpec)
+
+    // Compute HH marginals at the block level (using block group marginals)
+    nmSpec = {BlkFile: Args.CensusBlocks, Filter: "InPeoria = 1", MarginalsFile: Args.BGMarginals, OutputFile: Args.BlockMarginals}
+    RunMacro("Create Nested Marginals File", nmSpec)
+
+    // Run synthesis and perform tabulations
+    spec = null
+    spec.HHSeed = {FileName: Args.HHSeed, Filter: "NP > 0 and WGTP > 0", ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"}
+    spec.PopSeed = {FileName: Args.PersonSeed, ID: "PersonID", HHID: "HHID"}
+    spec.BGMarginals = {FileName: Args.BGMarginals, ID: "ID", MatchingID: "PUMA"}                           // Use in IPU (and not in IPF)
+    spec.BlockMarginals = {FileName: Args.BlockMarginals, ID: "ID", MatchingID: "PUMAID", IPUID: "BG_ID"}   // Use in IPF
+    spec.HHFile = Args.Households
+    spec.PersonFile = Args.Persons
+    spec.Tabulations = Args.BGTabulations
+    spec.OutputFolder = Args.[Output Folder] + "\\Population\\"
+    RunMacro("PopulationSynth", spec)
+
+    // Run synthesis for dorm residents
+    RunMacro("Dorm Residents Synthesis", Args)
+
+    // Other post process on synthesis outputs (using the ABM Manager)
+    spec.abmManager = Args.[ABM Manager]
+    RunMacro("PopSyn Postprocess", spec)
+
+    Return(true)
+endMacro
+
+/*
+    Check HH and Person seed tables for any missing fields that are required by the synthesis
+*/
+Macro "Prepare Seed Data"(Args)
+    reqHHSeedFields = {"HHID", "PUMA", "WGTP", "NP", "HINCP", "AdjInc", "R18", "R65", "Veh"}
+    RunMacro("Check Fields", {File: Args.PUMS_Households, Fields: reqHHSeedFields})
+    
+    reqPersonSeedFields = {"PersonID", "HHID", "Sex", "AgeP", "INDP", "COW"}
+    RunMacro("Check Fields", {File: Args.PUMS_Persons, Fields: reqPersonSeedFields})
+
+    reqWrkIndFields = {"INDP", "INDP_Code", "Category"}
+    RunMacro("Check Fields", {File: Args.PUMS_WorkIndustryCodes, Fields: reqWrkIndFields})
+
+    // Export valid HH and Person seed records
+    hhObj = CreateObject("Table", Args.PUMS_Households)
+    perObj = CreateObject("Table", Args.PUMS_Persons)
+    n = hhObj.SelectByQuery({SetName: "_Valid", Query: "NP > 0 and NP < 9 and WGTP > 0"})
+    if n = 0 then
+        Throw("No Valid records in Household Seed Data")
+    hhSeedObj = hhObj.Export({FileName: Args.HHSeed, FieldNames: reqHHSeedFields})
+    perSeedObj = perObj.Export({FileName: Args.PersonSeed, FieldNames: reqPersonSeedFields})
+    hhObj = null
+    perObj = null
+
+    // Add Income, Seniors and Kids category fields to HH seed data
+    flds = {{FieldName: "Inc_Category", Type: "Short", Description: "Income Category|1. < 25K|2. [25 50)|3. [50, 75)|4. [75, 100)|5. [100, 150)|6. [150, 200)|7. >= 200k"},
+            {FieldName: "Kids_Category", Type: "Short", Description: "Kids Category|1. No Kids (age < 18) in HH|2. Kids present in HH"},
+            {FieldName: "Seniors_Category", Type: "Short", Description: "Seniors Category|1. No Seniors (age >= 65) in HH|2. Seniors present in HH"}}
+    hhSeedObj.AddFields({Fields: flds})
+    vecs = hhSeedObj.GetDataVectors({FieldNames: {"HINCP", "ADJINC", "R18", "R65"}})
+    v_inc = (vecs.ADJINC/1000000) * vecs.HINCP
+    vecsSet = null
+    vecsSet.Inc_Category = if v_inc < 25000 then 1
+                            else if v_inc < 50000 then 2
+                            else if v_inc < 75000 then 3
+                            else if v_inc < 100000 then 4
+                            else if v_inc < 150000 then 5
+                            else if v_inc < 200000 then 6
+                            else if v_inc >= 200000 then 7
+                            else 3
+    vecsSet.Seniors_Category = if vecs.R65 = 0 then 1 else 2
+    vecsSet.Kids_Category = if vecs.R18 = 0 then 1 else 2
+    hhSeedObj.SetDataVectors({FieldData: vecsSet})
+
+    // Add Industry category field and fill in person seed. Need the industry codes table to do so
+    flds = {{FieldName: "WorkIndustry", Type: "Short", Description: "Work Industry: (12 categories)"},
+            {FieldName: "IndustryCategory", Type: "Short", Description: "Industry Category (10 categories) used in synthesis"}}
+    perSeedObj.AddFields({Fields: flds})
+
+    wrkCodesObj = CreateObject("Table", Args.PUMS_WorkIndustryCodes)
+    jvObj = perSeedObj.Join({Table: wrkCodesObj, LeftFields: {"INDP"}, RightFields: {"INDP"}})
+    vecs = jvObj.GetDataVectors({FieldNames: {"IndP_Code", "Category"}})
+    vecsSet = null
+    vecsSet.WorkIndustry = vecs.IndP_Code
+    vecsSet.IndustryCategory = if vecs.Category = null then 10 else vecs.Category
+    jvObj.SetDataVectors({FieldData: vecsSet})
+
+    jvObj = null
+    wrkCodesObj = null
+    hhSeedObj = null
+    perSeedObj = null
+endMacro
+
+
+/*
+    Generic macro to check if the provided file contains the provided fields
+*/
+Macro "Check Fields"(spec)
+    dm = CreateObject("DataManager")
+    vw = dm.AddDataSource("File", {FileName: spec.File})
+    {flds, specs} = GetFields(vw,)
+    flds = flds.Map(do (f) Return(if f[1] = "[" then SubString(f, 2, StringLength(f) - 2) else f) end)
+    for fld in spec.Fields do
+        if flds.position(fld) = 0 then
+            Throw(Printf("Field '%s' not found in file '%s'", {fld, spec.File}))
+    end
+endMacro
+
+
+/*
+    Macro that uses the Census Block Group data and creates HH and Person marginals for synthesis
+    1. The HH by Size fields are corrected using the Database USA correction.
+       The correction is based on the average HH Size value for 6PlusPersonHHs.
+       This is a normal distribution with a mean of 6.48 and StdDev of 0.23
+       The correction modifies the HH Size fields (and the total households)
+
+    2. All other HH marginals are rescaled based on the new household totals
+
+    3. Person marginals are appropiately collapsed into fewer categories
+
+    4. An output marginals file is created
+*/
+Macro "Create Marginals File"(mSpec)
+    // Check for presence of required fields
+    mainFlds = {"ID", "PUMA", "InPeoria", "Households", "Population", "Population in GQ"}
+    hhSizeFlds = {"HH_1Person", "HH_2Person", "HH_3Person", "HH_4Person", 
+                  "HH_5Person", "HH_6Person", "HH_7+Person"}
+    hhOthFlds = {"HH_0Veh", "HH_1Veh", "HH_2Veh", "HH_3+Veh", 
+                "HH_No_Kids", "HH_With_Kids",
+                "HH_No_Seniors", "HH_With_Seniors",   
+                "HH_Inc_LT25", "HH_Inc_25to50", "HH_Inc_50to75", "HH_Inc_75to100",
+                "HH_Inc_100to150", "HH_Inc_150to200", "HH_Inc_GT200"}
+    popGenderFlds = {"Male", "Female"}
+    popAgeFlds = { "Age <5", "Age 5 to 9", "Age 10 to 14", "Age 15 to 19", "Age 20 to 24", "Age 25 to 34",
+                    "Age 35 to 44", "Age 45 to 54", "Age 55 to 59", "Age 60 to 64", "Age 65 to 74", "Age 75 to 84", "Age 85+"}
+    popIndFlds = {"EC 16+_Ind: Ag/forestry/fish/mine", 
+                    "EC 16+_Ind: Manufacturing", 
+                    "EC 16+_Ind: Construction", "EC 16+_Ind: Transportation/warehouse", 
+                    "EC 16+_Ind: Wholesale trade", 
+                    "EC 16+_Ind: Retail trade", 
+                    "EC 16+_Ind: Information",  "EC 16+_Ind: Finance/ins/RE/rental", "EC 16+_Ind: Prof/scientific/admin", 
+                    "EC 16+_Ind: Ed/health/soc services", 
+                    "EC 16+_Ind: Art/ent/rec/acc/food", "EC 16+_Ind: Other (ex public admin)", 
+                    "EC 16+_Ind: Public administration"}
+    flds = mainFlds + hhSizeFlds + hhOthFlds + popGenderFlds + popAgeFlds + popIndFlds
+    RunMacro("Check Fields", {File: mSpec.BGFile, Fields: flds})
+    
+    // Export relevant fields to marginals output file
+    bgObj = CreateObject("Table", mSpec.BGFile)
+    if mSpec.Filter <> null then do
+        setName = "Selection"
+        n = bgObj.SelectByQuery({SetName: "Selection", Query: mSpec.Filter})
+        if n = 0 then
+            Throw(Printf("No valid records in block group data for filter: '%s'", {mSpec.Filter}))
+    end
+    //mObj = bgObj.Export({FileName: mSpec.OutputFile, FieldNames: flds})
+    ExportView(bgObj.GetView() + "|" + setName, "FFB", mSpec.OutputFile, flds,)
+    mObj = CreateObject("Table", mSpec.OutputFile)
+    bgObj = null
+    
+    vecs = mObj.GetDataVectors({FieldNames: flds})
+    nRecs = vecs.ID.Length
+
+    // Generate a vector corresponding to the normal distrbution of the HHSize6Plus term
+    SetRandomSeed(99991)
+    params = {mu: mSpec.DistributionHHSize6P.Mean, sigma: mSpec.DistributionHHSize6P.StdDev}
+    vNorm = RandSamples(nRecs, mSpec.DistributionHHSize6P.Type, params)
+    
+    // Apply bounds if supplied
+    minVal = mSpec.DistributionHHSize6P.MinValue
+    if minVal <> null then
+        vNorm = if vNorm < minVal then minVal else vNorm
+
+    maxVal = mSpec.DistributionHHSize6P.MaxValue
+    if maxVal <> null then
+        vNorm = if vNorm > maxVal then maxVal else vNorm
+
+    // Add necessary fields
+    fldsToAdd = {"HHSize1", "HHSize2", "HHSize3", "HHSize4", "HHSize5", "HHSize6P",
+                 "Age_0_4", "Age_5_14", "Age_15_19", "Age_20_34", "Age_35_54", "Age_55_64", "Age_65P"}
+    for i = 1 to 10 do
+        fldsToAdd = fldsToAdd + {"Industry" + String(i)}
+    end
+    newFlds = fldsToAdd.Map(do (f) Return({FieldName: f, Type: "real", Width: 12, Decimals: 2}) end)
+    mObj.AddFields({Fields: newFlds})
+
+    // DB USA Adjustment
+    vHH = vecs.Households
+    vPop = vecs.Population - vecs.[Population in GQ]
+    vCurrPop1to5 = vecs.HH_1Person + 2*vecs.HH_2Person + 3*vecs.HH_3Person + 4*vecs.HH_4Person + 5*vecs.HH_5Person
+    vCurrHH6P = vecs.HH_6Person + vecs.[HH_7+Person]
+    vNewPop6P = vCurrHH6P * vNorm
+    vNewPop1to6 = vCurrPop1to5 + vNewPop6P
+    vRatio = if vNewPop1to6 > 0 then vPop/vNewPop1to6 else 1
+    
+    vecsSet = null
+    vecsSet.HHSize1 = vecs.HH_1Person * vRatio
+    vecsSet.HHSize2 = vecs.HH_2Person * vRatio
+    vecsSet.HHSize3 = vecs.HH_3Person * vRatio
+    vecsSet.HHSize4 = vecs.HH_4Person * vRatio
+    vecsSet.HHSize5 = vecs.HH_5Person * vRatio
+    vecsSet.HHSize6P = vCurrHH6P * vRatio
+
+    // Compute new HHs and ratio of new to old HHs
+    vecsSet.Households = vecsSet.HHSize1 + vecsSet.HHSize2 + vecsSet.HHSize3 + vecsSet.HHSize4 + vecsSet.HHSize5 + vecsSet.HHSize6P
+    vHHRatio = if vecs.Households > 0 then vecsSet.Households/vecs.Households else 1
+
+    // Adjust all other marginals
+    for fld in hhOthFlds do
+        vecsSet.(fld) = vecs.(fld) * vHHRatio
+    end
+
+    // Collapse population age categories
+    vPopRatio = if vecs.Population > 0 then (1 - nz(vecs.[Population in GQ])/nz(vecs.Population)) else 1
+    vecsSet.Male = vecs.Male * vPopRatio
+    vecsSet.Female = vecs.Female * vPopRatio
+
+    vecsSet.[Age_0_4] = vecs.[Age <5] * vPopRatio
+    vecsSet.[Age_5_14] = (vecs.[Age 5 to 9] + vecs.[Age 10 to 14]) * vPopRatio
+    vecsSet.[Age_15_19] = vecs.[Age 15 to 19] * vPopRatio
+    vecsSet.[Age_20_34] = (vecs.[Age 20 to 24] + vecs.[Age 25 to 34]) * vPopRatio
+    vecsSet.[Age_35_54] = (vecs.[Age 35 to 44] + vecs.[Age 45 to 54]) * vPopRatio
+    vecsSet.[Age_55_64] = (vecs.[Age 55 to 59] + vecs.[Age 60 to 64]) * vPopRatio
+    vecsSet.[Age_65P] = (vecs.[Age 65 to 74] + vecs.[Age 75 to 84] + vecs.[Age 85+]) * vPopRatio
+
+    // Pop Ind categories
+    vecsSet.Industry1 = vecs.[EC 16+_Ind: Ag/forestry/fish/mine] * vPopRatio
+    vecsSet.Industry2 = vecs.[EC 16+_Ind: Manufacturing] * vPopRatio
+    vecsSet.Industry3 = (vecs.[EC 16+_Ind: Construction] + vecs.[EC 16+_Ind: Transportation/warehouse]) * vPopRatio
+    vecsSet.Industry4 = vecs.[EC 16+_Ind: Wholesale trade] * vPopRatio
+    vecsSet.Industry5 = vecs.[EC 16+_Ind: Retail trade] * vPopRatio
+    vecsSet.Industry6 = (vecs.[EC 16+_Ind: Information] + vecs.[EC 16+_Ind: Finance/ins/RE/rental] + vecs.[EC 16+_Ind: Prof/scientific/admin]) * vPopRatio
+    vecsSet.Industry7 = vecs.[EC 16+_Ind: Ed/health/soc services] * vPopRatio
+    vecsSet.Industry8 = (vecs.[EC 16+_Ind: Art/ent/rec/acc/food] + vecs.[EC 16+_Ind: Other (ex public admin)]) * vPopRatio
+    vecsSet.Industry9 = vecs.[EC 16+_Ind: Public administration] * vPopRatio
+    
+    vSum1to9 = vecsSet.Industry1
+    for i = 2 to 9 do
+        vSum1to9 = vSum1to9 + vecsSet.("Industry" + String(i))
+    end
+    vecsSet.Industry10 = vPop - vSum1to9
+
+    // Set Vectors
+    mObj.SetDataVectors({FieldData: vecsSet})
+
+    // Drop old HH by Size, old Age fields and old occupation fields
+    mObj.DropFields({FieldNames: hhSizeFlds + popAgeFlds + popIndFlds})
+    mObj = null
+endMacro
+
+
+/*
+    Macro that uses the Census Block data and Block Group data creates HH Size marginals at the block level
+    1. The proportion of HHs in each block is calculated (within the block group) solely based on the block data
+
+    2. The HH by Size fields for each block is assumed to be the same as the HH by Size distribution for the corresponding block group
+
+    3. An output nested marginals file is created with HH by Size at the block level
+*/
+Macro "Create Nested Marginals File"(nmSpec)
+    // Open the census block file and export relevant fields
+    flds = {"ID", "BG_ID", "TAZ_ID", "InPeoria", "HU_Occupied"}
+    RunMacro("Check Fields", {File: nmSpec.BlkFile, Fields: flds})
+    
+    blkObj = CreateObject("Table", nmSpec.BlkFile)
+    if nmSpec.Filter <> null then do
+        setName = "Selection"
+        n = blkObj.SelectByQuery({SetName: "Selection", Query: nmSpec.Filter})
+        if n = 0 then
+            Throw(Printf("No valid records in block data for filter: '%s'", {nmSpec.Filter}))
+    end
+    //mObj = blkObj.Export({FileName: nmSpec.OutputFile, FieldNames: flds})
+    ExportView(blkObj.GetView() + "|" + setName, "FFB", nmSpec.OutputFile, flds,)
+    nmObj = CreateObject("Table", nmSpec.OutputFile)
+    blkObj = null
+    
+    // Add empty output fields to nested marginals file. Retain same names for the fields used in the synthesis.
+    marginalFlds  = {"HHSize1", "HHSize2", "HHSize3", "HHSize4", "HHSize5", "HHSize6P",
+                    "HH_Inc_LT25", "HH_Inc_25to50", "HH_Inc_50to75", "HH_Inc_75to100", 
+                    "HH_Inc_100to150", "HH_Inc_150to200", "HH_Inc_GT200", 
+                    "HH_No_Kids", "HH_With_Kids", "HH_No_Seniors", "HH_With_Seniors",
+                    "HH_0Veh", "HH_1Veh", "HH_2Veh", "HH_3+Veh"}
+    newFlds = marginalFlds.Map(do (f) Return({FieldName: f, Type: "real", Width: 12, Decimals: 2}) end)
+    newFlds = newFlds + {{FieldName: "BG_HU_Occupied", Type: "real", Width: 12, Decimals: 2},
+                         {FieldName: "PUMAID", Type: "integer", Width: 12}}
+    nmObj.AddFields({Fields: newFlds})
+
+    // Aggregate current Block HHs to get BG HH totals.
+    vwNM = nmObj.GetView()
+    vwAgg = AggregateTable("AggBlks", vwNM + "|", "MEM", "AggBlk", "BG_ID", {{"HU_Occupied", "Sum",}},)
+    {flds, specs} = GetFields(vwAgg,)
+    vwJ = JoinViews("Blk_Agg", GetFieldFullSpec(vwNM, "BG_ID"), specs[1],)
+    v = GetDataVector(vwJ + "|", specs[2],)
+    SetDataVector(vwJ + "|", "BG_HU_Occupied", v,)
+    CloseView(vwJ)
+    CloseView(vwAgg)
+
+    // Join Blk to BG to new table and process
+    bgObj = CreateObject("Table", nmSpec.MarginalsFile)
+    vwBG = bgObj.GetView()
+
+    // Join Blk to BG to new table and process
+    vwJ = JoinViews("Blk_BG", GetFieldFullSpec(vwNM, "BG_ID"), GetFieldFullSpec(vwBG, "ID"),)
+    mFldSpecs = marginalFlds.Map(do (f) Return(GetFieldFullSpec(vwBG, f)) end)
+    nmFldSpecs = marginalFlds.Map(do (f) Return(GetFieldFullSpec(vwNM, f)) end)
+    
+    flds = {"HU_Occupied", "BG_HU_Occupied", "PUMA"} + mFldSpecs
+    vecs = GetDataVectors(vwJ + "|", flds, {OptArray:1})
+    vRatio = if nz(vecs.BG_HU_Occupied) = 0 then 0 else vecs.HU_Occupied/vecs.BG_HU_Occupied
+    
+    vecsSet = null
+    vecsSet.PUMAID = vecs.PUMA
+    for i = 1 to marginalFlds.length do
+        mFld = mFldSpecs[i]
+        nmFld = nmFldSpecs[i]
+        vecsSet.(nmFld) = vecs.(mFld) * vRatio
+    end
+    SetDataVectors(vwJ + "|", vecsSet,)
+    CloseView(vwJ)
+    
+    mObj = null
+    nmObj = null
+endMacro
+
+
+/*
+    1. Run Nested Synthesis with IPU
+    - IPF HH Marginals: HH by Size at Block level
+                        HH by Vehicles at Block level
+                        HH by Income Block level
+                        HH by presence of kids Block level
+                        HH by presence of seniors Block level
+    
+    - IPU HH Marginals: All IPF HH marginals at the BG level
+
+    - IPU Person Marginals: Persons by Gender at BG level
+                            Persons by Age at BG level
+                            Persons by WorkIndustry at BG level
+
+    2. Create one-way tabulations from synthesized files
+*/
+Macro "PopulationSynth"(spec)
+    o = CreateObject("PopulationSynthesis")
+    o.HouseholdFile(spec.HHSeed)
+    o.PersonFile(spec.PopSeed)
+    o.MarginalFile(spec.BlockMarginals)     
+    o.IPUMarginalFile(spec.BGMarginals)            
+
+    HHDimSynmargData1 = {
+        { Name: "HHSize1" , Value: {1, 2}}, 
+        { Name: "HHSize2" , Value: {2, 3}}, 
+        { Name: "HHSize3" , Value: {3, 4}}, 
+        { Name: "HHSize4" , Value: {4, 5}}, 
+        { Name: "HHSize5" , Value: {5, 6}},
+        { Name: "HHSize6P" , Value: {6, 99}}
+    }
+    o.AddHHMarginal({ Field: "NP", Value: HHDimSynmargData1  , NewFieldName: "HHSize"})
+    
+    HHDimSynmargData2 = {
+        { Name: "HH_0Veh" , Value: {0, 1}}, 
+        { Name: "HH_1Veh" , Value: {1, 2}}, 
+        { Name: "HH_2Veh" , Value: {2, 3}}, 
+        { Name: "HH_3+Veh" , Value: {3, 99}}
+    }
+    o.AddHHMarginal({ Field: "Veh", Value: HHDimSynmargData2  , NewFieldName: "Vehicles"})
+    
+    HHDimSynmargData3 = {
+        { Name: "HH_Inc_LT25" , Value: {1, 2}}, 
+        { Name: "HH_Inc_25to50" , Value: {2, 3}}, 
+        { Name: "HH_Inc_50to75" , Value: {3, 4}}, 
+        { Name: "HH_Inc_75to100" , Value: {4, 5}}, 
+        { Name: "HH_Inc_100to150" , Value: {5, 6}}, 
+        { Name: "HH_Inc_150to200" , Value: {6, 7}}, 
+        { Name: "HH_Inc_GT200" , Value: {7, 99}}
+    }
+    o.AddHHMarginal({ Field: "Inc_Category", Value: HHDimSynmargData3  , NewFieldName: "Inc_Category"})
+    
+    HHDimSynmargData4 = {
+        { Name: "HH_No_Kids" , Value: {1, 2}},
+        { Name: "HH_With_Kids" , Value: {2, 99}} 
+    }
+    o.AddHHMarginal({ Field: "Kids_Category", Value: HHDimSynmargData4  , NewFieldName: "Kids_Category"})
+    
+    HHDimSynmargData5 = {
+        { Name: "HH_No_Seniors" , Value: {1, 2}},
+        { Name: "HH_With_Seniors" , Value: {2, 99}}
+    }
+    o.AddHHMarginal({ Field: "Seniors_Category", Value: HHDimSynmargData5  , NewFieldName: "Seniors_Category"})
+    
+    HHDimIPUmargData1 = HHDimSynmargData1
+    o.AddIPUHouseholdMarginal({ Field: "NP", Value: HHDimIPUmargData1  , NewFieldName: "HHSize"})
+    
+    HHDimIPUmargData2 = HHDimSynmargData2
+    o.AddIPUHouseholdMarginal({ Field: "Veh", Value: HHDimIPUmargData2  , NewFieldName: "Vehicles"})
+    
+    HHDimIPUmargData3 = HHDimSynmargData3
+    o.AddIPUHouseholdMarginal({ Field: "Inc_Category", Value: HHDimIPUmargData3  , NewFieldName: "Inc_Category"})
+    
+    HHDimIPUmargData4 = HHDimSynmargData4
+    o.AddIPUHouseholdMarginal({ Field: "Kids_Category", Value: HHDimIPUmargData4  , NewFieldName: "Kids_Category"})
+    
+    HHDimIPUmargData5 = HHDimSynmargData5
+    o.AddIPUHouseholdMarginal({ Field: "Seniors_Category", Value: HHDimIPUmargData5  , NewFieldName: "Seniors_Category"})
+
+    PersonDimIPUmargData1 = {
+        { Name: "Male" , Value: {1, 2}}, 
+        { Name: "Female" , Value: {2, 99}}
+    }
+    o.AddIPUPersonMarginal({ Field: "SEX", Value: PersonDimIPUmargData1  , NewFieldName: "Gender"})
+
+    PersonDimIPUmargData2 = {
+        { Name: "Age_0_4" , Value: {0, 5}}, 
+        { Name: "Age_5_14" , Value: {5, 15}}, 
+        { Name: "Age_15_19" , Value: {15, 20}}, 
+        { Name: "Age_20_34" , Value: {20, 35}}, 
+        { Name: "Age_35_54" , Value: {35, 55}}, 
+        { Name: "Age_55_64" , Value: {55, 65}}, 
+        { Name: "Age_65P" , Value: {65, 999}}
+    }
+    o.AddIPUPersonMarginal({ Field: "AGEP", Value: PersonDimIPUmargData2  , NewFieldName: "Age"})
+
+    PersonDimIPUmargData3 = {
+        { Name: "Industry1" , Value: {1, 2}}, 
+        { Name: "Industry2" , Value: {2, 3}}, 
+        { Name: "Industry3" , Value: {3, 4}}, 
+        { Name: "Industry4" , Value: {4, 5}}, 
+        { Name: "Industry5" , Value: {5, 6}}, 
+        { Name: "Industry6" , Value: {6, 7}}, 
+        { Name: "Industry7" , Value: {7, 8}}, 
+        { Name: "Industry8" , Value: {8, 9}}, 
+        { Name: "Industry9" , Value: {9, 10}}, 
+        { Name: "Industry10" , Value: {10, 99}}
+    }
+    o.AddIPUPersonMarginal({ Field: "IndustryCategory", Value: PersonDimIPUmargData3  , NewFieldName: "IndustryCategory"})
+
+    o.OutputHouseholdsFile   = spec.HHFile
+    o.OutputPersonsFile      = spec.PersonFile
+    o.IPUIncidenceOutputFile = spec.OutputFolder + "Intermediate\\IPUIncidence.bin"
+    o.ExportIPUWeights(spec.OutputFolder + "Intermediate\\IPUWeights")
+    o.ReportExtraPersonsField("WorkIndustry", "WorkIndustry")
+    o.ReportExtraPersonsField("COW", "ClassOfWorker")
+    o.MarginError = 0.01
+    ok = o.Run()
+    //if ok then 
+    //    res = o.GetResults({CalculateSummaryStatistics: true, FileName: outputFolder + "PopSynth_Statistics.bin", OpenResults: 0})
+
+    RunMacro("Add PopSyn TAZ and BG Info", spec)
+    
+    // Call macro for tabulations
+    opts = null
+    opts.HHFile = spec.HHFile
+    opts.PersonFile = spec.PersonFile
+    opts.OutputFile = spec.Tabulations
+    opts.GroupBy = "BGID"
+    
+    opts.HHTabulations.HHSize = HHDimIPUmargData1
+    opts.HHTabulations.Vehicles = HHDimIPUmargData2
+    opts.HHTabulations.Inc_Category = HHDimIPUmargData3
+    opts.HHTabulations.Kids_Category = HHDimIPUmargData4
+    opts.HHTabulations.Seniors_Category = HHDimIPUmargData5
+    
+    opts.PersonTabulations.Gender = PersonDimIPUmargData1
+    opts.PersonTabulations.Age = PersonDimIPUmargData2
+    opts.PersonTabulations.IndustryCategory = PersonDimIPUmargData3
+    RunMacro("Generate Tabulations", opts)
 endmacro
 
+
 /*
-Macro that creates one dimensional marginls for HH by Size, HH by income and HH by workers
-Uses curves fit from the ACS data to split HH in each TAZ into subcategories
-Creates output file defined by 'Args.SEDMarginals'
+    - Add Block group and TAZ ID to output HH pop synth database
+    - Note that the file contains ZoneID, which is the BlockID and renamed as such
 */
-Macro "DisaggregateSED"(Args)
+Macro "Add PopSyn TAZ and BG Info"(spec)
+    // Add fields to store BG and TAZ ID
+    hhObj = CreateObject("Table", spec.HHFile)
+    newFlds = newFlds + {{FieldName: "TAZID", Type: "integer", Width: 12, Description: "TAZID field from the TAZ layer"},
+                         {FieldName: "BGID", Type: "integer", Width: 12, Description: "Block Group ID"}}
+    hhObj.AddFields({Fields: newFlds})
 
-    // Open SED Data and check table for missing fields
-    obj = CreateObject("AddTables", {TableName: Args.Demographics})
-    vwSED = obj.TableView
-    flds = {"TAZ", "OccupiedHH", "Population", "GroupQuarterPopulation", "Median_Inc", "Pct_Worker", "Pct_Child", "Pct_Senior"}
-    expOpts.[Additional Fields] = {{"Kids", "Integer", 12,,,,},
-                                   {"AdultsUnder65", "Integer", 12,,,,},
-                                   {"Seniors", "Integer", 12,,,,},
-                                   {"PUMA5", "Integer", 12,,,,}}
-    ExportView(vwSED + "|", "FFB", Args.SEDMarginals, flds, expOpts)
-    obj = null
+    // Rename ZoneID field to BlockID
+    hhObj.RenameField({FieldName: "ZoneID", NewName: "BlockID"})
 
-    obj = CreateObject("AddTables", {TableName: Args.SEDMarginals})
-    vw = obj.TableView
+    // Transfer block group ID field to HH database
+    blkObj = CreateObject("Table", spec.BlockMarginals.FileName)
+    jvObj = hhObj.Join({Table: blkObj, LeftFields: {"BlockID"}, RightFields: {"ID"}})
+    jvObj.BGID = jvObj.BG_ID
+    jvObj.TAZID = jvObj.TAZ_ID
+    jvObj = null
+endMacro
 
-    // Run models to disaggregate curves
-    // 1. ==== Size
-    opt = {View: vw, Curve: Args.SizeCurves, KeyExpression: "(Population-GroupQuarterPopulation)/OccupiedHH", LookupField: "avg_size"}
-    RunMacro("Disaggregate SE HH Data", opt)
 
-    // 2. ==== Income
-    opt = {View: vw, Curve: Args.IncomeCurves, KeyExpression: "Median_Inc/" + String(Args.RegionalMedianIncome), LookupField: "inc_ratio"}
-    RunMacro("Disaggregate SE HH Data", opt)
+/*
+    Generic model to perform tabulations after synthesis
+    Uses the same input format as pop synth
+    Can ideally be integrated into the procedure in future TC versions
+*/
+Macro "Generate Tabulations"(opts)
+    dm = CreateObject("DataManager")
+    vwHH = dm.AddDataSource("HH", {FileName: opts.HHFile})
+    vwPer = dm.AddDataSource("Per", {FileName: opts.PersonFile})
+    vwPerHH = JoinViews("PersonHH", GetFieldFullSpec(vwPer, "HouseholdID"), GetFieldFullSpec(vwHH, "HouseholdID"), )
+    if opts.OutputFile = null or TypeOf(opts.OutputFile) <> "string" then
+        Throw("Please specify valid 'OutputFile' option for population synthesis output tabulations")
 
-    // 3. ==== Workers
-    opt = {View: vw, Curve: Args.WorkerCurves, KeyExpression: "((Pct_Worker/100)*(Population-GroupQuarterPopulation))/OccupiedHH", LookupField: "avg_workers"}
-    RunMacro("Disaggregate SE HH Data", opt)
+    groupByFld = opts.GroupBy
+    
+    // HH Tabulations
+    specs = {View: vwHH, Tabulations: opts.HHTabulations}
+    exprsHH = RunMacro("Create Expressions for Tabulations", specs)
 
-    // Fill number of kids, adults and seniors
-    vecs = GetDataVectors(vw + '|', {"Population", "GroupQuarterPopulation", "Pct_Child", "Pct_Senior"}, {OptArray: 1})
-    vecs.HH_Pop = vecs.Population - vecs.GroupQuarterPopulation
+    specs = {View: vwHH, ExpressionNames: exprsHH, GroupBy: groupByFld}
+    vwHHTab = RunMacro("Write Tabulations", specs)
+
+    // Person Tabulations
+    specs = {View: vwPerHH, Tabulations: opts.PersonTabulations}
+    exprsPer = RunMacro("Create Expressions for Tabulations", specs)
+
+    specs = {View: vwPerHH, ExpressionNames: exprsPer, GroupBy: groupByFld}
+    vwPerTab = RunMacro("Write Tabulations", specs)
+    
+    CloseView(vwPerHH)
+    dm = null
+
+    // Join HH and Person tabulations and export to final table
+    vwJ = JoinViews("HHPerTab", GetFieldFullSpec(vwHHTab, groupByFld), GetFieldFullSpec(vwPerTab, groupByFld),)
+    fldsToExport = {GetFieldFullSpec(vwHHTab, groupByFld)} + exprsHH + exprsPer
+    ExportView(vwJ + "|", "FFB", opts.OutputFile, fldsToExport,)
+    CloseView(vwJ)
+    CloseView(vwHHTab)
+    CloseView(vwPerTab)
+endMacro
+
+
+/*
+    Generate expressions that are aggragated to produce the synthesis tabulations
+*/
+Macro "Create Expressions for Tabulations"(specs)
+    vw = specs.View
+    exprNames = null
+    tabs = specs.Tabulations
+    for i = 1 to tabs.length do
+        outFld = tabs[i][1]
+        vals = tabs[i][2]
+        for val in vals do
+            fldName = val.Name
+            if fldName[1] = "[" then // Remove first and last bracket
+                fldName = SubString(fldName, 2, StringLength(fldName) - 2)
+            
+            exprName = fldName + "_Out"
+            range = val.Value
+            if TypeOf(range) = "array" then
+                expr = printf("if %s >= %lu and %s < %lu then 1 else 0", {outFld, range[1], outFld, range[2]})
+            else
+                expr = printf("if %s = %lu then 1 else 0", {outFld, range})
+
+            newExpr = CreateExpression(vw, exprName, expr,)
+            exprNames = exprNames + {newExpr}
+        end
+    end
+    Return(exprNames)
+endMacro
+
+
+/*
+    Aggregate expressions using the 'GroupBy' field to produce an In-Memory aggregation table
+*/
+Macro "Write Tabulations"(specs)
+    exprNames = specs.ExpressionNames
+    aggFlds = exprNames.Map(do (f) Return({f, "sum",}) end)
+    vw_agg = AggregateTable("Aggregations", specs.View + "|", "MEM", "Agg", specs.GroupBy, aggFlds, null)
+    for exprName in exprNames do
+        DestroyExpression(GetFieldFullSpec(specs.View, exprName))
+    end
+    Return(vw_agg)
+endMacro
+
+
+/*
+    Synthesis post process that fills several HH fields based on person level aggregations
+    Adds metadata to the table (balloon help)
+*/
+Macro "PopSyn Postprocess"(spec)
+    abm = spec.abmManager
+    hhFile = spec.HHFile
+    personFile = spec.PersonFile
+    
+    // Add fields to HH database
+    newFlds = { {Name: "Adults", Type: "Short", Description: "Number of adults in the household (Age >= 18)"},
+                {Name: "Kids", Type: "Short", Description: "Number of kids in the household (Age < 18)"},
+                {Name: "PreSchKids", Type: "Short", Description: "Number of pre-school kids in the household (Age < 5)"},
+                {Name: "Females", Type: "Short"},
+                {Name: "Males", Type: "Short"},
+                {Name: "Workers", Type: "Short", Description: "Number of workers in the household (IndustryCategory < 10)"},
+                {Name: "Seniors", Type: "Short", Description: "Number of seniors in the household (Age >= 65)"},
+                {Name: "IncomeLevel", Type: "Short", Description: "HH Income level: 1 if HHIncome is below $50K, 2 if HHIncome is [50K, 100K), 3 if HHIncome is gte $100K"},
+                {Name: "AvgWrkIncCategory", Type: "Short", Description: "Avg Worker Income level: 1 if HHIncome/HHWorkers is below $50K, 2 if HHIncome/HHWorkers is [50K, 100K), 3 if HHIncome/HHWorkers is gte $100K"}
+               }
+    abm.AddHHFields(newFlds)
+    
+    // Aggregate person fields and fill in household table
+    aggOpts.Spec = {{Kids: "(Age < 18).Count", DefaultValue: 0},   // (Condition).Count
+                    {PreSchKids: "(Age < 5).Count", DefaultValue: 0},
+                    {Adults: "(Age >= 18).Count", DefaultValue: 0},
+                    {Seniors: "(Age >= 65).Count", DefaultValue: 0},
+                    {Males: "(Gender = 1).Count", DefaultValue: 0},
+                    {Females: "(Gender = 2).Count", DefaultValue: 0},
+                    {Workers: "(IndustryCategory < 10).Count", DefaultValue: 0}}
+    abm.AggregatePersonData(aggOpts)
+
+    // Fill IncomeLevel and AvgWrkIncCategory fields
+    vecs = abm.GetHHVectors({"Inc_Category", "Workers"})
     vecsSet = null
-    vecsSet.Kids = r2i(vecs.HH_Pop * vecs.Pct_Child/100)
-    vecsSet.Seniors = r2i(vecs.HH_Pop * vecs.Pct_Senior/100)
-    vecsSet.AdultsUnder65 = vecs.HH_Pop - vecsSet.Kids - vecsSet.Seniors
-    SetDataVectors(vw + '|', vecsSet,)
+    vecsSet.IncomeLevel = if vecs.Inc_Category <= 2 then 1 
+                            else if vecs.Inc_Category <= 4 then 2 
+                            else 3
+    vecsSet.AvgWrkIncCategory = if vecs.Inc_Category <= 2 then 1
+                                else if vecs.Inc_Category <= 4 and vecs.Workers >= 2 then 1
+                                else if vecs.Inc_Category <= 4 and vecs.Workers < 2 then 2
+                                else if vecs.Inc_Category = 5 and vecs.Workers >= 3 then 1
+                                else if vecs.Inc_Category = 5 and vecs.Workers = 2 then 2
+                                else if vecs.Inc_Category = 5 and vecs.Workers < 2 then 3
+                                else if vecs.Inc_Category >= 6 and vecs.Workers >= 4 then 1
+                                else if vecs.Inc_Category >= 6 and vecs.Workers = 3 then 2
+                                else if vecs.Inc_Category >= 6 and vecs.Workers < 3 then 3
+                                else null
+    abm.SetHHVectors(vecsSet)
 
-    // Fill PUMA5 field using PUMA info from the master TAZ database
-    objLyrs = CreateObject("AddDBLayers", {FileName: Args.TAZGeography})
-    {TAZLayer} = objLyrs.Layers
-    vwJ = JoinViews("SED_TAZ", GetFieldFullSpec(vw, "TAZ"), GetFieldFullSpec(TAZLayer, "ID"),)
-    v = GetDataVector(vwJ + "|", "PUMA",)
-    vOut = s2i(Right(v,5))
-    SetDataVector(vwJ + "|", "PUMA5", vOut,)
-    CloseView(vwJ)
-    objLyrs = null
+    // Add pop syn metadata
+    opt = {HHView: abm.HHView, PersonView: abm.PersonView}
+    RunMacro("Add PopSyn Metadata", opt)
 
-    obj = null
+    // Export data
+    abm.ExportHHView({File: hhFile})
+    abm.ExportPersonView({File: personFile})
 endMacro
 
 
 /*
-Macro that disaggregates HH field in TAZ into categories based on input curves
-Options to the macro are:
-View: The SED view that contains TAZ, HH and other pertinent info
-Curve: The csv file that contains the disaggregate curves. 
-        E.g. 'size_curves.csv', that contains 
-            - One field for the average HH size and
-            - Four fields that contain fraction of HH by Size (1,2,3,4) corresponding to each value of average HH size
-LookupField: The key field in the curve csv file. e.g. 'avg_size' in the 'size_curves.csv' table
-KeyExpression: The expression in the SED view that is used to match the lookup field in the curve file (e.g 'HH_POP/HH')
-
-Macro adds fields to the SED view and populates them.
-It adds as many fields as indicated by the input curve csv file
-In the above example, fields added will be 'HH_siz1', 'HH_siz2', 'HH_siz3', 'HH_siz4'
-For records in SED data that fall outside the bounds in the curve.csv file, the appropriate limiting values from the curve table are used.
+    Add metadata (balloon help) to certain fields in the Person and HH output databases
 */
-Macro "Disaggregate SE HH Data"(opt)
-    // Open curve and get file characteristics
-    objC = CreateObject("AddTables", {TableName: opt.Curve})
-    vwC = objC.TableView
-    lookupFld = Lower(opt.LookupField)
-    {flds, specs} = GetFields(vwC,)
-    fldsL = flds.Map(do (f) Return(Lower(f)) end)
+Macro "Add PopSyn Metadata"(spec)
+    vwHH = spec.HHView
+    vwP = spec.PersonView
 
-    // Add output fields to view
-    vw = opt.View
-    modify = CreateObject("CC.ModifyTableOperation", vw)
-    categoryFlds = null
-    for fld in fldsL do
-        if fld <> lookupFld then do // No need to add lookup field
-            categoryFlds = categoryFlds + {fld}
-            modify.AddField("HH_" + fld, "Long", 12,,) // e.g. Add Field 'HH_siz1'
-        end
-    end
-    modify.Apply()
+    // Add HH metadata
+    items = {ZoneID: "Census Block Group layer ID field",
+             SubzoneID: "Census Block layer ID field",
+             "Veh_Category": "1: Zero Vehicles|2: One Vehicle|3. Two Vehicles|4: Three or more vehicles",
+             "Inc_Category": "HH Income|1. Less than 25k|2. 25k to 50k|3. 50k to 75k|4. 75k to 100k|5. 100k to 150k|6. 150k to 200k|7. More than 200K",
+             "Kids_Category": "1. HH without kids (Age < 18)|2. HH with kids",
+             "Seniors_Category": "1. HH without seniors (Age >= 65)|2. HH with seniors"
+            }
+    RunMacro("Add Balloon Help", vwHH, items)
 
-    // Get the range of values in lookupFld
-    vLookup = GetDataVector(vwC + "|", lookupFld,)
-    m1 = VectorStatistic(vLookup, "Max",)
-    maxVal = r2i(Round(m1*100, 2))
-    m2 = VectorStatistic(vLookup, "Min",)
-    minVal = r2i(Round(m2*100, 2))
-    exprStr = "r2i(Round(" + lookupFld + "*100,2))"             // e.g. r2i(Round(avg_size*100,0))
-    exprL = CreateExpression(vwC, "Lookup", exprStr,)
-
-    // Create expression on SED Data
-    // If computed value is beyond the range, set it to the appropriate limit (minVal or maxVal)
-    vw = opt.View
-    expr = "r2i(Round(" + opt.KeyExpression + "*100,2))"        // e.g. r2i(Round(HH_POP/HH*100,0))
-    exprStr = "if " + expr + " = null then null " +
-              "else if " + expr + " < " + String(minVal) + " then " + String(minVal) + " " +
-              "else if " + expr + " > " + String(maxVal) + " then " + String(maxVal) + " " +
-              "else " + expr
-    exprFinal = CreateExpression(vw, "Key", exprStr,) 
-
-    // Join SED Data to Lookup and compute values
-    vecsOut = null
-    vwJ = JoinViews("SEDLookup", GetFieldFullSpec(vw, exprFinal), GetFieldFullSpec(vwC, exprL),)
-    vecs = GetDataVectors(vwJ + "|", {"OccupiedHH"} + categoryFlds, {OptArray: 1})
-    vTotal = Vector(vecs.OccupiedHH.Length, "Long", {{"Constant", 0}})
-    for i = 2 to categoryFlds.length do // Do not compute for first category yet, hence the 2.
-        fld = categoryFlds[i]
-        vVal = r2i(vecs.OccupiedHH * vecs.(fld))    // Intentional truncation of decimal part
-        vecsOut.("HH_" + fld) = nz(vVal)
-        vTotal = vTotal + nz(vVal)      
-    end
-    finalFld = categoryFlds[1]
-    vecsOut.("HH_" + finalFld) = nz(vecs.OccupiedHH) - vTotal // Done to maintain clean marginals that exactly sum up to HH
-    SetDataVectors(vwJ + "|", vecsOut,)
-    CloseView(vwJ)
-    objC = null
-
-    DestroyExpression(GetFieldFullSpec(vw, exprFinal))
-endMacro
-
-/*
-    * Macro that performs population synthesis using the TransCAD (9.0) built-in procedure. 
-        * Marginal Data - Disaggregated SED Marginals (by TAZ)
-        * HH Dimensions are:
-            * HH By Size - 1, 2, 3 and 4+
-            * HH By Workers - 0, 1, 2 and 3+
-            * HH By Income Category - 1: [0, 25000); 2: [25000, 75000); 3. [75000, 150000); 4. 150000+
-        * For Persons, a match to the total population (HH_POP) by TAZ is attempted via the IPU (Iterational Proportional Update) option using:
-            * Age - Three categories. Kids: [0, 17], AdultsUnder65: [18, 64], Seniors: 65+.
-*/
-Macro "Synthesize Population"(Args)
-
-    // Set up and run the synthesis
-    o = CreateObject("PopulationSynthesis")
-    o.RandomSeed = 314159
+    // Add Person metadata
+    indCatStr = "Worker industry category|" + 
+                "1. Agriculture/Mining|2. Manufacturing|3. Utilities, Construction, Transportation, Waste Management|" +
+                "4. Wholesale Trade| 5. Retail Trade|" +   
+                "6. Information, Finance, Insurance, Professional, Scientific, Technical, Management, Real Estate|" +
+                "7. Education/Health/Social Services|8. Food/Other services|" +
+                "9. Public Administration and Military|10. Not in Labor Force or unemployed"
     
-    // Define Seed Data. Specify relationship between HH file and TAZ and between HH and Person file
-    o.HouseholdFile({FileName: Args.PUMS_Households, ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
-    o.PersonFile({FileName: Args.PUMS_Persons, ID: "PERID", HHID: "HHID"})
+    indStr = "Tagged field with worker industry using NAICS classification codes|" + 
+             "1. Agriculture|2. Manufacturing and Mining|3. Utilities, Construction, Transportation, Waste Management|" +
+             "4. Wholesale Trade|5. Retail Trade|" +   
+             "6. Information, Finance, Insurance, Professional, Scientific, Technical, Management, Real Estate|" +
+             "7. Education|8. Health Care|9. Arts, Entertainment, Food and Other Services|" +
+             "10. Public Administration|11. Military|12. Not in Labor Force or unemployed"
+
+    cowStr = "Class of Worker: Tagged|1. Employee of a private for-profit company, or of an individual for wages|" +
+             "2. Employee of a private not-for-profit organization|" +
+             "3. Employee of local government|4. Employee of state government|5. Employee of federal goverment|" + 
+             "6. Self-employed in own not incorporated business|" +
+             "7. Self-employed in own incorporated business|" +
+             "8. Working without pay in family business|" +
+             "9. Unemployed or never worked|" +
+             "Blank. Less than 16 years old or not in labor force for more than 5 years"
     
-    // Define the marginals data (Disaggregated SED marginals)
-    marginalData = {FileName: Args.SEDMarginals, Filter: "OccupiedHH > 0", ID: "TAZ", MatchingID: "PUMA5"}
-    o.MarginalFile(marginalData)     
-    o.IPUMarginalFile(marginalData)             
-
-    // ***** HH Dimensions *****
-    // HH by Size: Define TAZ marginal fields and corresponding values in the seed data
-    // Add Marginal Data Spec
-    // 'Field': Field from HH seed file for matching (e.g. NP is the HHSize field in the PUMS HH seed)
-    // 'Value': The above array, that specifies the marginal fields and how they are mapped to the seed field
-    // 'NewFieldName': The field name in the synthesized outout HH file for this variable
-    // Also specify the matching field in the seed data
-    HHDimSize = {{Name: "HH_siz1", Value: {1, 2}}, 
-                 {Name: "HH_siz2", Value: {2, 3}}, 
-                 {Name: "HH_siz3", Value: {3, 4}}, 
-                 {Name: "HH_siz4", Value: {4, 99}}}
-    HHbySizeSpec = {Field: "NP", Value: HHDimSize, NewFieldName: "HHSize"}
-    o.AddHHMarginal(HHbySizeSpec)
-
-    // HH by Income (4 categories): Define TAZ marginal fields and corresponding values in the seed data
-    HHDimInc = {{Name: "HH_incl" , Value: 1}, 
-                {Name: "HH_incml", Value: 2}, 
-                {Name: "HH_incmh", Value: 3}, 
-                {Name: "HH_inch",  Value: 4}}
-    HHbyIncSpec = {Field: "IncomeCategory", Value: HHDimInc, NewFieldName: "IncomeCategory"}
-    o.AddHHMarginal(HHbyIncSpec)
-
-    // HH by Number of Workers
-    HHDimWrk =   {{Name: "HH_wrk0", Value: {0, 1}}, 
-                  {Name: "HH_wrk1", Value: {1, 2}}, 
-                  {Name: "HH_wrk2", Value: {2, 3}}, 
-                  {Name: "HH_wrk3", Value: {3, 99}}}
-    HHbyWrkSpec = {Field: "NumberWorkers", Value: HHDimWrk, NewFieldName: "NumberWorkers"}
-    o.AddHHMarginal(HHbyWrkSpec)
-
-
-    // ***** Add marginals for IPU *****
-    // Typically, a good idea to include all of the above HH marginals in the IPU as well
-    o.AddIPUHouseholdMarginal(HHbySizeSpec)
-    o.AddIPUHouseholdMarginal(HHbyIncSpec)
-    o.AddIPUHouseholdMarginal(HHbyWrkSpec)
-
-    // ***** Person Dimensions *****
-    // These can only be specified for the IPU procedure. Use three age categories.
-    PersonDim =   {{Name: "Kids", Value: {0, 18}}, 
-                   {Name: "AdultsUnder65", Value: {18, 65}}, 
-                   {Name: "Seniors", Value: {65, 100}}}
-    o.AddIPUPersonMarginal({Field: "AgeP", Value: PersonDim, NewFieldName: "Age"})
-
-    // ***** Outputs *****
-    // A general note on IPU: 
-    // The IPU procedure generally creates a set of weights, one for each TAZ as opposed to a single weight field without IPU
-    // These weight fields are used for sampling from the seed
-    // Optional outputs include: The IPUIncidenceFile and one weight table for each PUMA
-    o.OutputHouseholdsFile = Args.Households
-    o.ReportExtraHouseholdField("PUMA", "PUMA")
-    o.ReportExtraHouseholdField("HINCP", "HHInc")
-    o.OutputPersonsFile = Args.Persons
-    o.ReportExtraPersonsField("SEX", "gender") // Add extra field from Person Seed and change the name
-    // o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
-    o.ReportExtraPersonsField("ESR", "EmploymentStatus")
-    
-    // Optional IPU by-products
-    outputFolder = Args.[Output Folder] + "\\Population\\"
-    o.IPUIncidenceOutputFile = outputFolder + "IPUIncidence.bin"
-    o.ExportIPUWeights(outputFolder + "IPUWeights")
-    o.Tolerance = Args.PopSynTolerance
-    ret_value = o.Run()
+    items = {Gender: "1. Male|2. Female",
+             IndustryCategory: indCatStr,
+             WorkIndustry: indStr,
+             ClassOfWorker: cowStr
+            }
+    RunMacro("Add Balloon Help", vwP, items)
+    dm = null
 endMacro
 
 
 /*
-    * Macro produces tabulations of marginals at the TAZ level from the population synthesis output
-    * Adds HH summary fields to the synhtesied HH file
+    Add balloon help given the view and an option array pair of field names and descriptions
 */
-Macro "PopSynth Post Process"(Args)
-
-    // Generate tabulations from the synthesis output
-    RunMacro("Generate Tabulations", Args)
-
-    objH = CreateObject("AddTables", {TableName: Args.Households})
-    vw_hh = objH.TableView
-    
-    objP = CreateObject("AddTables", {TableName: Args.Persons})
-    vw_per = objP.TableView
-    
-    // Create Balloon Help on synthesized tables
-    RunMacro("Set Balloon Help", vw_hh, vw_per)
-    BuildInternalIndex(GetFieldFullSpec(vw_hh, "HouseholdID"))
-    BuildInternalIndex(GetFieldFullSpec(vw_hh, "ZoneID"))
-    BuildInternalIndex(GetFieldFullSpec(vw_per, "PersonID"))
-    BuildInternalIndex(GetFieldFullSpec(vw_per, "HouseholdID"))
+Macro "Add Balloon Help"(vw, items)
+    strct = GetTableStructure(vw, {"Include Original" : "True"})
+    names = strct.Map(do (f) Return(f[1]) end)
+    for item in items do
+        pos = names.position(item[1])
+        if pos > 0 then
+            strct[pos][8] = item[2]
+    end
+    ModifyTable(vw, strct)
 endMacro
 
 
-Macro "Set Balloon Help"(vw_hh, vw_per)
-    // HH Field Descriptions
-    desc = null
-    desc.ZoneID = "TRM TAZ ID"
-    desc.IncomeCategory = "Household Income Category:|1. Income [0, 35K)|2. Income [35K, 70K)|3. Income [70K, 150K)| 4. Income 150K+"
-    strct = GetTableStructure(vw_hh, {"Include Original" : "True"})
-    for i = 1 to strct.length do
-        fld_name = strct[i][1]
-        strct[i][8] = desc.(fld_name)
-    end
-    ModifyTable(vw_hh, strct)
+/* Dorm Synthesis
+    Synthesize HHs and Persons for University residents from University Group Quarters information
+    - HH TAZ and Univ TAZ known
+    - HH Size = 1 (Each person constitutes a HH)
+    - Income distribution (low or low-medium) based on input parameter
+    - Age distributions into one of the six age groups (19-24)
+    - Auto based on input table containing probability of owning a car by age compiled from available statistics
+    - Equal Gender Split
+    - Part time worker distribution based on age based probabilities
+    - WorK industry for part time worker either service or retail based on a fixed probability
+*/
+Macro "Dorm Residents Synthesis"(Args)
+    // Open Existing HH and Pop file after HH Resident Synthesis
+    if !GetFileInfo(Args.Households) or !GetFileInfo(Args.Persons) then
+        Throw("Please ensuure that the resident synthesis is complete")
     
-    // Person Field descriptions
-    desc = null
-    desc.Gender = "Gender:|1. Male|2. Female"
-    desc.EmploymentStatus = "Employment status recode|1. Civilian employed, at work|2. Civilian employed, with a job but not at work|3. Unemployed|"
-    desc.EmploymentStatus = desc.EmploymentStatus + "4. Armed forces, at work|5. Armed forces, with a job but not at work|6. Not in labor force|Missing. N/A (less than 16 years old)"	
-    strct = GetTableStructure(vw_per, {"Include Original" : "True"})
-    for i = 1 to strct.length do
-        fld_name = strct[i][1]
-        strct[i][8] = desc.(fld_name)
+    abm = RunMacro("Get ABM Manager", Args)
+    abm.ClosePersonHHView()
+
+    // Add new fields to HH and Person Table
+    newFlds = {{Name: "UnivGQ", Type: "Short", Width: 2, Description: "1 if this is a university dorm HH (resident)"},
+               {Name: "Univ", Type: "String", Width: 10, Description: "University Name (Filled from dorm synthesis)"},
+               {Name: "Autos", Type: "Short", Description: "Number of autos in the HH"}}
+    abm.AddHHFields(newFlds)
+
+    newFlds = { {Name: "UnivGQStudent", Type: "Short", Width: 2, Description: "1 if this is a university student"},
+                {Name: "UnivTAZ", Type: "Long", Width: 12, Description: "TAZID of university that the student belongs to"},
+                {Name: "License", Type: "Short", Description: "License Status: 1 - Has driver license 2 - Does not have driver license"},
+                {Name: "WorkerCategory", Type: "Short", Description: "WorkerType: 1 - FullTime 2 - PartTime"},
+                {Name: "WorkDays", Type: "Short", Width: 10, Description: "Number of work days per week"},
+                {Name: "WorkAttendance", Type: "Short", Width: 2, Description: "Does person work on given day? Based on value of WorkDays"},
+                {Name: "AttendUniv", Type: "Short", Width: 2, Description: "Does person (non-dorm resident) attend university?|1: Yes|2: No.|Filled for Age >= 19"}}
+    abm.AddPersonFields(newFlds)
+
+    // ***** TAZ Data
+    // Get relevant data from TAZ
+    objT = CreateObject("Table", Args.Demographics)
+    nUniv = objT.SelectByQuery({SetName: "Selection", Query: "UnivGQ = 1 and GroupQuarterPopulation > 0"})
+    if nUniv = 0 then
+        Throw("Check university group quarter data in TAZ Demograhics file")
+    vecs = objT.GetDataVectors({FieldNames: {"TAZ", "GroupQuarterPopulation", "UnivGQ", "University", "UnivTAZ"}})
+    objT = null
+
+    // ***** Process
+    // Add records
+    vHHID = abm.[HH.HouseholdID]
+    maxHHID = vHHID.Max()
+    vPersonID = abm.[Person.PersonID]
+    maxPersonID = vPersonID.Max()
+    
+    vecsOutHH = null
+    vecsOutPersons = null
+    vUnivResidents = vecs.GroupQuarterPopulation
+    
+    pbar = CreateObject("G30 Progress Bar", "Processing University Zones...", true, vUnivResidents.length)
+    for i = 1 to vUnivResidents.length do
+        nUniv = r2i(vUnivResidents[i])
+        vecsDist = RunMacro("Get Univ Distributions", Args, nUniv)
+        
+        vHHID = Vector(nUniv, "Long", {{"Sequence", maxHHID + 1, 1}})
+        vPersonID = Vector(nUniv, "Long", {{"Sequence", maxPersonID + 1, 1}})
+        vOne = Vector(nUniv, "Short", {{"Constant", 1}})
+        vUnivTAZ = Vector(nUniv, "Long", {{"Constant", vecs.UnivTAZ[i]}})
+        vUniv = Vector(nUniv, "String", {{"Constant", vecs.University[i]}})
+
+        // Add records, select and set HH vectors
+        vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+                     "Inc_Category": vecsDist.IncomeCategory, "Kids_Category": vOne, "Seniors_Category": vOne,
+                     UnivGQ: vOne, Univ: vUniv}
+        AddRecords(abm.HHView,,,{"Empty Records": nUniv})
+        abm.CreateHHSet({Filter: 'HouseholdID = null', Activate: 1})
+        abm.SetHHVectors(vecsOutHH)
+
+        // Add records, select and set Person vectors
+        vecsOutPersons = {HouseholdID: vHHID, PersonID: vPersonID, Gender: vecsDist.Gender, Age: s2i(vecsDist.Age),
+                          UnivGQStudent: vOne, UnivTAZ: vUnivTAZ, WorkerCategory: vecsDist.WorkerCategory,
+                          WorkDays: vecsDist.WorkDays, WorkAttendance: vecsDist.WorkAttendance,
+                          License: vecsDist.License, IndustryCategory: vecsDist.IndustryCategory,
+                          WorkIndustry: vecsDist.WorkIndustry, AttendUniv: vOne}
+        AddRecords(abm.PersonView,,,{"Empty Records": nUniv})
+        abm.CreatePersonSet({Filter: 'PersonID = null', Activate: 1})
+        abm.SetPersonVectors(vecsOutPersons)
+        
+        // Reset Max IDs
+        maxHHID = vHHID[nUniv]
+        maxPersonID = vPersonID[nUniv]
+        if pbar.Step() then
+            Return()
     end
-    ModifyTable(vw_per, strct)
+    pbar.Destroy()
+    abm.ActivateHHSet()
+    abm.ActivatePersonSet()
+    Return(true)
 endMacro
 
 
-Macro "Generate Tabulations"(Args)
+// Macro that generates vectors for Age, Gender, IncomeCategory, WorkerStatus and Vehicle
+// The number of records are passed to the macro
+// The distributions are based on input probability numbers/tables
+Macro "Get Univ Distributions"(Args, nUniv)
+    vecsDist = null
     
-    outFile = Args.[Synthesized Tabulations]
+    // Gender
+    SetRandomSeed(42*nUniv + 1)
+    fPct = Args.FemaleStudentsPct
+    mPct = 100 - fPct
+    params = null
+    params.population = {1, 2}
+    params.weight = {mPct, fPct}
+    vecsDist.Gender = RandSamples(nUniv, "Discrete", params)
 
-    // Open HH File and create empty output fields for number of kids, seniors, adults and workers in the HH
-    objH = CreateObject("AddTables", {TableName: Args.Households})
-    vw_hh = objH.TableView
-    modify = CreateObject("CC.ModifyTableOperation", vw_hh)
-    modify.FindOrAddField("HHAdultsUnder65", "Long", 12,,)
-    modify.FindOrAddField("HHKids", "Long", 12,,)
-    modify.FindOrAddField("HHSeniors", "Long", 12,,)
-    modify.FindOrAddField("HHWorkers", "Long", 12,,)
-    modify.FindOrAddField("HHNWAdults", "Long", 12,,)
-    modify.Apply()
-    {hhFlds, hhSpecs} = GetFields(vw_hh,)
+    // Income
+    SetRandomSeed(42*nUniv + 2)
+    IncCat1Pct = Args.IncCategory1Pct
+    IncCat2Pct = 100 - IncCat1Pct
+    params.weight = {IncCat1Pct, IncCat2Pct}
+    vecsDist.IncomeCategory = RandSamples(nUniv, "Discrete", params)
 
-    objP = CreateObject("AddTables", {TableName: Args.Persons})
-    vw_per = objP.TableView
+    // ***** Age Related Distributions
+    ageChars = Args.StudentCharacteristics
+    arrAge = ageChars.Age
+    arrAgePct = ageChars.Percentage
+    if Sum(arrAgePct) <> 100 then
+        Throw("Incorrect Age Percentages in 'StudentCharacteristics' table for dorm population synthesis. They do not sum up to 100.0")
 
-    // Export to In-memory View for faster processing
-    vw_hhM = ExportView(vw_hh + "|", "MEM", "HHMem",,{"Indexed Fields": {"HouseholdID"}})
-    vw_perM = ExportView(vw_per + "|", "MEM", "PersonMem",,{"Indexed Fields": {"HouseholdID"}})
-    objH = null
-    objP = null
-    
-    // Write number of adults, kids, seniors and workers in the synthesized HH table (by aggregation on the synthesized persons)
-    expr1 = CreateExpression(vw_perM, "Kid", "if Age < 18 then 1 else 0",)
-    expr2 = CreateExpression(vw_perM, "AdultUnder65", "if Age >= 18 and Age < 65 then 1 else 0",)
-    expr3 = CreateExpression(vw_perM, "Senior", "if Age >= 65 then 1 else 0",)
-    expr4 = CreateExpression(vw_perM, "Worker", "if EmploymentStatus = 1 or EmploymentStatus = 2 or EmploymentStatus = 4 or EmploymentStatus = 5 then 1 else 0",)
-    expr5 = CreateExpression(vw_perM, "NWAdults", "if Age >= 18 and Worker = 0 then 1 else 0",)
+    // Age
+    params = null
+    params.population = arrAge
+    params.weight = arrAgePct
+    vecsDist.Age = RandSamples(nUniv, "Discrete", params)
 
-    // Aggregate person table by 'HouseholdID' and sum the above expression fields
-    aggrSpec = {{"Kid", "sum",}, {"AdultUnder65", "sum",}, {"Senior", "sum",}, {"Worker", "sum",}, {"NWAdults", "sum",}}
-    vwA =  AggregateTable("MemAggr", vw_perM + "|", "MEM",, "HouseholdID", aggrSpec,)
-    {flds, specs} = GetFields(vwA,)
-    
-    // Join aggregation file to HH table and copy over values
-    vwJ = JoinViews("Aggr_HH", specs[1], GetFieldFullSpec(vw_hhM, "HouseholdID"),)
-    vecs = GetDataVectors(vwJ + "|", {"Kid", "AdultUnder65", "Senior", "Worker", "NWAdults"}, {OptArray: 1})
-    vecsSet.HHKids = vecs.Kid
-    vecsSet.HHAdultsUnder65 = vecs.AdultUnder65
-    vecsSet.HHSeniors = vecs.Senior
-    vecsSet.HHWorkers = vecs.Worker
-    vecsSet.HHNWAdults = vecs.NWAdults
-    SetDataVectors(vwJ +"|", vecsSet,)
-    CloseView(vwJ)
-    CloseView(vwA)
-
-    /* Preferred code to replace Lines 190-210, but is much slower. Takes 90 seconds as opposed to 14 seconds for the above snippet
-    o = CreateObject("TransCAD.ABM")
-    o.TargetFile({ViewName: vw_hhM, ID: "HouseholdID"})
-    o.SourceFile({ViewName: vw_perM, ID: "HouseholdID"})
-    o.FillTargetField({Filter: "Age < 18", FillField: "HHKids",    DefaultValue: 0})
-    o.FillTargetField({Filter: "Age >= 65", FillField: "HHSeniors", DefaultValue: 0})
-    o.FillTargetField({Filter: "Age >= 18 and Age < 65", FillField: "HHAdultsUnder65",  DefaultValue: 0})
-    o.FillTargetField({Filter: "EmploymentStatus = 1 or EmploymentStatus = 2 or EmploymentStatus = 4 or EmploymentStatus = 5", FillField: "HHWorkers",  DefaultValue: 0})
-    o = null*/
-    
-    // Create Expressions on output HH for tabulations
-    specs = null
-    specs = {{Fields: {"HH_siz1", "HH_siz2", "HH_siz3", "HH_siz4"}, MatchingField: "HHSize", Levels: {1,2,3,4}},
-             {Fields: {"HH_wrk0", "HH_wrk1", "HH_wrk2", "HH_wrk3"},     MatchingField: "NumberWorkers", Levels: {0,1,2,3}},
-             {Fields: {"HH_incl", "HH_incml", "HH_incmh", "HH_inch"},   MatchingField: "IncomeCategory", Levels: {1,2,3,4}}
-             }
-    aggflds = RunMacro("Create Output HH Expressions", vw_hhM, specs)
-    aggflds = aggflds + {{"HHSize", "sum",},
-                         {"HHAdultsUnder65", "sum",},
-                         {"HHKids", "sum",},
-                         {"HHSeniors", "sum",},
-                         {"HHWorkers", "sum",},
-                         {"HHNWAdults", "sum",}} // For HH_Pop and number of adults, kids, seniors and workers
-
-    // Aggregate HH Data
-    vw_agg1 = AggregateTable("HHTotals", vw_hhM + "|", "MEM", "Agg1", "ZoneID", aggflds, null)
-    ExportView(vw_agg1 + "|", "FFB", outFile,,)
-    CloseView(vw_agg1)
-
-    // Change field name in final tabulation file
-    obj = CreateObject("AddTables", {TableName: outFile})
-    vw = obj.TableView
-    modify = CreateObject("CC.ModifyTableOperation", vw)
-    modify.ChangeField("HHSize", {Name: "HH_Pop"})
-    modify.ChangeField("HHAdultsUnder65", {Name: "AdultsUnder65"})
-    modify.ChangeField("HHKids", {Name: "Kids"})
-    modify.ChangeField("HHSeniors", {Name: "Seniors"})
-    modify.ChangeField("HHWorkers", {Name: "Workers"})
-    modify.ChangeField("HHNWAdults", {Name: "NWAdults"})
-    modify.Apply()
-    obj = null
-
-    // Export the HH In-Memory table back
-    ExportView(vw_hhM + "|", "FFB", Args.Households, hhFlds,)
-    CloseView(vw_hhM)
-    CloseView(vw_perM)
-endMacro
-
-
-// Generates formula fields for tabulations
-Macro "Create Output HH Expressions"(vw_hhM, specs)
-    aggflds = null
-    for spec in specs do
-        flds = spec.Fields
-        keyFld = spec.MatchingField
-        bounds = spec.Levels
-        nClasses = flds.length
-        for i = 1 to nClasses - 1 do
-            CreateExpression(vw_hhM, flds[i], "if " + keyFld + " = " + String(bounds[i]) + " then 1 else 0",)
-            aggflds = aggflds + {{flds[i], "sum",}}
-        end
-        CreateExpression(vw_hhM, flds[nClasses], "if " + keyFld + " >= " + String(bounds[nClasses]) + " then 1 else 0",)
-        aggflds = aggflds + {{flds[nClasses], "sum",}}
+    // Vehicle Availability
+    vProbVeh = Vector(nUniv, "Double",)
+    vProbWrk = Vector(nUniv, "Double",)
+    // Get Prob Vector First
+    for i = 1 to arrAge.length do
+        age = arrAge[i]
+        probVeh = ageChars.[Vehicle Probability][i]
+        probWrk = ageChars.[Worker Probability][i]
+        vProbVeh = if vecsDist.Age = age then probVeh else vProbVeh
+        vProbWrk = if vecsDist.Age = age then probWrk else vProbWrk 
     end
-    Return(aggflds)
+
+    SetRandomSeed(42*nUniv + 3)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.Vehicles = if vRand <= vProbVeh then 1 else 0
+    vecsDist.License = if vRand <= vProbVeh then 1 else 2
+
+    // Worker Category (PartTime or NonWorker)
+    SetRandomSeed(42*nUniv + 4)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.WorkerCategory = if vRand <= vProbWrk then 2 else null
+    vecsDist.WorkDays = if vecsDist.WorkerCategory = 2 then 3 else null
+    
+    SetRandomSeed(42*nUniv + 5)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.WorkAttendance = if vecsDist.WorkerCategory = 2 and vRand <= 0.6 then 1
+                              else if vecsDist.WorkerCategory = 2 then 0
+                              else null
+
+    // Work Industry (One of Service or Retail)
+    SetRandomSeed(42*nUniv + 6)
+    SvcPct = Args.ServiceEmpPct
+    RetPct = 100 - SvcPct
+    params.weight = {SvcPct, RetPct}
+    params.population = {8, 5}
+    vecsDist.IndustryCategory = RandSamples(nUniv, "Discrete", params)   // Note only generating enough records for the workers
+    vecsDist.IndustryCategory = if vecsDist.WorkerCategory = 2 then vecsDist.IndustryCategory else 10
+    vecsDist.WorkIndustry = if vecsDist.IndustryCategory = 8 then 9 
+                            else if vecsDist.IndustryCategory = 10 then 12
+                            else vecsDist.IndustryCategory
+
+    Return(vecsDist)
 endMacro

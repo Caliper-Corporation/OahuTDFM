@@ -22,10 +22,17 @@ endMacro
 
 
 Macro "SubTour Frequency"(Args)
+    objT = CreateObject("Table", Args.MandatoryTours)
+    spec = {ToursView: objT.GetView()}
+    RunMacro("Eval Sub Tour Choice", Args, spec)
+    Return(true)
+endMacro
+
+
+Macro "Eval Sub Tour Choice"(Args, spec)
     // Join Tours to PersonHH
     abm = RunMacro("Get ABM Manager", Args)
-    objT = CreateObject("Table", Args.MandatoryTours)
-    vwT = objT.GetView()
+    vwT = spec.ToursView
     vwJ = JoinViews("TourData", GetFieldFullSpec(vwT, "PerID"), GetFieldFullSpec(abm.PersonHHView, abm.PersonID), )
 
     filter = "TourPurpose = 'Work' or TourPurpose = 'Univ'"
@@ -46,10 +53,8 @@ Macro "SubTour Frequency"(Args)
     Args.[SubTour Choice Spec] = CopyArray(ret)
     obj = null
 
-    CloseView(vwJ)
-
-    ret_value = 1
-    Return(true)
+    if spec.LeaveDataOpen = null then 
+        CloseView(vwJ)
 endMacro
 
 
@@ -96,9 +101,10 @@ endMacro
 
 
 Macro "SubTour Duration"(Args)
-    Opts = {ModelName: "Activity Duration of Work/Univ Based SubTour",
+    objT = CreateObject("Table", Args.MandatoryTours)
+    Opts = {ModelName: "SubTourDuration",
             ModelFile: "SubTourDuration.mdl",
-            PrimaryView: "TourData",
+            ToursView: objT.GetView(),
             Filter: "SubTour = 1",
             OrigField: "Destination",
             DestField: "SubTourTAZ",
@@ -120,9 +126,11 @@ Macro "SubTour StartTime"(Args)
     altSpec = Args.SubTourStartAlts
     availSpec = RunMacro("Get SubTour St Avails", altSpec)
 
+    objT = CreateObject("Table", Args.MandatoryTours)
     // Run Start Time model
-    Opts = {ModelName: "Activity Start Time of Work Based Tour",
+    Opts = {ModelName: "SubTourStartTime",
             ModelFile: "SubTourStartTime.mdl",
+            ToursView: objT.GetView(),
             Filter: "SubTour = 1",
             OrigField: "Destination",
             DestField: "SubTourTAZ",
@@ -150,8 +158,7 @@ Macro "Subtour Activity Time"(Args, Opts)
 
     // Join Tours to PersonHH
     abm = RunMacro("Get ABM Manager", Args)
-    objT = CreateObject("Table", Args.MandatoryTours)
-    vwT = objT.GetView()
+    vwT = Opts.ToursView
     vwJ = JoinViews("TourData", GetFieldFullSpec(vwT, "PerID"), GetFieldFullSpec(abm.PersonHHView, abm.PersonID), )
 
     // Get Utility Options
@@ -182,6 +189,7 @@ Macro "Subtour Activity Time"(Args, Opts)
     // Simulate time after choice of interval is made
     simFld = Opts.SimulatedTimeField
     if simFld <> null then do
+        objT = CreateObject("Table", Opts.ChoiceTable)
         n = objT.SelectByQuery({Query: filter, SetName: "_Sel"})
         if n > 0 then do
             // Simulate duration in minutes for duration choice predicted above
@@ -195,10 +203,8 @@ Macro "Subtour Activity Time"(Args, Opts)
         end
     end
 
-    if spec.LeaveDataOpen = null then do
+    if Opts.LeaveDataOpen = null then
         CloseView(vwJ)
-        objT = null
-    end
 endMacro
 
 

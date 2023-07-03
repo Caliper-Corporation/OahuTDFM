@@ -176,8 +176,8 @@ Macro "Write Tours Table"(spec)
         fld = item[1]
         vecsOut.(fld) = a2v(data.(fld))
     end
-    vecsOut.AssignForwardHalf = if vecsOut.ForwardMode = 'Carpool' and vecsOut.TourPurpose = 'School' then 0 else 1
-    vecsOut.AssignReturnHalf = if vecsOut.ReturnMode = 'Carpool' and vecsOut.TourPurpose = 'School' then 0 else 1
+    vecsOut.AssignForwardHalf = if vecsOut.ForwardMode = 'Carpool' and Lower(vecsOut.TourPurpose) = 'school' then 0 else 1
+    vecsOut.AssignReturnHalf = if vecsOut.ReturnMode = 'Carpool' and Lower(vecsOut.TourPurpose) = 'school' then 0 else 1
     SetDataVectors(vwOut + "|", vecsOut,)
 
     // Fill Mandatory Tour No field
@@ -238,17 +238,21 @@ Macro "Create Empty Tour File"(spec)
             {"DepPickup2", "Integer", 12, null, "No"},
             {"StopsChoice", "String", 3, null, "No"},
             {"NForwardStops", "Short", 2, null, "No"},
-            {"NReturnStops", "Short", 2, null, "No"},
             {"StopForwardTAZ", "Integer", 12, null, "No"},
-            {"StopReturnTAZ", "Integer", 12, null, "No"},
             {"IsStopBeforeDropoffs", "Short", 2, null, "No"},
-            {"IsStopBeforePickups", "Short", 2, null, "No"},
             {"ForwardStopDeltaTT", "Real", 12, 2, "No"},
-            {"ReturnStopDeltaTT", "Real", 12, 2, "No"},
             {"ForwardStopDurChoice", "String", 12,, "No"},
             {"ForwardStopDuration", "Real", 12, 2, "No"},
+            {"TimeToStopF", "Real", 12, 2, "No"},
+            {"TimeFromStopF", "Real", 12, 2, "No"},
+            {"NReturnStops", "Short", 2, null, "No"},
+            {"StopReturnTAZ", "Integer", 12, null, "No"},
+            {"IsStopBeforePickups", "Short", 2, null, "No"},
+            {"ReturnStopDeltaTT", "Real", 12, 2, "No"},
             {"ReturnStopDurChoice", "String", 12,, "No"},
             {"ReturnStopDuration", "Real", 12, 2, "No"},
+            {"TimeToStopR", "Real", 12, 2, "No"},
+            {"TimeFromStopR", "Real", 12, 2, "No"},
             {"NumSubTours", "Short", 2, null, "No"},
             {"ModifyRecforDropoff", "Short", 2, null, "No"},
             {"ModifyRecforPickup", "Short", 2, null, "No"},
@@ -289,4 +293,791 @@ Macro "Append Arrays"(arrs, arrsOut)
             end
         end        
     end
+endMacro
+
+
+/************************** Trip file creation macros ****************************************
+/**********************************************************************************
+/*
+    Creates mandatory trip file from mandatory tour file.
+    Mandatory trips are created from mandatory tours.
+    Process 4 sets of tours and two directions (Forward or Return) for each set.
+    - Tours without PUDO and without intermediate stops
+    - Tours with PUDO but no intermediate stops
+    - Tours without PUDO but with intermediate stops
+    - Tours with PUDO and intermediate stops with two sub-cases
+        - Stop before PUDO
+        - Stop after PUDO
+*/
+Macro "Create Mandatory Trip File"(Args)
+    // This requires a mandatory tour file
+    tourFile = Args.MandatoryTours
+    if !GetFileInfo(tourFile) then
+        Throw("Please run the step to create the mandatory tour file before creating a trip file")
+
+    vw = OpenTable("Tours", "FFB", {tourFile})
+    vwT = ExportView(vw + "|", "MEM", "ToursMem",,)
+    CloseView(vw)
+
+    dirs = {"Forward", "Return"}
+    tfArr = {0, 1}
+    arrsOut = null
+    for dir in dirs do
+        spec = {ToursView: vwT, Direction: dir}
+        for x in tfArr do
+            spec.HasPUDO = x
+            for y in tfArr do
+                spec.HasStops = y
+                arrs = RunMacro("Extract Trips", spec)
+                RunMacro("Append Arrays", arrs, &arrsOut) 
+            end
+        end
+        arrs = RunMacro("Extract Subtour Trip", Args, spec)
+        RunMacro("Append Arrays", arrs, &arrsOut)
+    end
+
+    vwTemp = RunMacro("Write Trips Table", {Data: arrsOut, CarpoolOccupancy: Args.WorkCarpoolOccupancy})
+
+    // Export to final table
+    exportOpts = {"Row Order": {{"TripID", "Ascending"}} }
+    ExportView(vwTemp + "|", "FFB", Args.MandatoryTrips,, exportOpts)
+    CloseView(vwTemp)
+    CloseView(vwT)
+    Return(1)
+endMacro
+
+
+/*
+    The code that processes the trips from the tours file.
+    Records from tour file selected by:
+     - Direction
+     - Whether or not tours have PUDO stops
+     - Whether or not tours have intermediate stops
+*/
+Macro "Extract Trips"(spec)
+    hasPudo = spec.HasPUDO
+    hasStops = spec.HasStops
+
+    opts = {ToursView: spec.ToursView, Direction: spec.Direction}
+    arrs = null
+    // No PUDO and no stops
+    if !hasPudo and !hasStops then                      // No PUDO and no stops
+        arrs = RunMacro("Process Direct Tours", opts)
+    else if hasPudo and !hasStops then                  // PUDO but no stops.
+        arrs = RunMacro("Process Tours with Pudo", opts)
+    else if !hasPudo and hasStops then                  // Stops but no PUDO.
+        arrs = RunMacro("Process Tours with Stops", opts)
+    else                                                // Both PUDO and Stops. Will have only one stop and upto two PUDO stops.
+        arrs = RunMacro("Process Tours with Pudo and Stops", opts)
+    
+    Return(arrs)
+endMacro
+
+
+/* 
+    Extract trips on direct tours
+    Since dir is specified, generate only one trip per tour
+    # trips added = # selected tours
+*/
+Macro "Process Direct Tours"(opts)
+    vwT = opts.ToursView
+    dir = opts.Direction
+    if dir = 'Forward' then
+        pudoFld = "NumDropoffs"
+    else
+        pudoFld = "NumPickups"
+    stopsFld = "N" + dir + "Stops"
+    
+    // Select tours and get vectors
+    filter = printf("nz(%s) = 0 and nz(%s) = 0", {pudoFld, stopsFld})
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    {fields, specs} = GetFields(vwT,)
+    vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+    
+    // Get output arrays
+    ret = RunMacro("Get Direct Leg", vecs, dir)
+    Return(CopyArray(ret))
+endMacro
+
+
+/* 
+    Extract trips from tours with PUDO stops but no intermediate stops
+    - Maximum of three PUDO stops on forward or return leg
+    - Maximum of 4 trips per forward/return leg
+      # Trips = NToursWithPUDO * (Number PUDO stops + 1)
+*/
+Macro "Process Tours with Pudo"(opts)
+    vwT = opts.ToursView
+    dir = opts.Direction
+    if dir = 'Forward' then
+        pudoFld = "NumDropoffs"
+    else
+        pudoFld = "NumPickups"
+    stopsFld = "N" + dir + "Stops"
+    
+    // Trip records for Home/Dest to first PUDO stop
+    filter = printf("%s > 0 and nz(%s) = 0 and Lower(TourPurpose) <> 'pickup'", {pudoFld, stopsFld})
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    {fields, specs} = GetFields(vwT,)
+    vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+    
+    ret = RunMacro("Get First PUDO Leg", vecs, dir)
+
+    // Trip records for last PUDO stop to Dest/Home
+    filter = printf("%s > 0 and nz(%s) = 0 and Lower(TourPurpose) <> 'dropoff'", {pudoFld, stopsFld})
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    {fields, specs} = GetFields(vwT,)
+    vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+
+    ret1 = RunMacro("Get Last PUDO Leg", vecs, dir)
+    RunMacro("Append Arrays", ret1, &ret)
+
+    // Trips for intermediate PUDO stops
+    stops = {2}
+    for stopNo in stops do
+        filter = printf("%s >= %lu and nz(%s) = 0", {pudoFld, stopNo, stopsFld})
+        n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+        if n > 0 then do
+            vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+            ret2 = RunMacro("Get Intermediate PUDO Leg", vecs, dir, stopNo)
+            RunMacro("Append Arrays", ret2, &ret)
+        end
+    end
+    Return(CopyArray(ret))
+endMacro
+
+
+Macro "Process Tours with Stops"(opts)
+    vwT = opts.ToursView
+    dir = opts.Direction
+    if dir = 'Forward' then
+        pudoFld = "NumDropoffs"
+    else
+        pudoFld = "NumPickups"
+    stopsFld = "N" + dir + "Stops"
+    
+    filter = printf("nz(%s) = 0 and %s > 0", {pudoFld, stopsFld})
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    {fields, specs} = GetFields(vwT,)
+    vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+    
+    // Trip records for Home/Dest to first stop
+    ret = RunMacro("Get First Stop Leg", vecs, dir)
+
+    // Trip records for last PUDO stop to last stop
+    ret1 = RunMacro("Get Last Stop Leg", vecs, dir)
+    RunMacro("Append Arrays", ret1, &ret)
+
+    // Trips for intermediate stops
+    /*stopNo = 2
+    filter = printf("nz(%s) = 0 and %s >= %lu", {pudoFld, stopsFld, stopNo})
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    if n > 0 then do
+        vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+        ret2 = RunMacro("Get Intermediate Stop Leg", vecs, dir, stopNo)
+        RunMacro("Append Arrays", ret2, &ret)
+    end*/
+    
+    Return(CopyArray(ret))
+endMacro
+
+
+Macro "Process Tours with Pudo and Stops"(opts)
+    vwT = opts.ToursView
+    {fields, specs} = GetFields(vwT,)
+    dir = opts.Direction
+    if dir = 'Forward' then do
+        pudoFld = "NumDropoffs"
+        flagFld = "IsStopBeforeDropoffs"
+    end
+    else do
+        pudoFld = "NumPickups"
+        flagFld = "IsStopBeforePickups"
+    end
+    stopsFld = "N" + dir + "Stops"
+    
+    // ********** Case 1: Stops before PUDO
+    filter = printf("%s > 0 and %s > 0 and %s = 1", {pudoFld, stopsFld, flagFld})
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    if n > 0 then do
+        vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+        // Trip from origin to stop
+        ret = RunMacro("Get First Stop Leg", vecs, dir)
+
+        // Trip from stop to pudo
+        ret1 = RunMacro("Get Stop to PUDO Leg", vecs, dir)
+        RunMacro("Append Arrays", ret1, &ret)
+
+        // Trip from pudo to dest
+        ret2 = RunMacro("Get Last PUDO Leg", vecs, dir)
+        RunMacro("Append Arrays", ret2, &ret)
+    end
+
+    // ********** Case 2: Stops after PUDO
+    filter = printf("%s > 0 and %s > 0 and %s = 0", {pudoFld, stopsFld, flagFld})
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    if n > 0 then do
+        vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+        // Trip from origin to pudo
+        ret3 = RunMacro("Get First PUDO Leg", vecs, dir)
+        RunMacro("Append Arrays", ret3, &ret)
+
+        // Trip from pudo to stop
+        ret4 = RunMacro("Get PUDO to Stop Leg", vecs, dir)
+        RunMacro("Append Arrays", ret4, &ret)
+
+        // Trip from stop to dest
+        ret5 = RunMacro("Get Last Stop Leg", vecs, dir)
+        RunMacro("Append Arrays", ret5, &ret)
+    end
+    
+    // Trips for intermediate PUDO stops (for case where there are two PUDO stops)
+    stopNo = 2
+    filter = printf("%s >= %lu and %s > 0", {pudoFld, stopNo, stopsFld})
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    if n > 0 then do
+        vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+        ret6 = RunMacro("Get Intermediate PUDO Leg", vecs, dir, stopNo)
+        RunMacro("Append Arrays", ret6, &ret)
+    end
+
+    Return(CopyArray(ret))
+endMacro
+
+
+Macro "Get Basic Trip Info"(vecs, dir)
+    n = vecs.TourID.length
+    ret = null
+    ret.TourID = v2a(vecs.TourID)
+    ret.PerID = v2a(vecs.PerID)
+    ret.HID = v2a(vecs.HID)
+    ret.HTAZ = v2a(vecs.HTAZ)
+    ret.TourType = v2a(vecs.TourType)
+    ret.TourPurpose = v2a(vecs.TourPurpose)
+    ret.Direction = v2a(Vector(n, "String", {Constant: left(dir, 1)}))
+    ret.Assign = v2a(vecs.("Assign" + dir + "Half"))
+    ret.TOD = v2a(vecs.("TOD" + dir))
+    Return(ret)
+endMacro
+
+
+Macro "Get Direct Leg"(vecs, dir)
+    n = vecs.TourID.length
+    vHome = Vector(n, "String", {Constant: 'Home'})
+    vLegNo = Vector(n, "Short", {Constant: 1})
+    if dir = 'Forward' then do
+        vOPurp = vHome
+        vDPurp = vecs.TourPurpose
+        vOrig = vecs.Origin
+        vDest = vecs.Destination
+        vOrigDep = vecs.TourStartTime
+        vDestArr = vecs.DestArrTime
+        vDestDep = if Lower(vecs.TourPurpose) = 'pickup' then vecs.DepPickup1 else vecs.DestDepTime // First leg of a pickup only tour
+    end
+    else do
+        vOPurp = vecs.TourPurpose
+        vDPurp = vHome
+        vOrig = vecs.Destination
+        vDest = vecs.Origin
+        vOrigDep = vecs.DestDepTime
+        vDestArr = vecs.TourEndTime
+        vDestDep = Vector(n, "Long",)
+    end
+    modeFld = dir + "Mode"
+    modeCodeFld = dir + "ModeCode"
+
+    vTripPurp = if Lower(vecs.TourPurpose) = 'dropoff' or Lower(vecs.TourPurpose) = 'pickup' then
+                    'HBO'
+                else
+                    'HB' + vecs.TourPurpose
+    
+    // Get output arrays
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vOrig)
+    retArr.Destination = v2a(vDest)
+    retArr.ModeCode = v2a(vecs.(modeCodeFld))
+    retArr.Mode = v2a(vecs.(modeFld))
+    retArr.TripPurpose = v2a(vTripPurp) // e.g. HBWork
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.LegNo = v2a(vLegNo)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Get First PUDO Leg"(vecs, dir)
+    n = vecs.TourID.length
+    vLegNo = Vector(n, "Short", {Constant: 1})
+    if dir = "Forward" then do
+        vOrig = vecs.Origin
+        vModeCode = Vector(n, "Short", {Constant: 2})
+        vMode = Vector(n, "String", {Constant: "Carpool"})
+        vOPurp = Vector(n, "String", {Constant: "Home"})
+        vDPurp = Vector(n, "String", {Constant: "DropOff"})
+        vTPurp = Vector(n, "String", {Constant: "HBO"})
+        vPudoTAZ = vecs.DropoffTAZ1
+        vOrigDep = vecs.TourStartTime
+        vDestArr = vecs.ArrDropOff1
+        vDestDep = vecs.DepDropOff1
+    end
+    else do
+        vOrig = vecs.Destination
+        vModeCode = Vector(n, "Short", {Constant: 1})
+        vMode = Vector(n, "String", {Constant: "DriveAlone"})
+        vOPurp = vecs.TourPurpose
+        vDPurp = Vector(n, "String", {Constant: "PickUp"})
+        vTPurp = Vector(n, "String", {Constant: "NHBWork"})
+        vPudoTAZ = vecs.PickupTAZ1
+        vOrigDep = vecs.DestDepTime
+        vDestArr = vecs.ArrPickUp1
+        vDestDep = vecs.DepPickUp1
+    end
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vOrig)
+    retArr.Destination = v2a(vPudoTAZ)
+    retArr.ModeCode = v2a(vModeCode)
+    retArr.Mode = v2a(vMode)
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vLegNo)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Get Last PUDO Leg"(vecs, dir)
+    n = vecs.TourID.length
+    if dir = "Forward" then do
+        vDest = vecs.Destination
+        vModeCode = Vector(n, "Short", {Constant: 1})
+        vMode = Vector(n, "String", {Constant: "DriveAlone"})
+        vOPurp = Vector(n, "String", {Constant: "DropOff"})
+        vDPurp = vecs.TourPurpose
+        vTPurp = Vector(n, "String", {Constant: "NHBWork"})
+        vPudoTAZ1 = vecs.DropoffTAZ1
+        vPudoTAZ2 = vecs.DropoffTAZ2
+        vPudo = nz(vecs.NumDropOffs)
+        vStops = nz(vecs.NForwardStops)
+        vOrigDep = if vPudoTAZ2 <> null then vecs.DepDropoff2 else vecs.DepDropoff1
+        vDestArr = vecs.DestArrTime
+        vDestDep = vecs.DestDepTime
+    end
+    else do
+        vDest = vecs.Origin
+        vModeCode = Vector(n, "Short", {Constant: 2})
+        vMode = Vector(n, "String", {Constant: "Carpool"})
+        vOPurp = Vector(n, "String", {Constant: "PickUp"})
+        vDPurp = Vector(n, "String", {Constant: "Home"})
+        vTPurp = Vector(n, "String", {Constant: "HBO"})
+        vPudoTAZ1 = vecs.PickupTAZ1
+        vPudoTAZ2 = vecs.PickupTAZ2
+        vPudo = nz(vecs.NumPickups)
+        vStops = nz(vecs.NReturnStops)
+        vOrigDep = if vPudoTAZ2 <> null then vecs.DepPickUp2 else vecs.DepPickUp1
+        vDestArr = vecs.TourEndTime
+        vDestDep = Vector(n, "Long",)
+    end
+    vLastPUDO = if vPudoTAZ2 <> null then vPudoTAZ2 else vPudoTAZ1
+    vLegNo = if Lower(vecs.TourPurpose) = 'pickup' then vPudo else vPudo + vStops + 1 // Because the first pickup stop is already the main destination
+
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vLastPUDO)
+    retArr.Destination = v2a(vDest)
+    retArr.ModeCode = v2a(vModeCode)
+    retArr.Mode = v2a(vMode)
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vLegNo)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Get Intermediate PUDO Leg"(vecs, dir, stopNo)
+    n = vecs.TourID.length
+    vModeCode = Vector(n, "Short", {Constant: 2})
+    vMode = Vector(n, "String", {Constant: "Carpool"})
+    vTPurp = Vector(n, "String", {Constant: "NHBO"})
+    if dir = "Forward" then do
+        oFld = "DropoffTAZ" + String(stopNo - 1)
+        dFld = "DropoffTAZ" + String(stopNo)
+        vPurp = Vector(n, "String", {Constant: "DropOff"})
+        vFlag = nz(vecs.IsStopBeforeDropoffs)
+        vOrigDep = vecs.("DepDropOff" + String(stopNo - 1))
+        vDestArr = vecs.("ArrDropOff" + String(stopNo))
+        vDestDep = vecs.("DepDropOff" + String(stopNo))
+    end
+    else do
+        oFld = "PickupTAZ" + String(stopNo - 1)
+        dFld = "PickupTAZ" + String(stopNo)
+        vPurp = Vector(n, "String", {Constant: "PickUp"})
+        vFlag = nz(vecs.IsStopBeforePickups)
+        vOrigDep = vecs.("DepPickUp" + String(stopNo - 1))
+        vDestArr = vecs.("ArrPickUp" + String(stopNo))
+        vDestDep = vecs.("DepPickUp" + String(stopNo))
+    end
+    vLegNo = if Lower(vecs.TourPurpose) = 'pickup' then stopNo - 1    // Because the first pickup stop is already the main destination
+             else vFlag + stopNo
+    
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vecs.(oFld))
+    retArr.Destination = v2a(vecs.(dFld))
+    retArr.ModeCode = v2a(vModeCode)
+    retArr.Mode = v2a(vMode)
+    retArr.OrigPurpose = v2a(vPurp)
+    retArr.DestPurpose = v2a(vPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vLegNo)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Get First Stop Leg"(vecs, dir)
+    n = vecs.TourID.length
+    modeFld = dir + "Mode"
+    modeCodeFld = dir + "ModeCode"
+    stopTAZFld = "Stop" + dir + "TAZ"
+    vLegNo = Vector(n, "Short", {Constant: 1})
+    if dir = "Forward" then do
+        vOrig = vecs.Origin
+        vOPurp = Vector(n, "String", {Constant: "Home"})
+        vDPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+        vTPurp = Vector(n, "String", {Constant: "HBO"})
+        vOrigDep = vecs.TourStartTime
+        vDestArr = vOrigDep + vecs.TimeToStopF
+        vDestDep = vDestArr + vecs.ForwardStopDuration
+    end
+    else do
+        vOrig = vecs.Destination
+        vOPurp = vecs.TourPurpose
+        vDPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+        vTPurp = Vector(n, "String", {Constant: "NHBWork"})
+        vOrigDep = vecs.DestDepTime
+        vDestArr = vOrigDep + vecs.TimeToStopR
+        vDestDep = vDestArr+ vecs.ReturnStopDuration
+    end
+
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vOrig)
+    retArr.Destination = v2a(vecs.(stopTAZFld))
+    retArr.ModeCode = v2a(vecs.(modeCodeFld))
+    retArr.Mode = v2a(vecs.(modeFld))
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vLegNo)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Get Last Stop Leg"(vecs, dir)
+    n = vecs.TourID.length
+    modeFld = dir + "Mode"
+    modeCodeFld = dir + "ModeCode"
+    vMode = vecs.(modeFld)
+    vModeCode = vecs.(modeCodeFld)
+    if dir = "Forward" then do
+        vDest = vecs.Destination
+        vOPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+        vDPurp = vecs.TourPurpose
+        vTPurp = Vector(n, "String", {Constant: "NHBWork"})
+        vStopTAZ1 = vecs.StopForwardTAZ
+        vStopTAZ2 = vecs.StopForwardTAZ2
+        vPudo = nz(vecs.NumDropoffs)
+        vStops = nz(vecs.NForwardStops)
+        vOrigDep = vecs.DestArrTime - vecs.TimeFromStopF
+        vDestArr = vecs.DestArrTime
+        vDestDep = vecs.DestDepTime
+    end
+    else do
+        vDest = vecs.Origin
+        vOPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+        vDPurp = Vector(n, "String", {Constant: "Home"})
+        vTPurp = Vector(n, "String", {Constant: "HBO"})
+        vStopTAZ1 = vecs.StopReturnTAZ
+        vStopTAZ2 = vecs.StopReturnTAZ2
+        vPudo = nz(vecs.NumPickups)
+        vStops = nz(vecs.NReturnStops)
+        vMode = if vPudo > 0 then "Carpool" else vMode // Last stop leg with kids picked up from school
+        vModeCode = if vPudo > 0 then 2 else vModeCode
+        vOrigDep = vecs.TourEndTime - vecs.TimeFromStopR
+        vDestArr = vecs.TourEndTime
+        vDestDep = Vector(n, "Long",)
+    end
+    vLastStop = if vStopTAZ2 <> null then vStopTAZ2 else vStopTAZ1
+
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vLastStop)
+    retArr.Destination = v2a(vDest)
+    retArr.ModeCode = v2a(vModeCode)
+    retArr.Mode = v2a(vMode)
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vPudo + vStops + 1)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+/*
+Macro "Get Intermediate Stop Leg"(vecs, dir, stopNo)
+    n = vecs.TourID.length
+    modeFld = dir + "Mode"
+    modeCodeFld = dir + "ModeCode"
+    vLegNo = Vector(n, "Short", {Constant: 2})
+    if dir = "Forward" then do
+        oFld = "StopForwardTAZ" + String(stopNo - 1)
+        dFld = "StopForwardTAZ" + String(stopNo)
+    end
+    else do
+        oFld = "StopReturnTAZ" + String(stopNo - 1)
+        dFld = "StopReturnTAZ" + String(stopNo)
+    end
+    vPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+    vTPurp = Vector(n, "String", {Constant: "NHBO"})
+    
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vecs.(oFld))
+    retArr.Destination = v2a(vecs.(dFld))
+    retArr.ModeCode = v2a(vecs.(modeCodeFld))
+    retArr.Mode = v2a(vecs.(modeFld))
+    retArr.OrigPurpose = v2a(vPurp)
+    retArr.DestPurpose = v2a(vPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vLegNo)
+    Return(CopyArray(retArr))
+endMacro
+*/
+
+Macro "Get Stop to PUDO Leg"(vecs, dir, stopNo)
+    n = vecs.TourID.length
+    modeFld = dir + "Mode"
+    modeCodeFld = dir + "ModeCode"
+    vLegNo = Vector(n, "Short", {Constant: 2})
+    if dir = "Forward" then do
+        vDPurp = Vector(n, "String", {Constant: "DropOff"})
+        vMode = Vector(n, "String", {Constant: "Carpool"})
+        vModeCode = Vector(n, "Short", {Constant: 2})
+        vPudoTAZ = vecs.DropoffTAZ1
+        vOrigDep = vecs.ArrDropoff1 - vecs.TimeFromStopF
+        vDestArr = vecs.ArrDropoff1
+        vDestDep = vecs.DepDropoff1
+    end
+    else do
+        vDPurp = Vector(n, "String", {Constant: "PickUp"})
+        vMode = vecs.(modeFld)
+        vModeCode = vecs.(modeCodeFld)
+        vPudoTAZ = vecs.PickupTAZ1
+        vOrigDep = vecs.ArrPickup1 - vecs.TimeFromStopR
+        vDestArr = vecs.ArrPickup1
+        vDestDep = vecs.DepPickup1
+    end
+    vPudo = if vPudoTAZ2 <> null then vPudoTAZ2 else vPudoTAZ1
+    vOPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+    vTPurp = Vector(n, "String", {Constant: "NHBO"})
+    vStopTAZ = vecs.("Stop" + dir + "TAZ")
+    
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vStopTAZ)
+    retArr.Destination = v2a(vPudoTAZ)
+    retArr.ModeCode = v2a(vModeCode)
+    retArr.Mode = v2a(vMode)
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vLegNo)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Get PUDO to Stop Leg"(vecs, dir, stopNo)
+    n = vecs.TourID.length
+    modeFld = dir + "Mode"
+    modeCodeFld = dir + "ModeCode"
+    if dir = "Forward" then do
+        vOPurp = Vector(n, "String", {Constant: "DropOff"})
+        vMode = vecs.(modeFld)
+        vModeCode = vecs.(modeCodeFld)
+        vPudoTAZ1 = vecs.DropoffTAZ1
+        vPudoTAZ2 = vecs.DropoffTAZ2
+        vPudo = nz(vecs.NumDropoffs)
+        vOrigDep = if vecs.NumDropoffs = 2 then vecs.DepDropoff2 else vecs.DepDropoff1
+        vDestArr = vOrigDep + vecs.TimeToStopF
+        vDestDep = vDestArr + vecs.ForwardStopDuration
+    end
+    else do
+        vOPurp = Vector(n, "String", {Constant: "PickUp"})
+        vMode = Vector(n, "String", {Constant: "Carpool"})
+        vModeCode = Vector(n, "Short", {Constant: 2})
+        vPudoTAZ1 = vecs.PickupTAZ1
+        vPudoTAZ2 = vecs.PickupTAZ2
+        vPudo = nz(vecs.NumPickups)
+        vOrigDep = if vecs.NumPickups = 2 then vecs.DepPickup2 else vecs.DepPickup1
+        vDestArr = vOrigDep + vecs.TimeToStopR
+        vDestDep = vDestArr + vecs.ReturnStopDuration
+    end
+    vPudoTAZ = if vPudoTAZ2 <> null then vPudoTAZ2 else vPudoTAZ1
+    vDPurp = Vector(n, "String", {Constant: "IntermediateStop"})
+    vTPurp = Vector(n, "String", {Constant: "NHBO"})
+    vStopTAZ = vecs.("Stop" + dir + "TAZ")
+    
+    retArr = RunMacro("Get Basic Trip Info", vecs, dir)
+    retArr.Origin = v2a(vPudoTAZ)
+    retArr.Destination = v2a(vStopTAZ)
+    retArr.ModeCode = v2a(vModeCode)
+    retArr.Mode = v2a(vMode)
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(vTPurp)
+    retArr.LegNo = v2a(vPudo + 1)
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Extract Subtour Trip"(Args, spec)
+    vwT = spec.ToursView
+    dir = spec.Direction
+    filter = "Subtour = 1"
+    SetView(vwT)
+    n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
+    {fields, specs} = GetFields(vwT,)
+    vecs = GetDataVectors(vwT + "|__Selection", fields, {OptArray: 1})
+    n = vecs.TourID.length
+    if n = 0 then
+        Throw("No SubTours Found. Check output tours data file.")
+    
+    if dir = 'Forward' then do
+        vOrig = vecs.Destination
+        vDest = vecs.SubTourTAZ
+        vOPurp = Vector(n, "String", {Constant: "Work"})
+        vDPurp = Vector(n, "String", {Constant: "Other"})
+        vOrigDep = vecs.SubTourStartTime
+        vDestArr = vOrigDep + vecs.SubTourForwardTT
+        vDestDep = vDestArr + vecs.SubTourActDuration
+    end
+    else do
+        vOrig = vecs.SubTourTAZ
+        vDest = vecs.Destination
+        vOPurp = Vector(n, "String", {Constant: "Other"})
+        vDPurp = Vector(n, "String", {Constant: "Work"})
+        vOrigDep = vecs.SubTourEndTime - vecs.SubTourReturnTT
+        vDestArr = vecs.SubTourEndTime
+        vDestDep = Vector(n, "Long",)
+    end
+
+    // Write subtour data
+    retArr = null
+    retArr.TourID = v2a(10000000 + vecs.TourID)
+    retArr.PerID = v2a(vecs.PerID)
+    retArr.HID = v2a(vecs.HID)
+    retArr.HTAZ = v2a(vecs.HTAZ)
+    retArr.TourType = v2a(Vector(n, "String", {Constant: "Mandatory"}))
+    retArr.TourPurpose = v2a(Vector(n, "String", {Constant: "SubTour"}))
+    retArr.Direction = v2a(Vector(n, "String", {Constant: left(dir, 1)}))
+    retArr.Assign = v2a(vecs.("Assign" + dir + "Half"))
+    retArr.Origin = v2a(vOrig)
+    retArr.Destination = v2a(vDest)
+    retArr.ModeCode = v2a(vecs.SubTourModeCode)
+    retArr.Mode = v2a(vecs.SubTourMode)
+    retArr.OrigPurpose = v2a(vOPurp)
+    retArr.DestPurpose = v2a(vDPurp)
+    retArr.TripPurpose = v2a(Vector(n, "String", {Constant: "NHBW"}))
+    retArr.LegNo = v2a(Vector(n, "Short", {"Constant": 1}))
+    retArr.OrigDep = v2a(vOrigDep)
+    retArr.DestArr = v2a(vDestArr)
+    retArr.DestDep = v2a(vDestDep)
+    
+    PeriodInfo = Args.TimePeriod
+    retArr.TOD = v2a(RunMacro("Get TOD Vector", vOrigDep, PeriodInfo))
+    Return(CopyArray(retArr))
+endMacro
+
+
+Macro "Write Trips Table"(spec)
+    data = spec.Data
+    nRecs = data[1][2].length
+    vwOut = RunMacro("Create Empty Trip File", {ViewName: "TempTrips", NRecords: nRecs})
+    
+    vecsOut = null
+    for item in data do
+        fld = item[1]
+        vecsOut.(fld) = a2v(data.(fld))
+    end
+    vecsOut.One = Vector(nRecs, "Short", {Constant: 1})
+    vecsOut.TripCount = if (vecsOut.Mode = 'Carpool' and vecsOut.OrigPurpose <> "DropOff" and vecsOut.OrigPurpose <> "PickUp" 
+                            and vecsOut.DestPurpose <> "DropOff" and vecsOut.DestPurpose <> "PickUp") then 
+                                vecsOut.Assign/spec.CarpoolOccupancy
+                        else if vecsOut.Mode = "autopass" then
+                                vecsOut.Assign/spec.CarpoolOccupancy
+                        else
+                                vecsOut.Assign
+    vecsOut.Period = if vecsOut.TOD = "AM" or vecsOut.TOD = "PM" then vecsOut.TOD else "OP"
+    SetDataVectors(vwOut + "|", vecsOut,)
+
+    // Write Trip ID field
+    vTripID = Vector(nRecs, "Long", {{"Sequence", 1, 1}})
+    order = {TourID: "Ascending", Direction: "Ascending", LegNo: "Ascending"}
+    SetDataVector(vwOut + "|", "TripID", vTripID, {SortOrder: order})
+    Return(vwOut)
+endMacro
+
+
+Macro "Create Empty Trip File"(spec)
+    flds = {{"TripID", "Integer", 12, null, "Yes"},
+            {"TourID", "Integer", 12, null, "Yes"},
+            {"HID", "Integer", 12, null, "Yes"},
+            {"PerID", "Integer", 12, null, "Yes"},
+            {"TourType", "String", 12, null, "No"},
+            {"TourPurpose", "String", 8, null, "Yes"},
+            {"HTAZ", "Integer", 12, null, "Yes"},
+            {"Direction", "String", 1, null, "No"},
+            {"LegNo", "Integer", 8, null, "No"},
+            {"OrigPurpose", "String", 18, null, "No"},
+            {"DestPurpose", "String", 18, null, "No"},
+            {"TripPurpose", "String", 12, null, "No"},
+            {"Origin", "Integer", 12, null, "Yes"},
+            {"Destination", "Integer", 12, null, "Yes"},
+            {"OrigDep", "Integer", 12, null, "No"},
+            {"DestArr", "Integer", 12, null, "No"},
+            {"DestDep", "Integer", 12, null, "No"},
+            {"TOD", "String", 2, null, "No"},
+            {"Period", "String", 2, null, "No"},
+            {"ModeCode", "Short", 2, null, "No"},
+            {"Mode", "String", 15, null, "No"},
+            {"Assign", "Short", 1, null, "No"},
+            {"One", "Tiny", 1, null, "No"},
+            {"TripCount", "Float", 12, 2, "No"}}
+    vwOut = CreateTable(spec.ViewName,, "MEM", flds)
+    if spec.NRecords > 0 then
+        AddRecords(vwOut,,, {{"Empty Records", spec.NRecords}})    
+    Return(vwOut)
 endMacro

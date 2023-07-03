@@ -319,7 +319,7 @@ Macro "Intermediate Stop DC"(Args, spec)
         obj.AddMatrixSource({SourceName: "DeltaDist", File: deltaDist, PersonBased: 1})
         obj.AddPrimarySpec({Name: "TourData", Filter: filter, OField: ODInfo.Origin})
         obj.AddUtility({UtilityFunction: util_fn, SubstituteStrings: {{"<Dir>", dir}}})
-        obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "TAZ"})
+        obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
         obj.AddSizeVariable({Name: "TAZData", Field: 'MandatoryStops_DCAttr'})
         obj.AddOutputSpec({ChoicesField: choiceFld})
         obj.RandomSeed = spec.RandomSeed
@@ -338,21 +338,18 @@ Macro "MandatoryStops Duration"(Args)
     
     objT = CreateObject("Table", Args.MandatoryTours)
     abm = RunMacro("Get ABM Manager", Args)
-    vwJ = JoinViews("ToursData", GetFieldFullSpec(objT.GetView(), "PerID"), GetFieldFullSpec(abm.PersonHHView, abm.PersonID), )
     for type in types do
         for dir in dirs do
             spec = null
             spec.Type = type
             spec.Direction = dir
-            spec.ToursView = vwJ
+            spec.ToursView = objT.GetView()
             spec.RandomSeed = 4099981 + 10*types.position(type) + dirs.position(dir)
             RunMacro("Mandatory Duration Choice", Args, spec)
             pbar.Step()
         end
     end
     pbar.Destroy()
-    CloseView(vwJ)
-    objT = null
     Return(true)
 endMacro
 
@@ -362,7 +359,9 @@ Macro "Mandatory Duration Choice"(Args, spec)
     dir = spec.Direction
     type = spec.Type
     filter = printf("N%sStops > 0", {dir})
-    vw = spec.ToursView
+    
+    abm = RunMacro("Get ABM Manager", Args)
+    vw = JoinViews("ToursData", GetFieldFullSpec(spec.ToursView, "PerID"), GetFieldFullSpec(abm.PersonHHView, abm.PersonID), )
 
     // Run Duration choice model
     tag = "Stops_" + type + "_" + dir
@@ -387,6 +386,9 @@ Macro "Mandatory Duration Choice"(Args, spec)
     n = SelectByQuery("__Selection", "several", "Select * where " + filter,)
     opt = {ViewSet: vw + "|__Selection", InputField: dir + "StopDurChoice", OutputField: dir + "StopDuration", AlternativeIntervalInMin: 1}
     RunMacro("Simulate Time", opt)
+
+    if spec.LeaveDataOpen = null then 
+        CloseView(vw)
 endMacro
 
 
@@ -418,6 +420,8 @@ Macro "MandatoryStops Scheduling"(Args)
         pbar.Step()
     end
     pbar.Destroy()
+
+    RunMacro("Fill Stop Travel Times", Args, spec)
 
     Return(true)
 endMacro
@@ -610,6 +614,87 @@ Macro "Mandatory Stops Postprocess"(spec)
 
     // Delete additional fields from the tours table
     obj.DropFields({FieldNames: {"PrevPID", "NextPID", "PrevTourEnd", "NextTourStart", "RemoveFStop", "RemoveRStop"}})
+endMacro
+
+
+
+Macro "Fill Stop Travel Times"(Args, spec)
+    toursObj = spec.ToursObj
+    vwT = toursObj.GetView()
+    
+    // **************************** Forward Stops ***********************************
+    qry = "NForwardStops > 0"
+    
+    //****************** Travel Time to Stop ***********************
+    // Travel time from the previous origin to the intermediate stop
+    // Create expressions for origin and departure time fields
+    expr = "if IsStopBeforeDropoffs = 1 or nz(NumDropoffs) = 0 then Origin " +
+           "else if NumDropoffs = 2 then DropoffTAZ2 else DropoffTAZ1"
+    orig = CreateExpression(vwT, "OFld", expr,)
+    
+    expr = "if IsStopBeforeDropoffs = 1 or nz(NumDropoffs) = 0 then TourStartTime " + 
+           "else if NumDropoffs = 2 then DepDropoff2 else DepDropoff1"
+    depTime = CreateExpression(vwT, "DepFld", expr,)
+    
+    fillSpec = {View: vwT, OField: orig, DField: "StopForwardTAZ", FillField: "TimeToStopF", 
+                Filter: qry, ModeField: "ForwardMode", DepTimeField: depTime}
+    RunMacro("Fill Travel Times", Args, fillSpec)
+    DestroyExpression(GetFieldFullSpec(vwT, orig))
+    DestroyExpression(GetFieldFullSpec(vwT, depTime))
+
+     //****************** Travel Time from Stop ***********************
+    // Travel time from intermediate stop to next destination
+    // Create expressions for origin and departure time fields
+    expr = "if IsStopBeforeDropoffs = 1 then DropoffTAZ1 else Destination"
+    dest = CreateExpression(vwT, "DFld", expr,)
+    
+    expr = "if IsStopBeforeDropoffs = 1 or nz(NumDropoffs) = 0 then TourStartTime + TimeToStopF + ForwardStopDuration " + 
+           "else if NumDropoffs = 2 then DepDropoff2 + TimeToStopF + ForwardStopDuration " + 
+           "else DepDropoff1 + TimeToStopF + ForwardStopDuration"
+    depTime = CreateExpression(vwT, "DepFld", expr,)
+    
+    fillSpec = {View: vwT, OField: "StopForwardTAZ", DField: dest, FillField: "TimeFromStopF", 
+                Filter: qry, ModeField: "ForwardMode", DepTimeField: depTime}
+    RunMacro("Fill Travel Times", Args, fillSpec)
+    DestroyExpression(GetFieldFullSpec(vwT, dest))
+    DestroyExpression(GetFieldFullSpec(vwT, depTime))
+
+    // **************************** Return Stops ***********************************
+    qry = "NReturnStops > 0"
+
+    //****************** Travel Time to Stop ***********************
+    // Travel time from the previous origin to the intermediate stop
+    // Create expressions for origin and departure time fields
+    expr = "if IsStopBeforePickups = 1 or nz(NumPickups) = 0 then Destination " +
+           "else if NumPickups = 2 then PickupTAZ2 else PickupTAZ1"
+    orig = CreateExpression(vwT, "OFld", expr,)
+    
+    expr = "if IsStopBeforePickups = 1 or nz(NumPickups) = 0 then DestDepTime " +
+           "else if NumPickups = 2 then DepPickup2 else DepPickup1"
+    depTime = CreateExpression(vwT, "DepFld", expr,)
+    
+    fillSpec = {View: vwT, OField: orig, DField: "StopReturnTAZ", FillField: "TimeToStopR", 
+                Filter: qry, ModeField: "ReturnMode", DepTimeField: depTime}
+    RunMacro("Fill Travel Times", Args, fillSpec)
+    DestroyExpression(GetFieldFullSpec(vwT, orig))
+    DestroyExpression(GetFieldFullSpec(vwT, depTime))
+
+     //****************** Travel Time from Stop ***********************
+    // Travel time from intermediate stop to next destination
+    // Create expressions for origin and departure time fields
+    expr = "if IsStopBeforePickups = 1 then PickupTAZ1 else Origin"
+    dest = CreateExpression(vwT, "DFld", expr,)
+    
+    expr = "if IsStopBeforePickups = 1 or nz(NumPickups) = 0 then DestDepTime + TimeToStopR + ReturnStopDuration " +
+           "else if NumPickups = 2 then DepPickup2 + TimeToStopR + ReturnStopDuration " +
+           "else DepPickup1 + TimeToStopR + ReturnStopDuration"
+    depTime = CreateExpression(vwT, "DepFld", expr,)
+    
+    fillSpec = {View: vwT, OField: "StopReturnTAZ", DField: dest, FillField: "TimeFromStopR", 
+                Filter: qry, ModeField: "ReturnMode", DepTimeField: depTime}
+    RunMacro("Fill Travel Times", Args, fillSpec)
+    DestroyExpression(GetFieldFullSpec(vwT, dest))
+    DestroyExpression(GetFieldFullSpec(vwT, depTime))
 endMacro
 
 
