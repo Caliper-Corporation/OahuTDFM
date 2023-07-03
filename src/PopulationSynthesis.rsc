@@ -2,7 +2,7 @@
 
 */
 
-Macro "PopulationSynthesis" (Args)
+Macro "PopulationSynthesis Oahu" (Args)
     RunMacro("DisaggregateSED", Args)
     RunMacro("Synthesize Population", Args)
     RunMacro("PopSynth Post Process", Args)

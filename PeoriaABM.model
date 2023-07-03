@@ -2,24 +2,27 @@
 Macro "PeoriaABM" (Args)
 Body:
     // model = FlowChart( { StartNodes } , { EndNodes } , Description)
-    model = FlowChart({"Population Synthesis"}, {Reports},)
-    
+    model = FlowChart({"Population Synthesis"},{null,"Reports"},)
+    //
     // Nodes
+    //
     // FlowChartNode(model,NodeName,MacroName,UI,Description)
-    
+    //
     FlowChartNode(model,"Population Synthesis",,,)
     FlowChartNode(model,"Preprocess and Build Networks",,,)
     FlowChartNode(model,"Skims and Accessibilities",,,)
     FlowChartNode(model,"ABM Core",,,)
-    FlowChartModel(model,"Supplementary Models",,,)
+    FlowChartNode(model,"Supplementary Models",,,)
     FlowChartNode(model,"Auto Assignments",,,)
     FlowChartNode(model,"Convergence",,,)
     FlowChartNode(model,"Public Transit Assignments",,,)
     FlowChartNode(model,"Reports",,,)
-    
+    FlowChartNode(model,"Oahu Steps",,,)
+    //
     // Links
+    //
     // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
-    
+    //
     FlowChartLink(model,"Population Synthesis","Preprocess and Build Networks",True,,)
     FlowChartLink(model,"Preprocess and Build Networks","Skims and Accessibilities",True,,)
     FlowChartLink(model,"Skims and Accessibilities","ABM Core",True,,)
@@ -29,7 +32,6 @@ Body:
     FlowChartLink(model,"Convergence","Skims and Accessibilities",2,,1)
     FlowChartLink(model,"Convergence","Public Transit Assignments",True,,)
     FlowChartLink(model,"Public Transit Assignments","Reports",True,,)
-
     Return(model)
 EndMacro
 
@@ -110,8 +112,8 @@ Macro "Skims and Accessibilities" (Args,Result)
 Data:
     InSections({"Accessibility|Mode Logsums|Mandatory",
                 "Accessibility|Destination Logsums|Auto",
-                "Accessibility|Destination Logsums|Non Motorized",
-                "Accessibility|Destination Logsums|Public Transport"})
+                    "Accessibility|Destination Logsums|Non Motorized",
+                    "Accessibility|Destination Logsums|Public Transport"})
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
     OutSections({"Skims|Motorized",
@@ -173,8 +175,8 @@ Macro "Mandatory Accessibility" (Args,Result)
 Data:
     InSections({"Accessibility|Mode Logsums|Mandatory",
                 "Accessibility|Destination Logsums|Auto",
-                "Accessibility|Destination Logsums|Non Motorized",
-                "Accessibility|Destination Logsums|Public Transport"})
+                    "Accessibility|Destination Logsums|Non Motorized",
+                    "Accessibility|Destination Logsums|Public Transport"})
     Out({ Args.[MandatoryModeAccessibility] })
     Out({ Args.[MandatoryDestAccessibility] })
 EndMacro
@@ -236,12 +238,12 @@ Macro "LongTermChoices" (Args,Result)
 Data:
     InSections({"Long Term Choices|Auto Ownership",
                 "Long Term Choices|Driver License",
-                "Long Term Choices|Mandatory Participation|Daycare Status",
-                "Long Term Choices|Mandatory Participation|School Status",
-                "Long Term Choices|Mandatory Participation|University Status",
-                "Long Term Choices|Worker Models|Remote Work",
-                "Long Term Choices|Worker Models|Work Attendance",
-                "Long Term Choices|Worker Models|Worker Category"})
+                    "Long Term Choices|Mandatory Participation|Daycare Status",
+                    "Long Term Choices|Mandatory Participation|School Status",
+                    "Long Term Choices|Mandatory Participation|University Status",
+                    "Long Term Choices|Worker Models|Remote Work",
+                    "Long Term Choices|Worker Models|Work Attendance",
+                    "Long Term Choices|Worker Models|Worker Category"})
     In({ Args.[WorkLocSize] })
     In({ Args.[WorkLocUtility] })
     In({ Args.[WorkSPFlag] })
@@ -283,10 +285,9 @@ EndMacro
 Macro "Tour Frequency" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"Work Tours Frequency",
-                        "Univ Tours Frequency"}},
-        {"Picture", "bmp\\report.bmp"},
-        {"PicturePosition", "CenterRight"}
+        {"MacroNames",{"Work Tours Frequency","Univ Tours Frequency"}},
+    {"Picture", "bmp\\report.bmp"},
+    {"PicturePosition", "CenterRight"}
     }
 Data:
     InSections({"MandatoryTours|Frequency|Work",
@@ -298,17 +299,17 @@ Macro "Activity Duration" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
         {"MacroNames",{"FullTime Work Act Dur",
-                       "PartTime Work Act Dur",
-                       "University Act Dur",
-                       "School Act Dur"}},
-        {"Picture", "bmp\\report.bmp"},
-        {"PicturePosition", "CenterRight"}
+                        "PartTime Work Act Dur",
+                        "University Act Dur",
+                        "School Act Dur"}},
+                    {"Picture", "bmp\\report.bmp"},
+                    {"PicturePosition", "CenterRight"}
     }
 Data:
     InSections({"MandatoryTours|Activity Duration|Full Time Workers",
                 "MandatoryTours|Activity Duration|Part Time Workers",
-                "MandatoryTours|Activity Duration|University",
-                "MandatoryTours|Activity Duration|School"})
+                    "MandatoryTours|Activity Duration|University",
+                    "MandatoryTours|Activity Duration|School"})
 EndMacro
 
 
@@ -316,41 +317,41 @@ Macro "Activity Start" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
         {"MacroNames",{"FullTime Work Start",
-                       "PartTime Work Start",
-                       "University Start",
-                       "School Start"}},
-        {"Picture", "bmp\\report.bmp"},
-        {"PicturePosition", "CenterRight"}
+                        "PartTime Work Start",
+                        "University Start",
+                        "School Start"}},
+                    {"Picture", "bmp\\report.bmp"},
+                    {"PicturePosition", "CenterRight"}
     }
 Data:
     InSections({"MandatoryTours|Activity Start Time|Full Time Workers",
                 "MandatoryTours|Activity Start Time|Part Time Workers",
-                "MandatoryTours|Activity Start Time|University",
-                "MandatoryTours|Activity Start Time|School"})
+                    "MandatoryTours|Activity Start Time|University",
+                    "MandatoryTours|Activity Start Time|School"})
 EndMacro
 
 
 Macro "Tour Mode" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"Mandatory Mode Choice"}},
+        {"MacroNames", {"Mandatory Mode Choice"}},
         {"Picture", "bmp\\planmodesplit_v3.bmp"},
         {"PicturePosition", "CenterRight"}
     }
 Data:
     InSections({"MandatoryTours|Tour Mode|Work|Modes",
                 "MandatoryTours|Tour Mode|Work|Utility",
-                "MandatoryTours|Tour Mode|University|Modes",
-                "MandatoryTours|Tour Mode|University|Utility",
-                "MandatoryTours|Tour Mode|School|Modes",
-                "MandatoryTours|Tour Mode|School|Utility"})
+                    "MandatoryTours|Tour Mode|University|Modes",
+                    "MandatoryTours|Tour Mode|University|Utility",
+                    "MandatoryTours|Tour Mode|School|Modes",
+                    "MandatoryTours|Tour Mode|School|Utility"})
 EndMacro
 
 
 Macro "Mandatory Tour Diary" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"Create Mandatory Tour File"}},
+        {"MacroNames", {"Create Mandatory Tour File"}},
         {"Picture", "bmp\\planreport_v3.bmp"},
         {"PicturePosition", "CenterRight"}
     }
@@ -387,7 +388,7 @@ EndMacro
 Macro "Stops Frequency" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"Mandatory Stops Frequency"}},
+        {"MacroNames", {"Mandatory Stops Frequency"}},
         {"Picture", "bmp\\report.bmp"},
         {"PicturePosition", "CenterRight"}
     }
@@ -400,7 +401,7 @@ EndMacro
 Macro "Stops Destination" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"MandatoryStops Destination"}},
+        {"MacroNames", {"MandatoryStops Destination"}},
         {"Picture", "bmp\\report.bmp"},
         {"PicturePosition", "CenterRight"}
     }
@@ -410,11 +411,10 @@ Data:
 EndMacro
 
 
-
 Macro "Stops Duration" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"MandatoryStops Duration"}},
+        {"MacroNames", {"MandatoryStops Duration"}},
         {"Picture", "bmp\\report.bmp"},
         {"PicturePosition", "CenterRight"}
     }
@@ -424,15 +424,13 @@ Data:
 EndMacro
 
 
-
 Macro "Stops Scheduling" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"MandatoryStops Scheduling"}},
+        {"MacroNames", {"MandatoryStops Scheduling"}},
         {"Picture", "bmp\\report.bmp"},
         {"PicturePosition", "CenterRight"}
     }
-Data:
 EndMacro
 
 
@@ -440,21 +438,21 @@ Macro "SubTour Models" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
         {"MacroNames",{"SubTour Setup",
-                       "SubTour Frequency",
-                       "SubTour Destination",
-                       "SubTour Duration",
-                       "SubTour StartTime",
-                       "SubTour Mode",
-                       "SubTour PostProcess"}},
-        {"Picture", "bmp\\report.bmp"},
-        {"PicturePosition", "CenterRight"}
+                        "SubTour Frequency",
+                        "SubTour Destination",
+                        "SubTour Duration",
+                        "SubTour StartTime",
+                        "SubTour Mode",
+                        "SubTour PostProcess"}},
+                    {"Picture", "bmp\\report.bmp"},
+                    {"PicturePosition", "CenterRight"}
     }
 Data:
     InSections({"SubTours|Frequency",
                 "SubTours|Destination",
                 "SubTours|Duration",
                 "SubTours|Start Time",
-                "SubTours|Mode"})
+                    "SubTours|Mode"})
 EndMacro
 
 
@@ -474,11 +472,13 @@ Body:
     Return(1)
 EndMacro
 
+
 Macro "Auto Assignments" (Args, Result)
 Body:
     ShowMessage("Auto Assignments: Not yet implemented")
     Return(1)
 EndMacro
+
 
 Macro "Public Transit Assignments" (Args, Result)
 Body:
@@ -486,11 +486,13 @@ Body:
     Return(1)
 EndMacro
 
+
 Macro "Reports" (Args, Result)
 Body:
     ShowMessage("Reports: Not yet implemented")
     Return(1)
 EndMacro
+
 
 /*
 Macro "Report.Population Synthesis" (Args,Result)
@@ -521,5 +523,14 @@ Body:
     Args.Iteration = Args.Iteration + 1
     Return(1)
     Return(retValue)
+EndMacro
+
+
+Macro "Oahu Steps" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Oahu Steps"}}
+    }
+    Return(True)
 EndMacro
 
