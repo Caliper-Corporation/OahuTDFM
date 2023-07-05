@@ -55,7 +55,7 @@ Macro "DisaggregateSED"(Args)
     // Fill PUMA5 field using PUMA info from the master TAZ database
     objLyrs = CreateObject("AddDBLayers", {FileName: Args.TAZGeography})
     {TAZLayer} = objLyrs.Layers
-    vwJ = JoinViews("SED_TAZ", GetFieldFullSpec(vw, "TAZ"), GetFieldFullSpec(TAZLayer, "ID"),)
+    vwJ = JoinViews("SED_TAZ", GetFieldFullSpec(vw, "TAZ"), GetFieldFullSpec(TAZLayer, "TAZID"),)
     v = GetDataVector(vwJ + "|", "PUMA",)
     vOut = s2i(Right(v,5))
     SetDataVector(vwJ + "|", "PUMA5", vOut,)
