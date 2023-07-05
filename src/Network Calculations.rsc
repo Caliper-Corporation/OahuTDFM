@@ -6,6 +6,9 @@ Macro "Network Calculations" (Args)
     RunMacro("CopyDataToOutputFolder", Args)
     RunMacro("Determine Area Type", Args)
     RunMacro("Speeds and Capacities", Args)
+    RunMacro("CalculateTransitSpeeds Oahu", Args)
+    RunMacro("Compute Intrazonal Matrix", Args)
+
     return(1)
 endmacro
 
@@ -302,6 +305,86 @@ macro "Speeds and Capacities" (Args, Result)
     quit:
     Return(ret_value)
 
+
+endmacro
+
+/*
+
+*/
+
+macro "CalculateTransitSpeeds Oahu" (Args, Result)
+    ret_value = 1
+    // input data files
+    LineDB = Args.HighwayDatabase
+    RouteSystem = Args.TransitRoutes
+    WalkSpeed = Args.WalkSpeed
+    BikeSpeed = Args.BikeSpeed
+    Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
+    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
+    fields = {
+    {FieldName: "ABWalkTime"}, 
+    {FieldName: "BAWalkTime"}, 
+    {FieldName: "ABBikeTime"}, 
+    {FieldName: "BABikeTime"}, 
+    {FieldName: "ABTransitFactor"}, 
+    {FieldName: "BATransitFactor"}, 
+    {FieldName: "ABTransitSpeed"}, 
+    {FieldName: "BATransitSpeed"}, 
+    {FieldName: "ABTransitTime"}, 
+    {FieldName: "BATransitTime"}, 
+    {FieldName: "ABTransitSpeedAM"}, 
+    {FieldName: "BATransitSpeedAM"}, 
+    {FieldName: "ABTransitTimeAM"}, 
+    {FieldName: "BATransitTimeAM"}, 
+    {FieldName: "ABTransitSpeedPM"}, 
+    {FieldName: "BATransitSpeedPM"}, 
+    {FieldName: "ABTransitTimePM"}, 
+    {FieldName: "BATransitTimePM"}, 
+    {FieldName: "ABTransitSpeedOP"}, 
+    {FieldName: "BATransitSpeedOP"}, 
+    {FieldName: "ABTransitTimeOP"}, 
+    {FieldName: "BATransitTimeOP"} 
+   }
+    Line.AddFields({Fields: fields})
+    Line.ABWalkTime = Line.Length / WalkSpeed * 60
+    Line.BAWalkTime = Line.Length / WalkSpeed * 60
+    Line.ABBikeTime = Line.Length / BikeSpeed * 60
+    Line.BABikeTime = Line.Length / BikeSpeed * 60
+
+    SpeedCap = Args.SpeedCapacityLookup
+    SC = CreateObject("Table", SpeedCap)
+    join = Line.Join({Table: SC, LeftFields: {"HCMType", "AreaType", "HCMMedian"}, RightFields: {"HCMType", "AreaType", "HCMMedian"}})
+    join.ABTransitFactor = join.TransitFactor
+    join.BATransitFactor = join.TransitFactor
+    join.ABTransitSpeed = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeed = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTime = join.Length / join.ABTransitSpeed * 60
+    join.BATransitTime = join.Length / join.BATransitSpeed * 60
+    join.ABTransitSpeedAM = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeedAM = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimeAM = join.Length / join.ABTransitSpeedAM * 60
+    join.BATransitTimeAM = join.Length / join.BATransitSpeedAM * 60
+    join.ABTransitSpeedPM = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeedPM = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimePM = join.Length / join.ABTransitSpeedPM * 60
+    join.BATransitTimePM = join.Length / join.BATransitSpeedPM * 60
+    join.ABTransitSpeedOP = join.ABFreeFlowSpeed / join.ABTransitFactor
+    join.BATransitSpeedOP = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimeOP = join.Length / join.ABTransitSpeedOP * 60
+    join.BATransitTimeOP = join.Length / join.BATransitSpeedOP * 60
+
+    RS = CreateObject("Table", {FileName: RouteSystem, LayerType: "Route"})
+    RouteLayer = RS.GetView()
+    STOP = CreateObject("Table", {FileName: RouteSystem, LayerType: "Stop"})
+    fields = {
+    {FieldName: "NodeID", Type: "integer"}}
+    STOP.AddFields({Fields: fields})
+    n = TagRouteStopsWithNode(RouteLayer, , "NodeID", 10) // fill stop layer with node ID for each stop
+    RS = null
+    STOP = null
+
+       quit:
+    Return(ret_value)
 
 endmacro
 

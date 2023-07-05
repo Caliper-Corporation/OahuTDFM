@@ -4,6 +4,8 @@
 
 Macro "Oahu Steps" (Args)
 
+  // Pre-process box
+
   Args.[Master Folder] = Args.[Base Folder] + "\\Master"
   Args.[Scenario Folder] = Args.[Base Folder] + "\\Scenarios\\base_2022"
   Args.[Input Folder] = Args.[Scenario Folder] + "\\Input"
@@ -41,6 +43,7 @@ Macro "Oahu Steps" (Args)
     {AreaType: "Urban", Density: 10000, Buffer: .5},
     {AreaType: "Downtown", Density: 25000, Buffer: .25}
   }
+  Args.IZMatrix = Args.[Output Folder] + "\\Skims\\IntraZonal.mtx"
   RunMacro("Network Calculations", Args)
   
   return(1)
