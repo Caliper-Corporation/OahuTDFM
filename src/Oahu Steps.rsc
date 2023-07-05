@@ -21,7 +21,7 @@ Macro "Oahu Steps" (Args)
   Args.[Master Routes] = Args.[Master Folder] + "\\networks\\master_routes.rts"
   Args.TransitRouteInputs = Args.[Input Folder] + "\\networks\\scenario_routes.rts"
   Args.TransitRoutes = Args.[Output Folder] + "\\networks\\scenario_routes.rts"
-  RunMacro("Create Scenario", Args)
+  // RunMacro("Create Scenario", Args)
 
   Args.SEDMarginals = Args.[Output Folder] + "\\Population\\SEDMarginals.bin"
   Args.SizeCurves = Args.[Input Folder] + "\\Population\\disagg_model\\size_curves.csv"
@@ -34,7 +34,7 @@ Macro "Oahu Steps" (Args)
   Args.Persons = Args.[Output Folder] + "\\Population\\Persons.bin"
   Args.PopSynTolerance = .001
   Args.[Synthesized Tabulations] = Args.[Output Folder] + "\\Population\\Tabulations.bin"
-  RunMacro("PopulationSynthesis Oahu", Args)
+  // RunMacro("PopulationSynthesis Oahu", Args)
 
   Args.SpeedCapacityLookup = Args.[Input Folder] + "\\networks\\speed_and_capacity.csv"
   Args.AreaTypes = {
@@ -44,7 +44,12 @@ Macro "Oahu Steps" (Args)
     {AreaType: "Downtown", Density: 25000, Buffer: .25}
   }
   Args.IZMatrix = Args.[Output Folder] + "\\Skims\\IntraZonal.mtx"
-  RunMacro("Network Calculations", Args)
+  // RunMacro("Network Calculations", Args)
+
+  // Build Networks box
+
+  Args.HighwayNetwork = Args.[Output Folder] + "\\Skims\\highwaynet.net"
+  RunMacro("BuildNetworks Oahu", Args)
   
   return(1)
 endmacro
