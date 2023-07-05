@@ -79,3 +79,7 @@ CC,Downtown,None,10000,10000,0,0.15,4,1
 CC,Rural,None,10000,10000,0,0.15,4,1
 CC,Suburban,None,10000,10000,0,0.15,4,1
 CC,Urban,None,10000,10000,0,0.15,4,1
+Ramp,Downtown,None,1800,1800,0,0.6,6,1.1
+Ramp,Rural,None,1800,1800,0,0.6,6,1.1
+Ramp,Suburban,None,1800,1800,0,0.6,6,1.1
+Ramp,Urban,None,1800,1800,0,0.6,6,1.1
