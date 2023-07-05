@@ -3,13 +3,47 @@
 */
 
 Macro "Network Calculations" (Args)
-    RunMacro("CopyDataToOutputFolder", Args)
+    // RunMacro("CopyDataToOutputFolder", Args)
+    RunMacro("Expand DTWB", Args)
     RunMacro("Determine Area Type", Args)
     RunMacro("Speeds and Capacities", Args)
     RunMacro("CalculateTransitSpeeds Oahu", Args)
     RunMacro("Compute Intrazonal Matrix", Args)
 
     return(1)
+endmacro
+
+/*
+The DTWB field has a string that says whether
+
+Drive
+Transit
+Walk
+Bike
+
+is available. This macro converts that into one-hot fields.
+*/
+
+Macro "Expand DTWB" (Args)
+    
+    hwy_dbd = Args.HighwayDatabase
+
+    tbl = CreateObject("Table", {FileName: hwy_dbd, Layer: 2})
+    tbl.AddField("D")
+    tbl.AddField("T")
+    tbl.AddField("W")
+    tbl.AddField("B")
+    
+    v_dtwb = tbl.DTWB
+    set = null
+    set.D = if Position(v_dtwb, "D") <> 0 then 1 else 0
+    set.T = if Position(v_dtwb, "T") <> 0 then 1 else 0
+    set.W = if Position(v_dtwb, "W") <> 0 then 1 else 0
+    set.B = if Position(v_dtwb, "B") <> 0 then 1 else 0
+    tbl.SetDataVectors({FieldData: set})
+    tbl.View()
+    Throw()
+    // SetDataVectors(llyr + "|", set, )
 endmacro
 
 /*
