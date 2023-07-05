@@ -1,9 +1,9 @@
 
-185,codepage=1252
+201
 "TAZ",I,1,4,0,11,0,,"","",,"Sum",
 "TotalHH",I,5,4,0,8,0,,"","",,"Sum",
 "OccupiedHH",I,9,4,0,8,0,,"","",,"Sum",
-"Population",I,13,4,0,8,0,,"","Total population (including group quarters)",,"Sum",
+"Population",I,13,4,0,8,0,,"","HH Population",,"Sum",
 "GroupQuarterPopulation",I,17,4,0,8,0,,"","",,"Sum",
 "Median_Inc",I,21,4,0,8,0,,"","",,"Sum",
 "Pct_Worker",I,25,4,0,8,0,,"","",,"Sum",
@@ -29,3 +29,5 @@
 "Emp_HealthCare",R,162,8,0,14,2,,"","EMP_NAICS_62",,"Sum",
 "Emp_Services",R,170,8,0,14,2,,"","EMP_NAICS_71-72 + EMP_NAICS_81",,"Sum",
 "Emp_Public",R,178,8,0,14,2,,"","EMP_NAICS_92",,"Sum",
+"Emp_Hotel",R,186,8,0,14,2,,"","",,"Sum",
+"Emp_Military",R,194,8,0,14,2,,"","",,"Sum",
