@@ -15,6 +15,7 @@ SubTours.rsc
 Calibration.rsc
 ../src/CreateScenario.rsc
 ../src/Network Calculations.rsc
+../src/Skimming.rsc
 ../src/PopulationSynthesis.rsc
 ../src/Oahu Steps.rsc
 ../src/utils/RoadwayProjectManagement.rsc

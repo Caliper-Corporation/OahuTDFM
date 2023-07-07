@@ -50,7 +50,14 @@ Macro "Oahu Steps" (Args)
 
   Args.HighwayNetwork = Args.[Output Folder] + "\\Skims\\highwaynet.net"
   Args.TransitNetwork = Args.[Output Folder] + "\\Skims\\TransitNetwork.tnw"
-  RunMacro("BuildNetworks Oahu", Args)
+  // RunMacro("BuildNetworks Oahu", Args)
+
+  Args.HighwaySkimAM = Args.[Output Folder] + "\\Skims\\Highway_AM.mtx"
+  Args.HighwaySkimPM = Args.[Output Folder] + "\\Skims\\Highway_PM.mtx"
+  Args.HighwaySkimOP = Args.[Output Folder] + "\\Skims\\Highway_OP.mtx"
+  Args.WalkSkim = Args.[Output Folder] + "\\Skims\\Walk.mtx"
+  Args.BikeSkim = Args.[Output Folder] + "\\Skims\\Bike.mtx"
+  RunMacro("HighwayAndTransitSkim Oahu", Args)
   
   return(1)
 endmacro

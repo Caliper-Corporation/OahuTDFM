@@ -998,6 +998,7 @@ macro "BuildNetworks Oahu" (Args, Result)
 
     // RunMacro("BuildHighwayNetwork Oahu", Args)
     RunMacro("BuildTransitNetwork Oahu", Args)
+    return(1)
 EndMacro
 
 /*
