@@ -49,6 +49,7 @@ Macro "Oahu Steps" (Args)
   // Build Networks box
 
   Args.HighwayNetwork = Args.[Output Folder] + "\\Skims\\highwaynet.net"
+  Args.TransitNetwork = Args.[Output Folder] + "\\Skims\\TransitNetwork.tnw"
   RunMacro("BuildNetworks Oahu", Args)
   
   return(1)
