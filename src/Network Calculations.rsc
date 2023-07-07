@@ -401,6 +401,22 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     join.BATransitSpeedOP = join.BAFreeFlowSpeed / join.BATransitFactor
     join.ABTransitTimeOP = join.Length / join.ABTransitSpeedOP * 60
     join.BATransitTimeOP = join.Length / join.BATransitSpeedOP * 60
+    // Calculate for non-drivable links (e.g. transit only)
+    join.SelectByQuery({
+        SetName: "transit_only",
+        Query: "T = 1 and D = 0"
+    })
+    periods = {"AM", "PM", "OP"}
+    dirs = {"AB", "BA"}
+    for period in periods do
+        for dir in dirs do
+            posted_speed = if join.PostedSpeed = null
+                then 25
+                else join.PostedSpeed
+            join.(dir + "TransitSpeed" + period) = posted_speed
+            join.(dir + "TransitTime" + period) = join.Length / posted_speed * 60
+        end
+    end
 
     RS = CreateObject("Table", {FileName: RouteSystem, LayerType: "Route"})
     RouteLayer = RS.GetView()
@@ -996,7 +1012,7 @@ endmacro
 
 macro "BuildNetworks Oahu" (Args, Result)
 
-    // RunMacro("BuildHighwayNetwork Oahu", Args)
+    RunMacro("BuildHighwayNetwork Oahu", Args)
     RunMacro("BuildTransitNetwork Oahu", Args)
     return(1)
 EndMacro

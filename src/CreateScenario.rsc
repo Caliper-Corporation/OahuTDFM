@@ -71,7 +71,9 @@ Macro "Create Folder Structure" (Args)
   a_dir = {
     "/tazs",
     "/sedata",
-    "/networks"
+    "/networks",
+    "/skims",
+    "/skims/transit"
   }
   for d = 1 to a_dir.length do
     dir = Args.[Output Folder] + a_dir[d]

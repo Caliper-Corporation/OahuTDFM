@@ -4,7 +4,7 @@
 
 macro "HighwayAndTransitSkim Oahu" (Args, Result)
     RunMacro("HighwayNetworkSkim Oahu", Args)
-    // RunMacro("TransitNetworkSkim Oahu", Args)
+    RunMacro("TransitNetworkSkim Oahu", Args)
     return(1)
 endmacro
 
@@ -156,5 +156,133 @@ macro "HighwayNetworkSkim Oahu" (Args)
 
     quit:
     Return(ret_value)
+
+endmacro
+
+/*
+
+*/
+
+macro "TransitNetworkSkim Oahu" (Args)
+    ret_value = 1 
+    LineDB = Args.HighwayDatabase
+    RouteSystem = Args.TransitRoutes
+    TransitTNW = Args.TransitNetwork
+
+    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
+    NodeLayer = Node.GetView()
+
+
+    classes = {"WalkAM", "DriveAM", "WalkPM", "DrivePM", "WalkOP", "DriveOP"}
+
+    WalkSkim = Args.TransitWalkSkim
+    DriveSkim = Args.TransitDriveSkim
+    WalkSkimAM = Args.TransitWalkSkimAM
+    DriveSkimAM = Args.TransitDriveSkimAM
+    WalkSkimPM = Args.TransitWalkSkimPM
+    DriveSkimPM = Args.TransitDriveSkimPM
+    WalkSkimOP = Args.TransitWalkSkimOP
+    DriveSkimOP = Args.TransitDriveSkimOP
+
+
+    SkimMatrices = {WalkSkimAM, DriveSkimAM, WalkSkimPM, DriveSkimPM, WalkSkimOP, DriveSkimOP}
+    Impedances = {"TransitTimeAM", "TransitTimeAM", "TransitTimePM", "TransitTimePM", "TransitTimeOP", "TransitTimeOP"}
+    for i = 1 to classes.length do
+        cls = classes[i]
+        Impedance = Impedances[i]
+
+        o = CreateObject("Network.SetPublicPathFinder", {RS: RouteSystem, NetworkName: TransitTNW})
+        o.UserClasses = classes
+        o.CurrentClass = cls
+        o.DriveTime = "Time"
+        o.CentroidFilter = "Centroid <> null"
+        o.LinkImpedance = Impedance
+        o.Parameters({
+        MaxTripCost: 999,
+        MaxTransfers: 3,
+        VOT: 12,
+        MidBlockOffset: 1,
+        InterArrival: 0.5
+        })
+        o.AccessControl({
+        PermitWalkOnly: false,
+        StopAccessField: null,
+        MaxWalkAccessPaths: 10,
+        WalkAccessNodeField: null
+        })
+        o.Combination({
+        CombinationFactor: 0.1,
+        Walk: 0,
+        Drive: 0,
+        ModeField: null,
+        WalkField: null
+        })
+        o.StopTimeFields({
+        InitialPenalty: null,
+        TransferPenalty: null,
+        DwellOn: null,
+        DwellOff: null
+        })
+        o.RouteTimeFields({
+        Headway: "PeakHeadway"
+        })
+        o.TimeGlobals({
+        MaxInitialWait: 30,
+        MaxTransferWait: 30,
+        MinInitialWait: 2,
+        MinTransferWait: 2,
+        TransferPenalty: 0,
+        DwellOn: 0.1,
+        DwellOff: 0.1,
+        MaxAccessWalk: 45,
+        MaxEgressWalk: 45,
+        MaxTransferWalk: 15
+        })
+        o.GlobalWeights({
+        InitialWait: 2,
+        TransferWait: 2,
+        WalkTimeFactor: 2,
+        DriveTimeFactor: 1.0
+        })
+        o.Fare({
+        Type: "Flat", // Flat, Zonal, Mixed
+        RouteFareField: "Fare",
+        RouteXFareField: "Fare"
+        })
+        o.DriveAccess({
+        InUse: {false, true, false, true, false, true},
+        MaxDriveTime: 20,
+        MaxParkToStopTime: 5,
+        ParkingNodes: "PNR = 1"
+        })
+        ok = o.Run()
+
+        skimmatrix = SkimMatrices[i]
+
+        obj = CreateObject("Network.PublicTransportSkims")
+        obj.Method = "PF"
+        obj.LayerRS = RouteSystem
+        obj.LoadNetwork( TransitTNW )
+        obj.OriginFilter = "Centroid <> null"
+        obj.DestinationFilter = "Centroid <> null"
+        obj.SkimVariables = {"Fare", "Initial Wait Time","Transfer Wait Time", "Transfer Walk Time",
+                                        "Access Walk Time", "Egress Walk Time", "Access Drive Time", "Dwelling Time", "Total Time",
+                                        "Number of Transfers","In-Vehicle Time", "Drive Distance"}
+        obj.OutputMatrix({MatrixFile: skimmatrix, Matrix: cls + "PTSkim"})
+        ok = obj.Run()
+
+        m = CreateObject("Matrix", skimmatrix)
+        idx = m.AddIndex({IndexName: "TAZ",
+                ViewName: NodeLayer, Dimension: "Both",
+                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+        idxint = m.AddIndex({IndexName: "InternalTAZ",
+                ViewName: NodeLayer, Dimension: "Both",
+                // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
+                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+        end
+
+    quit:
+    Return(ret_value)
+
 
 endmacro
