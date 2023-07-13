@@ -1,5 +1,5 @@
 Oahu Network 102907
-387
+395,codepage=1252
 "ID",I,1,4,0,4,0,,"","",,"Sum",
 "Road Name",C,5,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
 "Road_Name2",C,26,21,0,21,0,,"","Contains secondary information (like if it is a zipper lane)",,"Copy",
@@ -19,8 +19,8 @@ Oahu Network 102907
 "BA Speed",I,128,4,0,8,0,,"","Reverse Expanded Speed Classification",,"Copy",
 "AB Capacity",I,132,4,0,8,0,,"","Forward Expanded Capacity Classification",,"Copy",
 "BA Capacity",I,136,4,0,8,0,,"","Reverse Expanded Capacity Classification",,"Copy",
-"AB FACTYPE",I,140,4,0,10,0,,"","Forward Direction Facility Type  1 � Freeways; 2 � Expressways; 3 � Class I arterials; 4 � Class II|arterials; 5 � Class III arterials; 6 � Class I collectors; 7 � Class II collectors; 8 � local streets;|9 � High speed Ramps; 10 � Low Speed Ramps; 12 � centroid connectors; 13 � HOV lanes; 14-Rail/Transit only",,"Copy",
-"BA FACTYPE",I,144,4,0,10,0,,"","Reverse Direction Facility Type  1 � Freeways; 2 � Expressways; 3 � Class I arterials; 4 � Class II|arterials; 5 � Class III arterials; 6 � Class I collectors; 7 � Class II collectors; 8 � local streets;|9 � High speed Ramps; 10 � Low Speed Ramps; 12 � centroid connectors; 13 � HOV lanes; 14-Rail/Transit only",,"Copy",
+"AB FACTYPE",I,140,4,0,10,0,,"","Forward Direction Facility Type  1 Ã¢â‚¬â€œ Freeways; 2 Ã¢â‚¬â€œ Expressways; 3 Ã¢â‚¬â€œ Class I arterials; 4 Ã¢â‚¬â€œ Class II|arterials; 5 Ã¢â‚¬â€œ Class III arterials; 6 Ã¢â‚¬â€œ Class I collectors; 7 Ã¢â‚¬â€œ Class II collectors; 8 Ã¢â‚¬â€œ local streets;|9 Ã¢â‚¬â€œ High speed Ramps; 10 Ã¢â‚¬â€œ Low Speed Ramps; 12 Ã¢â‚¬â€œ centroid connectors; 13 Ã¢â‚¬â€œ HOV lanes; 14-Rail/Transit only",,"Copy",
+"BA FACTYPE",I,144,4,0,10,0,,"","Reverse Direction Facility Type  1 Ã¢â‚¬â€œ Freeways; 2 Ã¢â‚¬â€œ Expressways; 3 Ã¢â‚¬â€œ Class I arterials; 4 Ã¢â‚¬â€œ Class II|arterials; 5 Ã¢â‚¬â€œ Class III arterials; 6 Ã¢â‚¬â€œ Class I collectors; 7 Ã¢â‚¬â€œ Class II collectors; 8 Ã¢â‚¬â€œ local streets;|9 Ã¢â‚¬â€œ High speed Ramps; 10 Ã¢â‚¬â€œ Low Speed Ramps; 12 Ã¢â‚¬â€œ centroid connectors; 13 Ã¢â‚¬â€œ HOV lanes; 14-Rail/Transit only",,"Copy",
 "Tran_Only_Spd",R,148,8,0,10,2,,"","",,"Copy",
 "AB_FNCLASS",I,156,4,0,10,0,,"","2005 Federal Functional Class 1=freeway;2=expressway;3=principal arterial;4=minor arterial;5=major collector;6=minor collector;7=local;8=freeway ramp;9=centroid connector|",,"Copy",
 "BA_FNCLASS",I,160,4,0,10,0,,"","2005 Federal Functional Class 1=freeway;2=expressway;3=principal arterial;4=minor arterial;5=major collector;6=minor collector;7=local;8=freeway ramp;9=centroid connector|",,"Copy",
@@ -77,3 +77,5 @@ Oahu Network 102907
 "Line_Source",I,376,4,0,10,0,,"","1: Original planning links|2: TIGER links|3: Adams additional links",,"Copy",
 "Original_Link_ID_NEW",I,380,4,0,10,0,,"","",,"Copy",
 "Future",I,384,4,0,8,0,,"","",,"Copy",
+"count_sid_lc",I,388,4,0,10,0,,"","Count Station ID as tagged by the Load Counts macro",,"Sum",
+"count_vol_lc",I,392,4,0,10,0,,"","Count ID as tagged by the Load Counts macro",,"Sum",
