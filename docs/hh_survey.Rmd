@@ -282,10 +282,39 @@ id_tour_mode <- mark_anchor %>%
       "sov" %in% temp ~ "sov",
       "bike" %in% temp ~ "bike",
       "walk" %in% temp ~ "walk",
-      TRUE ~ "other"
+      TRUE ~ ""
     )
   ) %>%
-  select(-temp)
+  #
+  group_by(HOUSEID, PERSONID, tour_num, mode_model) %>%
+  mutate(
+    first_bus = ifelse(mode_model == "bus" & TRIPID == min(TRIPID), TRIPID, 0)
+  ) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  mutate(
+    # nearest_walk = case_when(
+    #   primary_mode != "bus" ~ 0,
+    #   TRIPID >= max(first_bus) ~ 0,
+    #   mode_model != "walk" ~ 0,
+    #   TRUE ~ TRIPID
+    # ),
+    # nearest_drive = case_when(
+    #   primary_mode != "bus" ~ 0,
+    #   TRIPID >= max(first_bus) ~ 0,
+    #   !(mode_model %in% c("sov", "hov2", "hov3")) ~ 0,
+    #   TRUE ~ TRIPID
+    # )
+    access_mode = ifelse(primary_mode == "bus",mode_model[TRIPID == max(first_bus) - 1], ""),
+    PSGR_FLG_temp = ifelse(primary_mode == "bus",PSGR_FLG[TRIPID == max(first_bus) - 1], 0),
+    access_mode = case_when(
+      access_mode == "sov" ~ "pnr",
+      access_mode %in% c("hov2", "hov3") & PSGR_FLG_temp == 2 ~ "pnr",
+      access_mode %in% c("hov2", "hov3") ~ "knr",
+      is.na(access_mode) ~ "walk",
+      TRUE ~ access_mode
+    )
+  ) %>%
+  select(-temp, PSGR_FLG_temp)
 
 tour_file <- id_tour_mode %>%
   group_by(tour_id) %>%
@@ -300,6 +329,7 @@ tour_file <- id_tour_mode %>%
     int_stop_fwd = sum(int_stop_fwd),
     int_stop_ret = sum(int_stop_ret),
     primary_mode = first(primary_mode),
+    access_mode = first(access_mode),
     secondary_mode = first(secondary_mode)
   )
 ```
