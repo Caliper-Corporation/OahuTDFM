@@ -4,22 +4,9 @@
             "Type":"Folder",
             "Value":"%Model Folder%"
         }
-        Args.[Data Folder] = {
-            "Type":"Folder",
-            "Value":"%Model Folder%\\Data"
-        }
-        Args.ScenarioSubFolder = {
-            "Type":"hidden",
-            "Value":"BaseYear"
-        }
         Args.[Scenario Folder] = {
             "Type":"Folder",
-            "Value":"%Data Folder%\\%ScenarioSubFolder%"
-        }
-        Args.[Common Folder] = {
-            "Type":"Folder",
-            "Caption":"Common Folder",
-            "Value":"%Data Folder%\\CommonFiles"
+            "Value":"%Model Folder%\\scenarios\\base_2022"
         }
         Args.[Input Folder] = {
             "Type":"Folder",
@@ -49,7 +36,7 @@
         }
         Args.FlowMapStyles = {
             "Type":"hidden",
-            "Value":"%Common Folder%\\FlowMapStyle.stg"
+            "Value":"%Output Folder%\\FlowMapStyle.stg"
         }
 	
 	Section = "Parameters|Feedback"
@@ -235,17 +222,27 @@
         Args.SpeedCapacityLookup = {
             "Type":"File",
             "Description":"Speed and Capacity Lookup by Facility and Area Type Table",
-            "Value":"%Common Folder%\\PeoriaStreets_RoadClasses.bin"
+            "Value":"%Output Folder%\\PeoriaStreets_RoadClasses.bin"
         }
         Args.TransitModeTable = {
             "Type":"File",
             "Description":"Transit Mode Table",
-            "Value":"%Common Folder%\\ModeTable.bin"
+            "Value":"%Input Folder%\\networks\\transit_mode_table.csv"
         }
         Args.TransitModeTransferTable = {
             "Type":"File",
             "Description":"Transit Mode Transfer Table",
-            "Value":"%Common Folder%\\ModeTransferTable.bin"
+            "Value":"%Output Folder%\\ModeTransferTable.bin"
+        }
+        Args.AccessModes = {
+            "Type":"Hidden",
+            "Description":"Transit access modes",
+            "Value":{"walk", "knr", "pnr"}
+        }
+        Args.TransitModes = {
+            "Type":"Hidden",
+            "Description":"Transit modes",
+            "Value":{"bus", "rail", "all"}
         }
 	
 	Section = "GEO Scenario"

@@ -4,7 +4,7 @@
 
 macro "HighwayAndTransitSkim Oahu" (Args, Result)
     RunMacro("HighwayNetworkSkim Oahu", Args)
-    RunMacro("TransitNetworkSkim Oahu", Args)
+    RunMacro("transit skim", Args)
     return(1)
 endmacro
 
@@ -163,126 +163,208 @@ endmacro
 
 */
 
-macro "TransitNetworkSkim Oahu" (Args)
-    ret_value = 1 
-    LineDB = Args.HighwayDatabase
-    RouteSystem = Args.TransitRoutes
-    TransitTNW = Args.TransitNetwork
+// macro "TransitNetworkSkim Oahu" (Args)
+//     ret_value = 1 
+//     LineDB = Args.HighwayDatabase
+//     RouteSystem = Args.TransitRoutes
+//     TransitTNW = Args.TransitNetwork
 
-    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
-    NodeLayer = Node.GetView()
-
-
-    classes = {"WalkAM", "DriveAM", "WalkPM", "DrivePM", "WalkOP", "DriveOP"}
-
-    WalkSkim = Args.TransitWalkSkim
-    DriveSkim = Args.TransitDriveSkim
-    WalkSkimAM = Args.TransitWalkSkimAM
-    DriveSkimAM = Args.TransitDriveSkimAM
-    WalkSkimPM = Args.TransitWalkSkimPM
-    DriveSkimPM = Args.TransitDriveSkimPM
-    WalkSkimOP = Args.TransitWalkSkimOP
-    DriveSkimOP = Args.TransitDriveSkimOP
+//     Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
+//     NodeLayer = Node.GetView()
 
 
-    SkimMatrices = {WalkSkimAM, DriveSkimAM, WalkSkimPM, DriveSkimPM, WalkSkimOP, DriveSkimOP}
-    Impedances = {"TransitTimeAM", "TransitTimeAM", "TransitTimePM", "TransitTimePM", "TransitTimeOP", "TransitTimeOP"}
-    for i = 1 to classes.length do
-        cls = classes[i]
-        Impedance = Impedances[i]
+//     classes = {"WalkAM", "DriveAM", "WalkPM", "DrivePM", "WalkOP", "DriveOP"}
 
-        o = CreateObject("Network.SetPublicPathFinder", {RS: RouteSystem, NetworkName: TransitTNW})
-        o.UserClasses = classes
-        o.CurrentClass = cls
-        o.DriveTime = "Time"
-        o.CentroidFilter = "Centroid <> null"
-        o.LinkImpedance = Impedance
-        o.Parameters({
-        MaxTripCost: 999,
-        MaxTransfers: 3,
-        VOT: 12,
-        MidBlockOffset: 1,
-        InterArrival: 0.5
-        })
-        o.AccessControl({
-        PermitWalkOnly: false,
-        StopAccessField: null,
-        MaxWalkAccessPaths: 10,
-        WalkAccessNodeField: null
-        })
-        o.Combination({
-        CombinationFactor: 0.1,
-        Walk: 0,
-        Drive: 0,
-        ModeField: null,
-        WalkField: null
-        })
-        o.StopTimeFields({
-        InitialPenalty: null,
-        TransferPenalty: null,
-        DwellOn: null,
-        DwellOff: null
-        })
-        o.RouteTimeFields({
-        Headway: "PeakHeadway"
-        })
-        o.TimeGlobals({
-        MaxInitialWait: 30,
-        MaxTransferWait: 30,
-        MinInitialWait: 2,
-        MinTransferWait: 2,
-        TransferPenalty: 0,
-        DwellOn: 0.1,
-        DwellOff: 0.1,
-        MaxAccessWalk: 45,
-        MaxEgressWalk: 45,
-        MaxTransferWalk: 15
-        })
-        o.GlobalWeights({
-        InitialWait: 2,
-        TransferWait: 2,
-        WalkTimeFactor: 2,
-        DriveTimeFactor: 1.0
-        })
-        o.Fare({
-        Type: "Flat", // Flat, Zonal, Mixed
-        RouteFareField: "Fare",
-        RouteXFareField: "Fare"
-        })
-        o.DriveAccess({
-        InUse: {false, true, false, true, false, true},
-        MaxDriveTime: 20,
-        MaxParkToStopTime: 5,
-        ParkingNodes: "PNR = 1"
-        })
-        ok = o.Run()
+//     WalkSkim = Args.TransitWalkSkim
+//     DriveSkim = Args.TransitDriveSkim
+//     WalkSkimAM = Args.TransitWalkSkimAM
+//     DriveSkimAM = Args.TransitDriveSkimAM
+//     WalkSkimPM = Args.TransitWalkSkimPM
+//     DriveSkimPM = Args.TransitDriveSkimPM
+//     WalkSkimOP = Args.TransitWalkSkimOP
+//     DriveSkimOP = Args.TransitDriveSkimOP
 
-        skimmatrix = SkimMatrices[i]
 
-        obj = CreateObject("Network.PublicTransportSkims")
-        obj.Method = "PF"
-        obj.LayerRS = RouteSystem
-        obj.LoadNetwork( TransitTNW )
-        obj.OriginFilter = "Centroid <> null"
-        obj.DestinationFilter = "Centroid <> null"
-        obj.SkimVariables = {"Fare", "Initial Wait Time","Transfer Wait Time", "Transfer Walk Time",
-                                        "Access Walk Time", "Egress Walk Time", "Access Drive Time", "Dwelling Time", "Total Time",
-                                        "Number of Transfers","In-Vehicle Time", "Drive Distance"}
-        obj.OutputMatrix({MatrixFile: skimmatrix, Matrix: cls + "PTSkim"})
-        ok = obj.Run()
+//     SkimMatrices = {WalkSkimAM, DriveSkimAM, WalkSkimPM, DriveSkimPM, WalkSkimOP, DriveSkimOP}
+//     Impedances = {"TransitTimeAM", "TransitTimeAM", "TransitTimePM", "TransitTimePM", "TransitTimeOP", "TransitTimeOP"}
+//     for i = 1 to classes.length do
+//         cls = classes[i]
+//         Impedance = Impedances[i]
 
-        m = CreateObject("Matrix", skimmatrix)
-        idx = m.AddIndex({IndexName: "TAZ",
-                ViewName: NodeLayer, Dimension: "Both",
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
-        idxint = m.AddIndex({IndexName: "InternalTAZ",
-                ViewName: NodeLayer, Dimension: "Both",
-                // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+//         o = CreateObject("Network.SetPublicPathFinder", {RS: RouteSystem, NetworkName: TransitTNW})
+//         o.UserClasses = classes
+//         o.CurrentClass = cls
+//         o.DriveTime = "Time"
+//         o.CentroidFilter = "Centroid <> null"
+//         o.LinkImpedance = Impedance
+//         o.Parameters({
+//         MaxTripCost: 999,
+//         MaxTransfers: 3,
+//         VOT: 12,
+//         MidBlockOffset: 1,
+//         InterArrival: 0.5
+//         })
+//         o.AccessControl({
+//         PermitWalkOnly: false,
+//         StopAccessField: null,
+//         MaxWalkAccessPaths: 10,
+//         WalkAccessNodeField: null
+//         })
+//         o.Combination({
+//         CombinationFactor: 0.1,
+//         Walk: 0,
+//         Drive: 0,
+//         ModeField: null,
+//         WalkField: null
+//         })
+//         o.StopTimeFields({
+//         InitialPenalty: null,
+//         TransferPenalty: null,
+//         DwellOn: null,
+//         DwellOff: null
+//         })
+//         o.RouteTimeFields({
+//         Headway: "PeakHeadway"
+//         })
+//         o.TimeGlobals({
+//         MaxInitialWait: 30,
+//         MaxTransferWait: 30,
+//         MinInitialWait: 2,
+//         MinTransferWait: 2,
+//         TransferPenalty: 0,
+//         DwellOn: 0.1,
+//         DwellOff: 0.1,
+//         MaxAccessWalk: 45,
+//         MaxEgressWalk: 45,
+//         MaxTransferWalk: 15
+//         })
+//         o.GlobalWeights({
+//         InitialWait: 2,
+//         TransferWait: 2,
+//         WalkTimeFactor: 2,
+//         DriveTimeFactor: 1.0
+//         })
+//         o.Fare({
+//         Type: "Flat", // Flat, Zonal, Mixed
+//         RouteFareField: "Fare",
+//         RouteXFareField: "Fare"
+//         })
+//         o.DriveAccess({
+//         InUse: {false, true, false, true, false, true},
+//         MaxDriveTime: 20,
+//         MaxParkToStopTime: 5,
+//         ParkingNodes: "PNR = 1"
+//         })
+//         ok = o.Run()
+
+//         skimmatrix = SkimMatrices[i]
+
+//         obj = CreateObject("Network.PublicTransportSkims")
+//         obj.Method = "PF"
+//         obj.LayerRS = RouteSystem
+//         obj.LoadNetwork( TransitTNW )
+//         obj.OriginFilter = "Centroid <> null"
+//         obj.DestinationFilter = "Centroid <> null"
+//         obj.SkimVariables = {"Fare", "Initial Wait Time","Transfer Wait Time", "Transfer Walk Time",
+//                                         "Access Walk Time", "Egress Walk Time", "Access Drive Time", "Dwelling Time", "Total Time",
+//                                         "Number of Transfers","In-Vehicle Time", "Drive Distance"}
+//         obj.OutputMatrix({MatrixFile: skimmatrix, Matrix: cls + "PTSkim"})
+//         ok = obj.Run()
+
+//         m = CreateObject("Matrix", skimmatrix)
+//         idx = m.AddIndex({IndexName: "TAZ",
+//                 ViewName: NodeLayer, Dimension: "Both",
+//                 OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+//         idxint = m.AddIndex({IndexName: "InternalTAZ",
+//                 ViewName: NodeLayer, Dimension: "Both",
+//                 // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
+//                 OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+//         end
+
+//     quit:
+//     Return(ret_value)
+
+
+// endmacro
+
+/*
+
+*/
+
+Macro "transit skim" (Args)
+    
+    periods = Args.Periods
+    access_modes = Args.AccessModes
+    rsFile = Args.TransitRoutes
+    skim_dir = Args.OutputSkims
+
+    for period in periods do
+        for acceMode in access_modes do
+
+        tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
+
+        if acceMode = "walk" then 
+            TransModes = Args.TransitModes // {"bus", "rail", "all"}
+        else // if "pnr" or "knr"
+            TransModes = Subarray(Args.TransitModes, 1, 3) // {"bus", "brt", "rail"}
+
+            for transMode in TransModes do
+                label = period + " " + acceMode + " " + transMode + " Skim Matrix"
+                outFile = skim_dir + "\\transit\\" + period + "_" + acceMode + "_" + transMode + ".mtx"
+
+                ok = RunMacro("Set Transit Network", Args, period, acceMode, transMode)
+                if !ok then goto quit
+
+                // do skim
+                obj = CreateObject("Network.PublicTransportSkims")
+
+                obj.Network = tnwFile
+                obj.LayerRS = rsFile
+                obj.Method = "PF"
+                obj.SkimByNodes = True
+                obj.OriginFilter = "Centroid = 1"
+                obj.DestinationFilter = "Centroid = 1"
+
+                obj.SkimVariables = {"Generalized Cost", "Fare",
+                                    "In-Vehicle Time",
+                                    "Initial Wait Time",
+                                    "Transfer Wait Time",
+                                    "Initial Penalty Time",
+                                    "Transfer Penalty Time",
+                                    "Transfer Walk Time",
+                                    "Access Walk Time",
+                                    "Egress Walk Time",
+                                    "Access Drive Time",
+                                    "Egress Drive Time",
+                                    "Dwelling Time",
+                                    "Total Time",
+                                    "In-Vehicle Cost",
+                                    "Initial Wait Cost",
+                                    "Transfer Wait Cost",
+                                    "Initial Penalty Cost",
+                                    "Transfer Penalty Cost",
+                                    "Transfer Walk Cost",
+                                    "Access Walk Cost",
+                                    "Egress Walk Cost",
+                                    "Access Drive Cost",
+                                    "Egress Drive Cost",
+                                    "Dwelling Cost",
+                                    "Number of Transfers",
+                                    "In-Vehicle Distance",
+                                    "Access Drive Distance",
+                                    "Egress Drive Distance",
+                                    "Length",
+                                    "DriveTime",
+                                    "WalkTime"
+                                    }
+                obj.OutputMatrix({MatrixFile: outFile, MatrixLabel: label, Compression: True})
+
+                ok = obj.Run()
+                if !ok then goto quit
+            end // for transMode
         end
+    end
 
-    quit:
-    Return(ret_value)
-
-
+  quit:
+    return(ok)
 endmacro

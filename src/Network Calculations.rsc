@@ -292,9 +292,14 @@ macro "Speeds and Capacities" (Args, Result)
     {FieldName: "ABAlpha"}, 
     {FieldName: "BAAlpha"}, 
     {FieldName: "ABBeta"}, 
-    {FieldName: "BABeta"}
+    {FieldName: "BABeta"},
+    {FieldName: "Mode"}
    }
     Line.AddFields({Fields: fields})
+
+    Line.HCMMedian = if Line.HCMType = "MLHighway" or Line.HCMType = "Freeway"
+        then "Restrictive"
+        else Line.HCMMedian
 
     SpeedCap = Args.SpeedCapacityLookup
     SC = CreateObject("Table", SpeedCap)
@@ -329,6 +334,7 @@ macro "Speeds and Capacities" (Args, Result)
     join.BAPMTime = join.Length / join.BAFreeFlowSpeed * 60   
     join.ABOPTime = join.Length / join.ABFreeFlowSpeed * 60   
     join.BAOPTime = join.Length / join.BAFreeFlowSpeed * 60   
+    join.Mode = 1
     join = null
 
     quit:
@@ -463,7 +469,7 @@ endmacro
 //         // network
 //     Args.lineDB = inPath + "network\\scenario_links.dbd"
 //     Args.Routes = inPath + "network\\scenario_routes.rts"
-//     Args.TransModeTable = inPath + "network\\transit_mode_table.bin"
+//     Args.TransitModeTable = inPath + "network\\transit_mode_table.bin"
 
 //         // assignment
 //     Args.[AM walk OD Matrix] = inPath + "assign\\AM_walk_PA.mtx"
@@ -551,7 +557,7 @@ endmacro
 //     // For testing, the KNR and PNR nodes are the exact same, but they will
 //     // be different in the final model, so please create separate classes.
 //     Args.AccessModes = {"walk", "pnr", "knr"}
-//     Args.TransModes = {"bus", "brt", "rail", "all"}
+//     Args.TransitModes = {"bus", "brt", "rail", "all"}
 
 //     Args.[Transit Speed] = 25 // mile/hr, default
 //     Args.[Drive Speed] = 25   // mile/hr, default
@@ -635,221 +641,9 @@ endmacro
 
 // endMacro
 
-// Macro "Create Transit Networks" (Args)
 
-//     rsFile = Args.Routes
-//     Periods = Args.periods
-//     AccessModes = Args.AccessModes
 
-//     objLyrs = CreateObject("AddRSLayers", {FileName: rsFile})
-//     rtLyr = objLyrs.RouteLayer
 
-//     // Retag stops to nodes. While this step is done by the route manager
-//     // during scenario creation, a user might create a new route to test after
-//     // creating the scenario. This makes sure it 'just works'.
-//     TagRouteStopsWithNode(rtLyr,, "Node_ID", 0.2)
-
-//     for period in Periods do
-//         for acceMode in AccessModes do
-//             tnwFile = Args.(period + " " + acceMode + " transit net") // AM_walk.tnw, AM_pnr.tnw, AM_knr.tnw
-//             o = CreateObject("Network.CreateTransit")
-//             o.LayerRS = rsFile
-//             o.OutNetworkName = tnwFile
-//             o.UseModes({TransitModeField: "Mode", NonTransitModeField: "Mode"})
-
-//                 // route attributes
-//             o.RouteFilter = period + "Headway > 0 & Mode > 0"
-//             o.AddRouteField({Name: period + "Headway", Field: period + "Headway"})
-//             o.AddRouteField({Name: "Fare", Field: "Fare"})
-
-//                 // stop attributes
-//             o.StopToNodeTagField = "Node_ID"
-
-//                 // link attributes
-//             abLBTimeFld = "AB" + period + "LBTime"
-//             baLBTimeFld = "BA" + period + "LBTime"
-//             abEBTimeFld = "AB" + period + "EBTime"
-//             baEBTimeFld = "BA" + period + "EBTime"
-//             abFGTimeFld = "AB" + period + "FGTime"
-//             baFGTimeFld = "BA" + period + "FGTime"
-//             o.AddLinkField({Name: "LBTime", TransitFields: {abLBTimeFld, baLBTimeFld},
-//                                             NonTransitFields: "WalkTime"})
-//             o.AddLinkField({Name: "EBTime", TransitFields: {abEBTimeFld, baEBTimeFld},
-//                                             NonTransitFields: "WalkTime"})
-//             o.AddLinkField({Name: "FGTime", TransitFields: {abFGTimeFld, baFGTimeFld},
-//                                             NonTransitFields: "WalkTime"})
-
-//                 // drive attributes
-//             abDrvTimeFld = "ABDriveTime"
-//             baDrvTimeFld = "BADriveTime"
-//             o.IncludeDriveLinks = true
-//             o.DriveLinkFilter = "D = 1"
-//             o.AddLinkField({Name: "DriveTime",
-//                             TransitFields:    {"ABDriveTime", "BADriveTime"}, 
-//                             NonTransitFields: {"ABDriveTime", "BADriveTime"}})
-
-//                 // walk attributes
-//             o.IncludeWalkLinks = true
-//             o.WalkLinkFilter = "W = 1"
-//             o.AddLinkField({Name:             "WalkTime",
-//                             TransitFields:    "WalkTime", 
-//                             NonTransitFields: "WalkTime"})
-
-//             ok = o.Run()
-//             if !ok then goto quit
-
-//             RunMacro("Set Transit Network", Args, period, acceMode,)
-//           end // for acceMode
-//       end // for period
-
-//   quit:
-//     return(ok)
-// endMacro
-
-// Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
-//     rsFile = Args.Routes
-//     modeTable = Args.TransModeTable
-//     tnwFile = Args.(period + " " + acceMode + " Transit Net") // AM_walk.tnw, AM_pnr.tnw, AM_knr.tnw
-
-//     o = CreateObject("Network.SetPublicPathFinder", {RS: rsFile, NetworkName: tnwFile})
-
-//         // define user classes
-//     UserClasses = null
-//     ModeUseFld = null
-//     DrvTimeFld = null
-//     DrvInUse   = null
-//     PermitAllW = null
-//     AllowWacc = null
-//     ParkFilter = null
-
-//         // build class name list and class-specific PnR/KnR option array
-//     if acceMode = "walk" then 
-//         TransModes = Args.TransModes // {"bus", "brt", "rail", "all"}
-//     else // if "pnr" or "knr"
-//         TransModes = Subarray(Args.TransModes, 1, 3) // {"bus", "brt", "rail"}
-//     for transMode in TransModes do
-//         UserClasses = UserClasses + {period + "-" + acceMode + "-" + transMode}
-//         ModeUseFld = ModeUseFld + {transMode}
-//         PermitAllW = PermitAllW + {true}
-
-//         if acceMode = "walk" then do
-//             DrvTimeFld = DrvTimeFld + {}
-//             DrvInUse = DrvInUse + {false}
-//             AllowWacc = AllowWacc + {true}
-//             ParkFilter = ParkFilter + {}
-//           end
-//         else do
-//             DrvTimeFld = DrvTimeFld + {"DriveTime"}
-//             DrvInUse = DrvInUse + {true}
-//             AllowWacc = AllowWacc + {false}
-
-//             if acceMode = "knr" then
-//                 ParkFilter = ParkFilter + {"KNR = 1"}
-//             else
-//                 ParkFilter = ParkFilter + {"PNR = 1"}
-//           end // else (if acceMode)
-//       end // for transMode
-
-//     o.UserClasses = UserClasses
-
-//     o.DriveTime = DrvTimeFld
-//     DrvOpts = null
-//     DrvOpts.InUse = DrvInUse
-//     DrvOpts.PermitAllWalk = PermitAllW
-//     DrvOpts.AllowWalkAccess = AllowWacc
-//     DrvOpts.ParkingNodes = ParkFilter
-//     if period = "PM" then
-//         o.DriveEgress(DrvOpts)
-//     else
-//         o.DriveAccess(DrvOpts)  // temporarily commented out PnR/KnR setting due to bug in Transit API
-
-//     o.CentroidFilter = "Centroid = 1"
-//     o.LinkImpedance = "LBTime" // default
-
-//     o.Parameters(
-//         {MaxTripCost : 240,
-//          MaxTransfers: 1,
-//          VOT         : 0.1984 // $/min (40% of the median wage)
-//         })
-
-//     o.AccessControl(
-//         {PermitWalkOnly:     false,
-//          MaxWalkAccessPaths: 10
-//         })
-
-//     o.Combination(
-//         {CombinationFactor: .1
-//         })
-
-//     o.TimeGlobals(
-//         {Headway:         14,
-//          InitialPenalty:  0,
-//          TransferPenalty: 5,
-//          MaxInitialWait:  30,
-//          MaxTransferWait: 10,
-//          MinInitialWait:  2,
-//          MinTransferWait: 5,
-//          Layover:         5, 
-//          MaxAccessWalk:   45,
-//          MaxEgressWalk:   45,
-//          MaxModalTotal:   120
-//         })
-
-//     o.RouteTimeFields(
-//         {Headway: period + "Headway"
-//         })
-
-//     o.ModeTable(
-//         {TableName: modeTable,
-//         // A field in the mode table that contains a list of
-//         // link network field names. These network field names
-//         // in turn point to the AB/BA fields on the link layer.
-//          TimeByMode:          "IVTT",
-//          ModesUsedField:      ModeUseFld,
-//          OnlyCombineSameMode: true,
-//          FreeTransfers:       0
-//         })
-
-//     o.RouteWeights(
-//         {
-//          Fare: null,
-//          Time: null,
-//          InitialPenalty: null,
-//          TransferPenalty: null,
-//          InitialWait: null,
-//          TransferWeight: null,
-//          Dwelling: null
-//         })
-
-//     o.GlobalWeights(
-//         {Fare:            1.0,
-//          Time:            1.0,
-//          InitialPenalty:  1.0,
-//          TransferPenalty: 3.0,
-//          InitialWait:     3.0,
-//          TransferWait:    3.0,
-//          Dwelling:        2.0,
-//          WalkTimeFactor:  3.0,
-//          DriveTimeFactor: 1.0
-//         })
-
-//     o.Fare(
-//         {Type:              "Flat",
-//          RouteFareField:    "Fare",
-//          RouteXFareField:   "Fare",
-//          FareValue:         0.0,
-//          TransferFareValue: 0.0
-//         })
-
-//     if currTransMode <> null then
-//         o.CurrentClass = period + "-" + acceMode + "-" + currTransMode 
-
-//     ok = o.Run()
-//     if !ok then goto quit
-
-//   quit:
-//     return(ok)
-// endMacro
 
 // Macro "Transit Skimming" (Args)
 //     on error do
@@ -871,77 +665,7 @@ endmacro
 //     return(ok)
 // endMacro
 
-// Macro "transit skim" (Args, period, acceMode)
-//     rsFile = Args.Routes
-//     tnwFile = Args.(period + " " + acceMode + " Transit Net") // AM_walk.tnw, AM_pnr.tnw, AM_knr.tnw
 
-//     if acceMode = "walk" then 
-//         TransModes = Args.TransModes // {"bus", "brt", "rail", "all"}
-//     else // if "pnr" or "knr"
-//         TransModes = Subarray(Args.TransModes, 1, 3) // {"bus", "brt", "rail"}
-
-//     for transMode in TransModes do
-//         label = period + " " + acceMode + " " + transMode + " Skim Matrix"
-//         outFile = Args.(label)
-
-//         ok = RunMacro("Set Transit Network", Args, period, acceMode, transMode)
-//         if !ok then goto quit
-
-//             // do skim
-//         obj = CreateObject("Network.PublicTransportSkims")
-
-//         obj.Network = tnwFile
-//         obj.LayerRS = rsFile
-//         obj.Method = "PF"
-//         obj.SkimByNodes = True
-//         obj.OriginFilter = "Centroid=1"
-//         obj.DestinationFilter = "Centroid=1"
-// //xz        obj.NumberofThreads = 16
-
-//         obj.SkimVariables = {"Generalized Cost", "Fare",
-//                              "In-Vehicle Time",
-//                              "Initial Wait Time",
-//                              "Transfer Wait Time",
-//                              "Initial Penalty Time",
-//                              "Transfer Penalty Time",
-//                              "Transfer Walk Time",
-//                              "Access Walk Time",
-//                              "Egress Walk Time",
-//                              "Access Drive Time",
-//                              "Egress Drive Time",
-//                              "Dwelling Time",
-//                              "Total Time",
-//                              "In-Vehicle Cost",
-//                              "Initial Wait Cost",
-//                              "Transfer Wait Cost",
-//                              "Initial Penalty Cost",
-//                              "Transfer Penalty Cost",
-//                              "Transfer Walk Cost",
-//                              "Access Walk Cost",
-//                              "Egress Walk Cost",
-//                              "Access Drive Cost",
-//                              "Egress Drive Cost",
-//                              "Dwelling Cost",
-//                              "Number of Transfers",
-//                              "In-Vehicle Distance",
-//                              "Access Drive Distance",
-//                              "Egress Drive Distance",
-//                              "Length",
-//                              "LBTime",
-//                              "EBTime",
-//                              "FGTime",
-//                              "DriveTime",
-//                              "WalkTime"
-//                             }
-//         obj.OutputMatrix({MatrixFile: outFile, MatrixLabel: label, Compression: True})
-
-//         ok = obj.Run()
-//         if !ok then goto quit
-//       end // for transMode
-
-//   quit:
-//     return(ok)
-// endmacro
 
 // Macro "Transit Assignment" (Args)
 //     on error do
@@ -969,9 +693,9 @@ endmacro
 //     odMatrix = Args.(period + " " + acceMode + " OD Matrix")  // AM_walk_PA.mtx, AM_pnr_PA.mtx, AM_knr_PA.mtx
 
 //     if acceMode = "walk" then 
-//         TransModes = Args.TransModes // {"bus", "brt", "rail", "all"}
+//         TransModes = Args.TransitModes // {"bus", "brt", "rail", "all"}
 //     else // if "pnr" or "knr"
-//         TransModes = Subarray(Args.TransModes, 1, 3) // {"bus", "brt", "rail"}
+//         TransModes = Subarray(Args.TransitModes, 1, 3) // {"bus", "brt", "rail"}
 
 //     for transMode in TransModes do
 //         label = period + " " + acceMode + " " + transMode
@@ -1013,7 +737,7 @@ endmacro
 macro "BuildNetworks Oahu" (Args, Result)
 
     RunMacro("BuildHighwayNetwork Oahu", Args)
-    RunMacro("BuildTransitNetwork Oahu", Args)
+    RunMacro("Create Transit Networks", Args)
     return(1)
 EndMacro
 
@@ -1062,34 +786,240 @@ endmacro
 
 */
 
-macro "BuildTransitNetwork Oahu" (Args)
+// macro "BuildTransitNetwork Oahu" (Args)
 
-    ret_value = 1
-    RouteSystem = Args.TransitRoutes
-    TransitTNW = Args.TransitNetwork
+//     ret_value = 1
+//     RouteSystem = Args.TransitRoutes
+//     TransitTNW = Args.TransitNetwork
 
-    netObj = CreateObject("Network.CreatePublic")
-    netObj.LayerRS = RouteSystem
-    netObj.OutNetworkName = TransitTNW
-    netObj.StopToNodeTagField = "NodeID"
-    netObj.IncludeWalkLinks = true
-    netObj.WalkLinkFilter = "W = 1"
-    netObj.IncludeDriveLinks = true
-    netObj.DriveLinkFilter = "D = 1"
-    netObj.AddRouteField({Name: "PeakHeadway", Field: "AMHeadway"})
-    netObj.AddRouteField({Name: "OffpeakHeadway", Field: "MDHeadway"})
-    netObj.AddRouteField({Name: "Fare", Field: "Fare"})
-    netObj.AddLinkField({Name: "TransitTime", TransitFields: {"ABTransitTime", "BATransitTime"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
-    netObj.AddLinkField({Name: "TransitTimeAM", TransitFields: {"ABTransitTimeAM", "BATransitTimeAM"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
-    netObj.AddLinkField({Name: "TransitTimePM", TransitFields: {"ABTransitTimePM", "BATransitTimePM"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
-    netObj.AddLinkField({Name: "TransitTimeOP", TransitFields: {"ABTransitTimeOP", "BATransitTimeOP"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
-    netObj.AddLinkField({Name: "Time", TransitFields: {"ABFreeflowTime", "BAFreeFlowTime"}, NonTransitFields: {"ABFreeflowTime", "BAFreeFlowTime"}})
-    netObj.AddLinkField({Name: "AMTime", TransitFields: {"ABAMTime", "BAAMTime"}, NonTransitFields: {"ABAMTime", "BAAMTime"}})
-    netObj.AddLinkField({Name: "PMTime", TransitFields: {"ABPMTime", "BAPMTime"}, NonTransitFields: {"ABPMTime", "BAPMTime"}})
-    netObj.AddLinkField({Name: "OPTime", TransitFields: {"ABOPTime", "BAOPTime"}, NonTransitFields: {"ABOPTime", "BAOPTime"}})
-    netObj.Run()
+//     netObj = CreateObject("Network.CreatePublic")
+//     netObj.LayerRS = RouteSystem
+//     netObj.OutNetworkName = TransitTNW
+//     netObj.StopToNodeTagField = "NodeID"
+//     netObj.IncludeWalkLinks = true
+//     netObj.WalkLinkFilter = "W = 1"
+//     netObj.IncludeDriveLinks = true
+//     netObj.DriveLinkFilter = "D = 1"
+//     netObj.AddRouteField({Name: "PeakHeadway", Field: "AMHeadway"})
+//     netObj.AddRouteField({Name: "OffpeakHeadway", Field: "MDHeadway"})
+//     netObj.AddRouteField({Name: "Fare", Field: "Fare"})
+//     netObj.AddLinkField({Name: "TransitTime", TransitFields: {"ABTransitTime", "BATransitTime"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+//     netObj.AddLinkField({Name: "TransitTimeAM", TransitFields: {"ABTransitTimeAM", "BATransitTimeAM"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+//     netObj.AddLinkField({Name: "TransitTimePM", TransitFields: {"ABTransitTimePM", "BATransitTimePM"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+//     netObj.AddLinkField({Name: "TransitTimeOP", TransitFields: {"ABTransitTimeOP", "BATransitTimeOP"}, NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+//     netObj.AddLinkField({Name: "Time", TransitFields: {"ABFreeflowTime", "BAFreeFlowTime"}, NonTransitFields: {"ABFreeflowTime", "BAFreeFlowTime"}})
+//     netObj.AddLinkField({Name: "AMTime", TransitFields: {"ABAMTime", "BAAMTime"}, NonTransitFields: {"ABAMTime", "BAAMTime"}})
+//     netObj.AddLinkField({Name: "PMTime", TransitFields: {"ABPMTime", "BAPMTime"}, NonTransitFields: {"ABPMTime", "BAPMTime"}})
+//     netObj.AddLinkField({Name: "OPTime", TransitFields: {"ABOPTime", "BAOPTime"}, NonTransitFields: {"ABOPTime", "BAOPTime"}})
+//     netObj.Run()
 
-       quit:
-    Return(ret_value)
+//        quit:
+//     Return(ret_value)
 
-endmacro
+// endmacro
+
+Macro "Create Transit Networks" (Args)
+
+    rsFile = Args.TransitRoutes
+    Periods = Args.periods
+    AccessModes = Args.AccessModes
+    skim_dir = Args.OutputSkims
+
+    objLyrs = CreateObject("AddRSLayers", {FileName: rsFile})
+    rtLyr = objLyrs.RouteLayer
+
+    // Retag stops to nodes. While this step is done by the route manager
+    // during scenario creation, a user might create a new route to test after
+    // creating the scenario. This makes sure it 'just works'.
+    TagRouteStopsWithNode(rtLyr,, "Node_ID", 0.2)
+
+    for period in Periods do
+        for acceMode in AccessModes do
+            tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
+            o = CreateObject("Network.CreateTransit")
+            o.LayerRS = rsFile
+            o.OutNetworkName = tnwFile
+            o.UseModes({TransitModeField: "Mode", NonTransitModeField: "Mode"})
+
+            // route attributes
+            o.RouteFilter = period + "Headway > 0 & Mode > 0"
+            o.AddRouteField({Name: period + "Headway", Field: period + "Headway"})
+            o.AddRouteField({Name: "Fare", Field: "Fare"})
+
+            // stop attributes
+            o.StopToNodeTagField = "Node_ID"
+
+            // link attributes
+            o.AddLinkField({Name: "bus_time", TransitFields: {"ABTransitTime" + period, "BATransitTime" + period},
+                                            NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+            // rail time never changes so just use AM
+            o.AddLinkField({Name: "rail_time", TransitFields: {"ABTransitTimeAM", "ABTransitTimeAM"},
+                                            NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+
+            // drive attributes
+            o.IncludeDriveLinks = true
+            o.DriveLinkFilter = "D = 1"
+            o.AddLinkField({Name: "DriveTime",
+                            TransitFields:    {"AB" + period + "Time", "BA" + period + "Time"}, 
+                            NonTransitFields: {"AB" + period + "Time", "BA" + period + "Time"}})
+
+            // walk attributes
+            o.IncludeWalkLinks = true
+            o.WalkLinkFilter = "W = 1"
+            o.AddLinkField({Name:             "WalkTime",
+                            TransitFields:    {"ABWalkTime", "BAWalkTime"}, 
+                            NonTransitFields: {"ABWalkTime", "BAWalkTime"}})
+
+            ok = o.Run()
+
+            RunMacro("Set Transit Network", Args, period, acceMode,)
+          end // for acceMode
+      end // for period
+endMacro
+
+Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
+    rsFile = Args.TransitRoutes
+    modeTable = Args.TransitModeTable
+    skim_dir = Args.OutputSkims
+    tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
+
+    o = CreateObject("Network.SetPublicPathFinder", {RS: rsFile, NetworkName: tnwFile})
+
+    // define user classes
+    UserClasses = null
+    ModeUseFld = null
+    DrvTimeFld = null
+    DrvInUse   = null
+    PermitAllW = null
+    AllowWacc = null
+    ParkFilter = null
+
+    // build class name list and class-specific PnR/KnR option array
+    if acceMode = "walk" then 
+        TransModes = Args.TransitModes // {"bus", "rail", "all"}
+    else // if "pnr" or "knr"
+        TransModes = Subarray(Args.TransitModes, 1, 3) // {"bus", "rail"}
+    for transMode in TransModes do
+        UserClasses = UserClasses + {period + "-" + acceMode + "-" + transMode}
+        ModeUseFld = ModeUseFld + {transMode}
+        PermitAllW = PermitAllW + {false}
+
+        if acceMode = "walk" then do
+            DrvTimeFld = DrvTimeFld + {}
+            DrvInUse = DrvInUse + {false}
+            AllowWacc = AllowWacc + {true}
+            ParkFilter = ParkFilter + {}
+          end
+        else do
+            DrvTimeFld = DrvTimeFld + {"DriveTime"}
+            DrvInUse = DrvInUse + {true}
+            AllowWacc = AllowWacc + {false}
+
+            if acceMode = "knr" then
+                ParkFilter = ParkFilter + {"KNR = 1"}
+            else
+                ParkFilter = ParkFilter + {"PNR = 1"}
+        end // else (if acceMode)
+    end // for transMode
+
+    o.UserClasses = UserClasses
+
+    o.DriveTime = DrvTimeFld
+    DrvOpts = null
+    DrvOpts.InUse = DrvInUse
+    DrvOpts.PermitAllWalk = PermitAllW
+    DrvOpts.AllowWalkAccess = AllowWacc
+    DrvOpts.ParkingNodes = ParkFilter
+    // if period = "PM" then
+    //     o.DriveEgress(DrvOpts)
+    // else
+    //     o.DriveAccess(DrvOpts)  // temporarily commented out PnR/KnR setting due to bug in Transit API
+    o.DriveAccess(DrvOpts)
+
+    o.CentroidFilter = "Centroid = 1"
+    // o.LinkImpedance = "LBTime" // default
+
+    o.Parameters(
+        {MaxTripCost : 240,
+         MaxTransfers: 2,
+         VOT         : 0.1984 // $/min (40% of the median wage)
+        })
+
+    o.AccessControl(
+        {PermitWalkOnly:     false,
+         MaxWalkAccessPaths: 10
+        })
+
+    o.Combination(
+        {CombinationFactor: .1
+        })
+
+    o.TimeGlobals(
+        {Headway:         14,
+         InitialPenalty:  0,
+         TransferPenalty: 5,
+         MaxInitialWait:  30,
+         MaxTransferWait: 10,
+         MinInitialWait:  2,
+         MinTransferWait: 5,
+         Layover:         5, 
+         MaxAccessWalk:   45,
+         MaxEgressWalk:   45,
+         MaxModalTotal:   120
+        })
+
+    o.RouteTimeFields(
+        {Headway: period + "Headway"
+        })
+
+    o.ModeTable(
+        {TableName: modeTable,
+        // A field in the mode table that contains a list of
+        // link network field names. These network field names
+        // in turn point to the AB/BA fields on the link layer.
+         TimeByMode:          "IVTT",
+         ModesUsedField:      ModeUseFld,
+         OnlyCombineSameMode: true,
+         FreeTransfers:       2
+        })
+
+    o.RouteWeights(
+        {
+         Fare: null,
+         Time: null,
+         InitialPenalty: null,
+         TransferPenalty: null,
+         InitialWait: null,
+         TransferWeight: null,
+         Dwelling: null
+        })
+
+    o.GlobalWeights(
+        {Fare:            1.0,
+         Time:            1.0,
+         InitialPenalty:  1.0,
+         TransferPenalty: 3.0,
+         InitialWait:     3.0,
+         TransferWait:    3.0,
+         Dwelling:        2.0,
+         WalkTimeFactor:  3.0,
+         DriveTimeFactor: 1.0
+        })
+
+    o.Fare(
+        {Type:              "Flat",
+         RouteFareField:    "Fare",
+         RouteXFareField:   "Fare",
+         FareValue:         0.0,
+         TransferFareValue: 0.0
+        })
+
+    if currTransMode <> null then
+        o.CurrentClass = period + "-" + acceMode + "-" + currTransMode 
+
+    ok = o.Run()
+    if !ok then goto quit
+
+  quit:
+    return(ok)
+endMacro
