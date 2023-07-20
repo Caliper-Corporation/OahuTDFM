@@ -75,7 +75,7 @@ coords <- long %>%
 write_csv(coords, "data/_private/obs_survey/output/coords.csv")
 
 # Used TC to geocode the points and create the following file
-tazs <- "data/_private/obs_survey/output/coords_with_tazs.csv"
+geo_file <- "data/_private/obs_survey/output/coords_with_tazs.csv"
 if (file.exists(geo_file)) {
   geocoded <- read_csv(geo_file) %>%
     select(coord, TAZ)
@@ -101,6 +101,13 @@ create_pa <- attach_tazs %>%
   )
 ```
 
+```{r}
+create_pa %>%
+  group_by(AccMode) %>%
+  summarize(count = n())
+```
+
+
 
 ```{r, eval=FALSE}
 # Summarize by access mode, time of day, and P/A TAZ. This table was used to do
@@ -110,5 +117,9 @@ test_assn <- create_pa %>%
   group_by(AccMode, DAYPART, ProdTAZ, AttrTAZ) %>%
   summarize(weight = sum(WeightLinked))
 write_csv(test_assn, "data/_private/obs_survey/output/test_assignment.csv")  
+```
+
+```{r, eval=FALSE}
+write_csv(create_pa, "data/_private/obs_survey/output/output_obs.csv")
 ```
 
