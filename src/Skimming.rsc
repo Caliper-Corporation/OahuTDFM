@@ -303,10 +303,10 @@ Macro "transit skim" (Args)
 
         tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
 
-        if acceMode = "walk" then 
-            TransModes = Args.TransitModes // {"bus", "rail", "all"}
-        else // if "pnr" or "knr"
-            TransModes = Subarray(Args.TransitModes, 1, 3) // {"bus", "brt", "rail"}
+        if acceMode = "walk" 
+            then TransModes = Args.TransitModes
+            // if "pnr" or "knr" remove 'all'
+            else TransModes = ExcludeArrayElements(Args.TransitModes, Args.TransitModes.position("all"), 1)
 
             for transMode in TransModes do
                 label = period + " " + acceMode + " " + transMode + " Skim Matrix"

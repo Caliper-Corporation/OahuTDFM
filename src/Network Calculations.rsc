@@ -926,10 +926,11 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     ParkFilter = null
 
     // build class name list and class-specific PnR/KnR option array
-    if acceMode = "walk" then 
-        TransModes = Args.TransitModes // {"bus", "rail", "all"}
-    else // if "pnr" or "knr"
-        TransModes = Subarray(Args.TransitModes, 1, 3) // {"bus", "rail"}
+    if acceMode = "walk" 
+        then TransModes = Args.TransitModes
+        // if "pnr" or "knr" remove 'all'
+        else TransModes = ExcludeArrayElements(Args.TransitModes, Args.TransitModes.position("all"), 1)
+
     for transMode in TransModes do
         UserClasses = UserClasses + {period + "-" + acceMode + "-" + transMode}
         ModeUseFld = ModeUseFld + {transMode}
@@ -940,16 +941,14 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
             DrvInUse = DrvInUse + {false}
             AllowWacc = AllowWacc + {true}
             ParkFilter = ParkFilter + {}
-          end
-        else do
+        end else do
             DrvTimeFld = DrvTimeFld + {"DriveTime"}
             DrvInUse = DrvInUse + {true}
             AllowWacc = AllowWacc + {false}
 
-            if acceMode = "knr" then
-                ParkFilter = ParkFilter + {"KNR = 1"}
-            else
-                ParkFilter = ParkFilter + {"PNR = 1"}
+            if acceMode = "knr" 
+                then ParkFilter = ParkFilter + {"KNR = 1"}
+                else ParkFilter = ParkFilter + {"PNR = 1"}
         end // else (if acceMode)
     end // for transMode
 
@@ -968,7 +967,7 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     o.DriveAccess(DrvOpts)
 
     o.CentroidFilter = "Centroid = 1"
-    // o.LinkImpedance = "LBTime" // default
+    o.LinkImpedance = "LBTime" // default
 
     o.Parameters(
         {MaxTripCost : 240,
