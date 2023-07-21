@@ -5,6 +5,7 @@
 Macro "Network Calculations" (Args)
     RunMacro("CopyDataToOutputFolder", Args)
     RunMacro("Expand DTWB", Args)
+    RunMacro("Mark KNR Nodes", Args)
     RunMacro("Determine Area Type", Args)
     RunMacro("Speeds and Capacities", Args)
     RunMacro("CalculateTransitSpeeds Oahu", Args)
@@ -41,6 +42,36 @@ Macro "Expand DTWB" (Args)
     set.W = if Position(v_dtwb, "W") <> 0 then 1 else 0
     set.B = if Position(v_dtwb, "B") <> 0 then 1 else 0
     tbl.SetDataVectors({FieldData: set})
+endmacro
+
+/*
+
+*/
+
+Macro "Mark KNR Nodes" (Args)
+
+    rts_file = Args.TransitRoutes
+
+    map = CreateObject("Map", rts_file)
+    {nlyr, llyr, rlyr, slyr} = map.GetLayerNames()
+
+    node = CreateObject("Table", nlyr)
+    node.AddField({
+        FieldName: "KNR",
+        Description: "If node can be considered for KNR|(If a bus stop is at the node)"
+    })
+    links = CreateObject("Table", llyr)
+    links.SelectByQuery({
+        SetName: "drive_links",
+        Query: "Select * where D  = 1"
+    })
+    SetLayer(nlyr)
+    SelectByLinks("drive nodes", "several", "drive_links", )
+    n = SelectByVicinity ("knr", "several", slyr + "|", 10/5280, {"Source And": "drive nodes"})
+    v = Vector(n, "Long", {Constant: 1})
+    node.ChangeSet("knr")
+    node.KNR = v
+
 endmacro
 
 /*
