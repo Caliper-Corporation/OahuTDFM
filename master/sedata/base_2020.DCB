@@ -1,5 +1,5 @@
 
-209
+225
 "TAZ",I,1,4,0,11,0,,"","",,"Sum",
 "TotalHH",I,5,4,0,8,0,,"","",,"Sum",
 "OccupiedHH",I,9,4,0,8,0,,"","",,"Sum",
@@ -33,3 +33,5 @@
 "Emp_Public",R,186,8,0,14,2,,"","EMP_NAICS_92",,"Sum",
 "Emp_Hotel",R,194,8,0,14,2,,"","",,"Sum",
 "Emp_Military",R,202,8,0,14,2,,"","",,"Sum",
+"VisArrivalsWork",R,210,8,0,14,2,,"","Special Generator|Daily visitor arrivals for work purposes",,"Sum",
+"VisArrivalsRec",R,218,8,0,14,2,,"","Special Generator|Daily visitor arrivals for recreational purposes",,"Sum",
