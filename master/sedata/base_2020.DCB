@@ -33,5 +33,5 @@
 "Emp_Public",R,186,8,0,14,2,,"","EMP_NAICS_92",,"Sum",
 "Emp_Hotel",R,194,8,0,14,2,,"","",,"Sum",
 "Emp_Military",R,202,8,0,14,2,,"","",,"Sum",
-"VisArrivalsWork",R,210,8,0,14,2,,"","Special Generator|Daily visitor arrivals for work purposes",,"Sum",
-"VisArrivalsRec",R,218,8,0,14,2,,"","Special Generator|Daily visitor arrivals for recreational purposes",,"Sum",
+"VisArrivalsWork",R,210,8,0,14,2,,"","Special Generator|Daily visitor arrivals for work purposes|Currently, this is just the convention center.",,"Sum",
+"VisArrivalsRec",R,218,8,0,14,2,,"","Special Generator|Monthly visits from visitors in May 2023|https://www.hawaiitourismauthority.org/research/symphony-dashboards/||Used to capture trip attractions that aren't related to employment.",,"Sum",
