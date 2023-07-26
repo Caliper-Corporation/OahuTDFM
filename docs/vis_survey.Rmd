@@ -1,0 +1,48 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-07-25"
+editor_options: 
+  chunk_output_type: console
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(dplyr.summarise.inform = FALSE)
+options(scipen = 999)
+
+library(tidyverse)
+```
+
+```{r}
+vis <- read_csv("data/_private/vis_survey/input/Oahu_Visitor.csv") %>%
+  arrange(SAMPN, placeno)
+```
+
+```{r}
+translate_table <- function(tbl){
+  equiv_tbl <- read_csv("data/_private/vis_survey/input/equiv_table.csv")
+  
+  variables <- unique(equiv_tbl$VARIABLE)
+  col_names <- colnames(tbl)
+  for (variable in variables) {
+    if (!(variable %in% col_names)) next
+    
+    tmp <- equiv_tbl %>%
+      filter(VARIABLE == variable) %>%
+      select(CODE, EQUIV)
+
+    tbl <- tbl %>%
+      rename(temp = variable) %>%
+      left_join(tmp, by = c("temp" = "CODE")) %>%
+      mutate(temp = ifelse(is.na(EQUIV), temp, EQUIV)) %>%
+      select(-EQUIV) %>%
+      rename(!!variable := temp)
+  }
+  return(tbl)
+}
+```
+
+```{r}
+translate_vis <- translate_table(vis)
+```
+
