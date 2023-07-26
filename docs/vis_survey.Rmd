@@ -13,9 +13,10 @@ options(scipen = 999)
 library(tidyverse)
 ```
 
-```{r}
+```{r, include=FALSE}
 vis <- read_csv("data/_private/vis_survey/input/Oahu_Visitor.csv") %>%
   arrange(SAMPN, placeno)
+taz_equiv <- read_csv("data/_private/vis_survey/input/taz_equiv.csv")
 ```
 
 ```{r}
@@ -44,5 +45,120 @@ translate_table <- function(tbl){
 
 ```{r}
 translate_vis <- translate_table(vis)
+```
+
+```{r}
+# fix the party variable, which has some zeros
+fix_party <- translate_vis %>%
+  mutate(trip_party = pmax(1, trip_party))
+
+# Update survey from the old 764 zone system to the new 1000+ system
+update_tazs <- fix_party %>%
+  left_join(taz_equiv, by = "TAZ") %>%
+  mutate(TAZ = new_taz) %>%
+  select(-new_taz)
+```
+
+## Summaries
+
+### Business vs Personal Visitors
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PURPOSE) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(desc(percent))
+```
+
+### Lodging Type
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PLCTYPE) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(desc(percent))
+```
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PURPOSE, PLCTYPE) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(id_cols = PLCTYPE, names_from = PURPOSE, values_from = percent)
+```
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(LastCallWeekDay) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(desc(percent))
+```
+
+
+### Trip Mode
+
+```{r}
+update_tazs %>%
+  group_by(mode) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  filter(!is.na(mode)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  arrange(desc(percent))
+```
+
+```{r}
+# Create trip table
+trip_tbl <- update_tazs %>%
+  group_by(SAMPN) %>%
+  mutate(
+    weight = lead(Daily_Census_Weight),
+    trip_party = lead(trip_party),
+    trip_deptime = deptime,
+    trip_arrtime = lead(arrtime),
+    trip_mode = lead(mode),
+    trip_o_purp = tpurp,
+    trip_d_purp = lead(tpurp),
+    trip_o_taz = TAZ,
+    trip_d_taz = lead(TAZ),
+    trip_o_ptype = PTYPE,
+    trip_d_ptype = lead(PTYPE),
+    trip_pa_flag = ifelse(trip_d_purp == "home" & trip_o_purp != "home", 0, 1),
+    trip_p_taz = ifelse(trip_pa_flag == 1, trip_o_taz, trip_d_taz),
+    trip_a_taz = ifelse(trip_pa_flag == 1, trip_d_taz, trip_o_taz),
+    trip_iz_flag = ifelse(trip_o_taz == trip_d_taz, 1, 0)
+  ) %>%
+  select(SAMPN, weight, visitor_type = PURPOSE, starts_with("trip_")) %>%
+  rename_with(~stringr::str_remove(., "trip_")) %>%
+  filter(!is.na(party))
+```
+
+```{r, include=FALSE}
+auto_skim <- read_csv("data/input/skims/auto_skim_am.csv")
+bike_skim <- read_csv("data/input/skims/bike_skim.csv")
+walk_skim <- read_csv("data/input/skims/walk_skim.csv")
+bus_skim <- read_csv("data/input/skims/bus_skim.csv")
+```
+
+```{r}
+add_skims <- trip_tbl %>%
+  left_join(auto_skim, by = c("p_taz", "a_taz")) %>%
+  left_join(bike_skim, by = c("p_taz", "a_taz")) %>%
+  left_join(walk_skim, by = c("p_taz", "a_taz")) %>%
+  left_join(bus_skim, by = c("p_taz", "a_taz"))
 ```
 
