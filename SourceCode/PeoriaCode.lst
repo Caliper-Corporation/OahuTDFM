@@ -21,3 +21,4 @@ Calibration.rsc
 ../src/utils/RoadwayProjectManagement.rsc
 ../src/utils/TransitProjectManagement.rsc
 ../src/utils/utils.rsc
+../src/Visitors.rsc

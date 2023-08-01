@@ -65,7 +65,17 @@ Macro "Oahu Steps" (Args)
   Args.TransitDriveSkimPM = Args.[Output Folder] + "\\Skims\\Transit\\d_transitPM.mtx"
   Args.TransitWalkSkimOP = Args.[Output Folder] + "\\Skims\\Transit\\w_transitOP.mtx"
   Args.TransitDriveSkimOP = Args.[Output Folder] + "\\Skims\\Transit\\d_transitOP.mtx"
-  RunMacro("HighwayAndTransitSkim Oahu", Args)
+  // RunMacro("HighwayAndTransitSkim Oahu", Args)
+
+  // Vistors
+  Args.[Vis Hotel Occ Rate] = .846
+  Args.[Vis Condo Occ Rate] = .846
+  Args.[Vis HH Occ Rate] = .022
+  Args.[Vis Hotel Business Ratio] = .088
+  Args.[Vis Condo Business Ratio] = .063
+  Args.[Vis HH Business Ratio] = .012
+  Args.[Vis Trip Rates] = Args.[Input Folder] + "\\visitors\\vis_generation.csv"
+  RunMacro("Visitor Model", Args)
   
   return(1)
 endmacro
