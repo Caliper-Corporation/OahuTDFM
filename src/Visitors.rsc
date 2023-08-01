@@ -24,11 +24,13 @@ Macro "Visitor Lodging Locations" (Args)
     }})
 
     se.visitors_b = se.OccupiedHH * Args.[Vis HH Occ Rate] * Args.[Vis HH Business Ratio] +
-        se.HU * Args.[Vis Hotel Occ Rate] * Args.[Vis Hotel Business Ratio] + 
+        se.HR * Args.[Vis Hotel Occ Rate] * Args.[Vis Hotel Business Ratio] + 
         se.RC * Args.[Vis Condo Occ Rate] * Args.[Vis Condo Business Ratio]
+    se.visitors_b = se.visitors_b * Args.[Vis Business Party Size] * Args.[Vis Party Calibration Factor]
     se.visitors_p = se.OccupiedHH * Args.[Vis HH Occ Rate] * (1 - Args.[Vis HH Business Ratio]) +
-        se.HU * Args.[Vis Hotel Occ Rate] * (1 - Args.[Vis Hotel Business Ratio]) + 
+        se.HR * Args.[Vis Hotel Occ Rate] * (1 - Args.[Vis Hotel Business Ratio]) + 
         se.RC * Args.[Vis Condo Occ Rate] * (1 - Args.[Vis Condo Business Ratio])
+    se.visitors_p = se.visitors_p * Args.[Vis Personal Party Size] * Args.[Vis Party Calibration Factor]
 endmacro
 
 /*

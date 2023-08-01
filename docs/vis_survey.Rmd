@@ -74,6 +74,17 @@ update_tazs %>%
   arrange(desc(percent))
 ```
 
+### Party Size
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PURPOSE) %>%
+  summarize(party_size = weighted.mean(VIS_PARTY, Daily_Census_Weight))
+```
+
+
 ### Lodging Type
 
 ```{r}
@@ -216,7 +227,9 @@ May 2020: 6,176
 May 2021: 80,921
 May 2023: 105,124
 
-This has to be considered when validating to 2019 traffic counts.
+The visitor model was calibrated to create 109,584 daily visitors on the island.
+This was done to ensure the validation to 2019 traffic counts would not be
+impacted by COVID-related reductions in visitor numbers.
 
 ```{r, eval=FALSE}
 write_csv(add_skims, "data/_private/vis_survey/output/vis_survey.csv")
