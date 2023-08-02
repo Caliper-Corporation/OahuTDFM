@@ -65,11 +65,11 @@ macro "HighwayNetworkSkim Oahu" (Args)
         m.RenameCores({CurrentNames: currCoreNames, NewNames: {"Time", "Distance"}})
         idx = m.AddIndex({IndexName: "TAZ",
                     ViewName: NodeLayer, Dimension: "Both",
-                    OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+                    OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
         idxint = m.AddIndex({IndexName: "InternalTAZ",
                     ViewName: NodeLayer, Dimension: "Both",
                     // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
-                    OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+                    OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
             
     end
 
@@ -138,21 +138,21 @@ macro "HighwayNetworkSkim Oahu" (Args)
     m.RenameCores({CurrentNames: {"WalkTime", "Length (Skim)"}, NewNames: {"Time", "Distance"}})
     idx = m.AddIndex({IndexName: "TAZ",
                 ViewName: NodeLayer, Dimension: "Both",
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+                OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
     idxint = m.AddIndex({IndexName: "InternalTAZ",
                 ViewName: NodeLayer, Dimension: "Both",
                 // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+                OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
 
     m = CreateObject("Matrix", bikeskimfile)
     m.RenameCores({CurrentNames: {"BikeTime", "Length (Skim)"}, NewNames: {"Time", "Distance"}})
     idx = m.AddIndex({IndexName: "TAZ",
                 ViewName: NodeLayer, Dimension: "Both",
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+                OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
     idxint = m.AddIndex({IndexName: "InternalTAZ",
                 ViewName: NodeLayer, Dimension: "Both",
                 // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
-                OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null"})
+                OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
 
     quit:
     Return(ret_value)
