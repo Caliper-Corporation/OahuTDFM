@@ -102,7 +102,7 @@ Macro "Determine Area Type" (Args)
     RunMacro("Add Fields", {view: se_vw, a_fields: a_fields})
 
     // Join the se to TAZ
-    jv = JoinViews("jv", taz_lyr + ".ID", se_vw + ".TAZ", )
+    jv = JoinViews("jv", taz_lyr + ".TAZID", se_vw + ".TAZ", )
 
     data = GetDataVectors(
         jv + "|",
