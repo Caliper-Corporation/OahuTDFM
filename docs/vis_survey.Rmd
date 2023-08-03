@@ -232,7 +232,7 @@ This was done to ensure the validation to 2019 traffic counts would not be
 impacted by COVID-related reductions in visitor numbers.
 
 ```{r, eval=FALSE}
-write_csv(add_skims, "data/_private/vis_survey/output/vis_survey.csv")
-write_csv(trip_rates, "data/_private/vis_survey/output/vis_generation.csv")
+write_csv(add_skims, "data/_private/vis_survey/output/vis_trips.csv", na = "")
+write_csv(trip_rates, "data/_private/vis_survey/output/vis_generation.csv", na = "")
 ```
 
