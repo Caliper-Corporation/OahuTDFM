@@ -19,7 +19,7 @@
 "UnivTAZ",I,78,4,0,8,0,,"","TAZ of the university associated wth this group quarter",,"Sum",
 "University",C,82,16,0,16,0,,"","Univesity name associated with this group quarter",,"Copy",
 "UnivEnrollment",I,98,4,0,8,0,,"","",,"Sum",
-"TotalEmployment",R,102,8,0,14,2,,"","",,"Sum",
+"TotalEmployment",R,102,8,0,14,2,,"","All employment except military",,"Sum",
 "TAZCounty",I,110,4,0,8,0,,"","",,"Sum",
 "Emp_Agriculture",R,114,8,0,14,2,,"","EMP_NAICS_11",,"Sum",
 "Emp_Manufacturing",R,122,8,0,14,2,,"","EMP_NAICS_21 + EMP_NAICS_31-33",,"Sum",
