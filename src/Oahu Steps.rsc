@@ -50,7 +50,7 @@ Macro "Oahu Steps" (Args)
 
   Args.HighwayNetwork = Args.[Output Folder] + "\\Skims\\highwaynet.net"
   Args.TransitNetwork = Args.[Output Folder] + "\\Skims\\TransitNetwork.tnw"
-  // RunMacro("BuildNetworks Oahu", Args)
+  RunMacro("BuildNetworks Oahu", Args)
 
   Args.HighwaySkimAM = Args.[Output Folder] + "\\Skims\\Highway_AM.mtx"
   Args.HighwaySkimPM = Args.[Output Folder] + "\\Skims\\Highway_PM.mtx"
@@ -74,9 +74,9 @@ Macro "Oahu Steps" (Args)
   Args.[Vis Hotel Business Ratio] = .088
   Args.[Vis Condo Business Ratio] = .063
   Args.[Vis HH Business Ratio] = .012
-  Args.[Vis Personal Party Size] = 1.74
-  Args.[Vis Business Party Size] = 2.64
-  Args.[Vis Party Calibration Factor] = 1.46
+  Args.[Vis Personal Party Size] = 2.64
+  Args.[Vis Business Party Size] = 1.74
+  Args.[Vis Party Calibration Factor] = 1
   Args.[Vis Trip Rates] = Args.[Input Folder] + "\\visitors\\vis_generation.csv"
   RunMacro("Visitor Model", Args)
   
