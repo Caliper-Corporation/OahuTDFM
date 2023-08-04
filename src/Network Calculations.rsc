@@ -967,7 +967,7 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     o.DriveAccess(DrvOpts)
 
     o.CentroidFilter = "Centroid = 1"
-    o.LinkImpedance = "LBTime" // default
+    o.LinkImpedance = "bus_time" // default
 
     o.Parameters(
         {MaxTripCost : 240,
