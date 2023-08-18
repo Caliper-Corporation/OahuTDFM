@@ -107,7 +107,8 @@ Body:
                Args.[Output Folder] + "\\access\\",
                Args.[Output Folder] + "\\skims\\",
                Args.[Output Folder] + "\\taz\\",
-               Args.[Output Folder] + "\\ToursAndTrips\\"    
+               Args.[Output Folder] + "\\ToursAndTrips\\",
+               Args.[Output Folder] + "\\OD\\"    
                }
     for f in folders do
         o = CreateObject("CC.Directory", RunMacro("FlowChart.ResolveValue", f, Args))

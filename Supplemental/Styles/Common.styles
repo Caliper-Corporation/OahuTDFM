@@ -69,11 +69,6 @@
 														                              {Name: "Expression", Type: "string",    Fixed: "false"}}
                                 })
 
-  Styles.AvailabilityS = Pme.Table({Height: 4, Autosize: "True", Values: "Columns",
-                                                Columns: {{Name: "Alternative", Type: "string",  Fixed: "false", Width:  100},
-														                              {Name: "Expression", Type: "string",    Fixed: "false"}}
-                                })
-
   Styles.AlternativesList = Pme.Table({Height: 20, Autosize: "True", Values: "Columns",
                                                 Columns: {{Name: "Alternative", Type: "string",  Fixed: "false", Width:  "30%"},
 														                              {Name: "Utility Column", Type: "string",  Fixed: "false", Width:  "40%"},
@@ -245,6 +240,13 @@
                                                             {Name: "Coefficient",   Type: "real",    Fixed: "false", Decimals: "4"}}
                                     })
 
+   Styles.DestUtilityWithSegment = Pme.Table({Height: 21, Autosize: "True", Values: "Columns",
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
+															                               {Name: "Expression", Type: "string",  Fixed: "false", Width:  "35%"},
+                                                             {Name: "Segment", Type: "string",  Fixed: "false", Width:  "25%"},
+                                                             {Name: "Coefficient",   Type: "real",    Fixed: "false", Decimals: "4"}}
+                                    })
+
    Styles.StopsFreqUtility = Pme.Table({Height: 30, Autosize: "True", Values: "Columns",
                                                 Columns: {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
 															                            {Name: "Expression", Type: "string",  Fixed: "false", Width:  "35%"},
@@ -327,11 +329,213 @@
 															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
                                                             {Name: "Coefficient","Type":"real","Width":"10%","Decimals":"4"},
                                                             {Name: "AutoDriver",   Type: "boolean",    Fixed: "false"},
-															                              {Name: "AutoPass",   Type: "boolean",    Fixed: "false"},
+															                              {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                         })
+
+    Styles.PatternChoice = Pme.Table({Height: 18, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "40%"},
+                                                            {Name: "Coefficient","Type":"real","Width":"10%","Decimals":"4"},
+                                                            {Name: "N",   Type: "boolean",    Fixed: "false"},
+															                              {Name: "I",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "J",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "IJ",   Type: "boolean",    Fixed: "false"}}
+                                    })
+
+    Styles.JointTourFreqUtility = Pme.Table({Height: 20, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
+                                                            {Name: "O1",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "O2",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "S1",   Type: "boolean",    Fixed: "false"},
+															                              {Name: "O1S1",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "O2S1",   Type: "boolean",    Fixed: "false"}}
+                                                })
+
+    Styles.JointTourCompOtherUtility = Pme.Table({Height: 13, MaxRows: 12, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  190},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  350},
+                                                            {Name: "All",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A1K1",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A1K2",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A1K3P",   Type: "real",    Fixed: "false"},
+															                              {Name: "A2K0",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A2K1",   Type: "real",    Fixed: "false"}} 
+                                                })
+
+  Styles.JointTourCompShopUtility = Pme.Table({Height: 9, MaxRows: 8, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  190},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  350},
+                                                            {Name: "All",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A1K1",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A1K2P",   Type: "real",    Fixed: "false"},
+															                              {Name: "A2K0",   Type: "real",    Fixed: "false"},
+                                                            {Name: "A2K1P",   Type: "real",    Fixed: "false"}}
+                                            })
+
+  Styles.ParticipationUtility = Pme.Table({Height: 15, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "45%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
+                                                            {Name: "Yes",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "No",   Type: "boolean",    Fixed: "false"}}
+                                            })
+  
+  Styles.JointTourDurOtherUtility = Pme.Table({Height: 13, MaxRows: 12, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "5 - 30 min",   Type: "real",    Fixed: "false"},
+															                              {Name: "30 - 60 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "60 - 90 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "90 - 120 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "120 - 150 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "150 - 180 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "180 - 210 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "210 - 240 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "240 - 270 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "270 - 300 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "300 - 330 min",   Type: "real",    Fixed: "false"}}
+                                            })
+
+
+  Styles.JointTourDurShopUtility = Pme.Table({Height: 13, MaxRows: 12, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "5 - 30 min",   Type: "real",    Fixed: "false"},
+															                              {Name: "30 - 60 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "60 - 90 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "90 - 120 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "120 - 150 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "150 - 180 min",   Type: "real",    Fixed: "false"}}
+                                            })
+
+  Styles.JointTourStartUtility = Pme.Table({Height: 16, MaxRows: 15, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "7 AM - 10 AM",   Type: "real",    Fixed: "false"},
+															                              {Name: "10 AM - 1 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "1 PM - 4 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "4 PM - 6 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "6 PM - 9 PM",   Type: "real",    Fixed: "false"}}
+                                            })
+
+  Styles.JointTourOtherModeUtility = Pme.Table({Height: 15, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width: "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
+                                                            {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Walk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Bike",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                            })
+
+  Styles.JointTourShopModeUtility = Pme.Table({Height: 8, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width: "25%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "35%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
+                                                            {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Walk",   Type: "boolean",    Fixed: "false"}}
+                                            })
+
+  Styles.JointTourOtherModeLSUtility = Pme.Table({Height: 12, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width: "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals: "4"},
+                                                            {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Walk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Bike",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"}}
+                                                })
+
+  Styles.NMStopsDurUtility = Pme.Table({Height: 21, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width: "20%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width: "30%"},
+                                                            {Name: "5 - 15 m",   Type: "real",    Fixed: "false"},
+                                                            {Name: "15 - 30 m",   Type: "real",    Fixed: "false"},
+                                                            {Name: "30 - 45 m",   Type: "real",    Fixed: "false"},
+                                                            {Name: "45 - 60 m",   Type: "real",    Fixed: "false"},
+                                                            {Name: "60 - 75 m",   Type: "real",    Fixed: "false"},
+                                                            {Name: "75 - 90 m",   Type: "real",    Fixed: "false"}}
+                                            })
+
+  Styles.SoloTourFreqUtility = Pme.Table({Height: 25, MaxRows: 24, Values: "Columns",  
+                                                Columns:   {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "O1",   Type: "real",    Fixed: "false"},
+                                                            {Name: "O2",   Type: "real",    Fixed: "false"},
+                                                            {Name: "O3",   Type: "real",    Fixed: "false"},
+                                                            {Name: "S1",   Type: "real",    Fixed: "false"},
+                                                            {Name: "S2",   Type: "real",    Fixed: "false"},
+															                              {Name: "O1S1",   Type: "real",    Fixed: "false"},
+                                                            {Name: "O2S1",   Type: "real",    Fixed: "false"},
+                                                            {Name: "No Tours",   Type: "real",    Fixed: "false"}}
+                                        })
+
+  Styles.SoloTourDurOtherUtility = Pme.Table({Height: 21, MaxRows: 20, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "5 - 30 min",   Type: "real",    Fixed: "false"},
+															                              {Name: "30 - 60 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "60 - 90 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "90 - 120 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "120 - 150 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "150 - 180 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "180 - 210 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "210 - 240 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "240 - 270 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "270 - 300 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "300 - 330 min",   Type: "real",    Fixed: "false"}}
+                                            })
+
+
+  Styles.SoloTourDurShopUtility = Pme.Table({Height: 13, MaxRows: 12, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "5 - 30 min",   Type: "real",    Fixed: "false"},
+															                              {Name: "30 - 60 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "60 - 90 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "90 - 120 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "120 - 150 min",   Type: "real",    Fixed: "false"},
+                                                            {Name: "150 - 180 min",   Type: "real",    Fixed: "false"}}
+                                            })
+
+  Styles.SoloTourStartUtility = Pme.Table({Height: 16, MaxRows: 15, Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  175},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  275},
+                                                            {Name: "7 AM - 10 AM",   Type: "real",    Fixed: "false"},
+															                              {Name: "10 AM - 1 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "1 PM - 4 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "4 PM - 6 PM",   Type: "real",    Fixed: "false"},
+                                                            {Name: "6 PM - 9 PM",   Type: "real",    Fixed: "false"}}
+                                            })
+
+  Styles.SoloTourModeUtility = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width: "25%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
+                                                            {Name: "DriveAlone",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Walk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Bike",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                            })
+
+  Styles.SoloTourModeLSUtility = Pme.Table({Height: 11, Autosize: "True", Values: "Columns", 
+                                                Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width: "25%"},
+															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "35%"},
+                                                            {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
+                                                            {Name: "DriveAlone",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Walk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "Bike",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"}}
+                                            })
 
   Styles.PctSlider  = Pme.RealSlider({Min: 0.0, Max: 100.0})
 
@@ -431,3 +635,22 @@
         {"Name":"3",            "Type":"float",   "Fixed":"false"},
         {"Name":"4+",           "Type":"float",   "Fixed":"false"}
       }}))
+  
+  all_tables = {"Fixed": "false",
+                "Height":   "seven",
+                "MinRows":   0,
+                // Values:   "Option Arrays" (default), "Indexed Option Arrays", "Columns", or "Rows" (as is)
+                "Values":    "Columns",
+                "MaxRows":   50}
+
+  Styles.modesplit = RunMacro("Extend Object", all_tables,  
+                                      { "MaxRows":3, "Height":4, 
+                                    "Columns":{{"Name":"Mode", "Type":"string",  "Fixed":"true"},
+                                                {"Name":"Split", "Type":"real",  "Fixed":"false"}}})
+                        
+  Styles.LREquation = Pme.Table({Height: 7, Autosize: "True", Values: "Columns",
+                            Columns: {{Name: "Variable", Type: "string",  "Align":"center", Width:  "25%", Fixed: "true"},
+                                      {Name: "Coefficient", Type: "real",  "Align":"center"}}
+                                      })
+
+

@@ -104,10 +104,10 @@ EndClass
 
 // visualize menu items
 // Main toolbar menues
-MenuItem "Peoria Menu Item" text: "Peoria"
-    menu "Peoria Menu"
+MenuItem "TCRPC Menu Item" text: "TCRPC"
+    menu "TCRPC Menu"
  
-Menu "Peoria Menu"
+Menu "TCRPC Menu"
     init do
     enditem
  
