@@ -1,8 +1,8 @@
-  Styles.AreaType = Pme.Table(
-                            {"Columns":{{"Name":"AreaType", "Type":"string",  "Fixed":"false"},
-                                        {"Name":"Density", "Type":"float",  "Fixed":"false"},
-                                        {"Name":"Buffer", "Type":"float",  "Fixed":"false"}
-                            }})
+  Styles.AreaType = Pme.Table({Height: 10, Autosize: "true",
+                                    Columns: {{Name: "AreaType", Type: "string",  Fixed: "false"},
+										                          {Name: "Density", Type: "float",  Fixed: "false"},
+                                              {Name:"Buffer","Type":"float", "Fixed":"false"}} 
+                                })
   Styles.StudentDist = Pme.Table({Height: 7, Autosize: "True", Values: "Columns",
                                                 Columns: {{Name: "Age", Type: "droplist", Fixed: "false", Editable: "true", Options: {"19", "20", "21", "22", "23", "24"}},
                                                           {Name: "Percentage",     Type: "real",   Fixed: "false"},
