@@ -985,12 +985,3 @@ Body:
     Return(retValue)
 EndMacro
 
-
-Macro "Oahu Steps" (Args,Result)
-    Attributes = {
-        {"Class", {"GISDK"}},
-        {"MacroNames", {"Oahu Steps"}}
-    }
-    Return(True)
-EndMacro
-
