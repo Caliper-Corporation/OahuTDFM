@@ -1,17 +1,99 @@
 /*
-    - Generate MC accessibiltiies (modified logsums) by mode group using an aggregate mode choicep specification
+    - Generate MC accessibiltiies (modified logsums) by mode group using an aggregate mode choice specification
       Generate accessibility matrices by auto, non motorized and transit mode groups
-
-    - Generate DC accessibilities (modified logsums) by origin zone using an aggregate DC specification that uses the mode choice logsums
 */
 Macro "Mandatory Accessibility"(Args)
+    modeGroups = null
+    modeGroups.Auto = {"DriveAlone", "Carpool", "Other"}
+    modeGroups.NM = {"Bike", "Walk"}
+    modeGroups.PT = {"Bus"}
+
     // Generate MC accessibilities from the aggregate mode choice spec
-    RunMacro("Mand MC Accessibility", Args)
+    spec = {Type: "Mandatory",
+            ModeGroups: modeGroups,
+            OutputFile: Args.MandatoryModeAccessibility,
+            AlternativesTree: Args.MandatoryAggMCModes,
+            UtilityFunction: Args.MandatoryAggMCUtility,
+            Availability: Args.MandatoryAggMCAvail, 
+            VOT: Args.VOT, 
+            AOC: Args.AOC}
+    RunMacro("MC Accessibility", Args, spec)
 
     // Generate DC accessibilities from the aggregate destination choice spec
     RunMacro("Mand DC Accessibility", Args)
 
     Return(true)
+endMacro
+
+
+Macro "NonMandatory Joint Accessibility"(Args)
+    // These will be used as utility terms in the aggregate DC models (for accessibility).
+    // Note no mode logsum term for Shop, since DC spec does not have MC accessibility.
+    modeGroups = null
+    modeGroups.Auto = {"Carpool"}
+    modeGroups.NM = {"Bike", "Walk"}
+    modeGroups.PT = {"PTWalk"}
+    spec = {Type: "NonMandatory",
+            ModeGroups: modeGroups,
+            OutputFile: Args.NonMandJointModeAccessOther,
+            UtilityFunction: Args.JointOtherAggMCUtility,
+            Availability: Args.JointTourModeOtherAvail
+            }
+    RunMacro("MC Accessibility", Args, spec)
+
+    // Compute DC TAZ Logsums (also computes size variable for destination choice)
+    purps = {"Other", "Shop"}
+    for p in purps do
+        opt =  {Purpose: p, 
+                Type: "Joint", 
+                UtilityFunction: Args.("JointTourDest" + p + "Utility"),
+                SizeVarEquation: Args.("JointTour" + p + "SizeVar")
+                }
+        RunMacro("NonMand DC Accessibility", Args, opt)
+    end
+endMacro
+
+
+/*
+    Accessibility calculation for solo tours
+*/
+Macro "NonMandatory Solo Accessibility"(Args)
+    // MC accessibilities first
+    // Solo Other Tours
+    modeGroups = null
+    modeGroups.Auto = {"DriveAlone", "Carpool"}
+    modeGroups.NM = {"Bike", "Walk"}
+    modeGroups.PT = {"PTWalk"}
+    modeGroups.NoDA = {"Carpool", "Bike", "Walk", "PTWalk"}
+    
+    purps = {"Other", "Shop"}
+    for p in purps do
+        // MC Accessibility
+        spec = {Type: "NonMandatory",
+                ModeGroups: modeGroups,
+                OutputFile: Args.("NonMandSoloModeAccess" + p),
+                UtilityFunction: Args.("Solo" + p + "AggMCUtility"),
+                Availability: Args.("SoloTourMode" + p + "Avail")
+                }
+        RunMacro("MC Accessibility", Args, spec)
+
+        // DC Accessibility for market segment of people with driver license
+        opt =  {Purpose: p, 
+                Type: "Solo", 
+                UtilityFunction: Args.("SoloTourDest" + p + "LSUtility"),
+                SizeVarEquation: Args.("SoloTour" + p + "SizeVar")
+                }
+        RunMacro("NonMand DC Accessibility", Args, opt)
+
+        // DC Accessibility for market segment of people without driver license
+        opt =  {Purpose: p, 
+                Type: "Solo", 
+                UtilityFunction: Args.("SoloTourDest" + p + "LSUtility"),
+                SizeVarEquation: Args.("SoloTour" + p + "SizeVar"),
+                Segment: "NoLicense"
+                }
+        RunMacro("NonMand DC Accessibility", Args, opt)
+    end
 endMacro
 
 
@@ -21,26 +103,36 @@ endMacro
     - For a given mode group, disable modes not part of the group, run model and obtain the logsum matrix
     - Compute the accessibilty core as ln(1 + exp(Root_Logsum))
 */
-Macro "Mand MC Accessibility"(Args)
+Macro "MC Accessibility"(Args, spec)
+    type = spec.Type
+    modeGroups = spec.ModeGroups
+    outFile = spec.OutputFile
+    inputAvail = spec.Availability
+    altTree = spec.AlternativesTree
+    outCores = modeGroups.Map(do (f) Return(f[1]) end)
+
     // Create empty output MC logsum matrix
-    mSpec = {TAZFile: Args.TAZGeography, OutputFile: Args.MandatoryModeAccessibility, DataType: "Double", 
-             Cores: {"Auto", "NM", "PT"}, Label: "Mandatory Mode Accessibility"}
+    mSpec = {TAZFile: Args.TAZGeography, OutputFile: outFile, DataType: "Double", 
+             Cores: outCores, Label: type + " Mode Accessibility"}
     mat = RunMacro("Create Empty Matrix", mSpec)
     mOutObj = CreateObject("Matrix", mat)
 
     // Define mode groups
-    modeGroups.Auto = {"DriveAlone", "Carpool", "Other"}
-    modeGroups.NM = {"Bike", "Walk"}
-    modeGroups.PT = {"Bus"}
-    allModes = modeGroups.Auto + modeGroups.NM + modeGroups.PT
+    allModes = null
+    for m in modeGroups do
+        allModes = allModes + m[2]
+    end
+    allModes = SortArray(allModes, {Unique: "True"})
 
     for modeGroup in modeGroups do
         mainMode = modeGroup[1]
         subModes = modeGroup[2]
         
         // Get availability parameter and modify it
-        inputAvail = Args.MandatoryAggMCAvail
-        avail = CopyArray(inputAvail)
+        avail = null
+        if inputAvail <> null then
+            avail = CopyArray(inputAvail)
+        
         availAlts = avail.Alternative // Array of alternatives in current availability specification
         for mode in allModes do
             pos = subModes.position(mode)
@@ -58,23 +150,30 @@ Macro "Mand MC Accessibility"(Args)
 
         // Run PME model
         util = null
-        util.UtilityFunction = Args.MandatoryAggMCUtility
-        util.SubstituteStrings = {{"<VOT>", String(Args.VOT)}, {"<AOC>", String(Args.AOC)}}
+        util.UtilityFunction = spec.UtilityFunction
+        if spec.VOT <> null then
+            util.SubstituteStrings = {{"<VOT>", String(spec.VOT)}}
+        if spec.AOC <> null then
+            util.SubstituteStrings = util.SubstituteStrings + {{"<AOC>", String(spec.AOC)}}
         util.AvailabilityExpressions = avail
 
-        type = mainMode + "AggregateMC"
-        logsumFile = printf("%s\\Intermediate\\MCLogsum_%s.mtx", {Args.[Output Folder], type})
-        probFile = printf("%s\\Intermediate\\MCProb_%s.mtx", {Args.[Output Folder], type})
-        utilFile = printf("%s\\Intermediate\\MCUtil_%s.mtx", {Args.[Output Folder], type})
+        tag = type + mainMode + "AggregateMC"
+        logsumFile = printf("%s\\Intermediate\\MCLogsum_%s.mtx", {Args.[Output Folder], tag})
+        probFile = printf("%s\\Intermediate\\MCProb_%s.mtx", {Args.[Output Folder], tag})
+        utilFile = printf("%s\\Intermediate\\MCUtil_%s.mtx", {Args.[Output Folder], tag})
         
-        obj = CreateObject("PMEChoiceModel", {ModelName: type})
-        obj.OutputModelFile = printf("%s\\Intermediate\\%s.mdl", {Args.[Output Folder], type})
+        obj = CreateObject("PMEChoiceModel", {ModelName: tag})
+        obj.OutputModelFile = printf("%s\\Intermediate\\%s.mdl", {Args.[Output Folder], tag})
         obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "PTSkim", File: Args.TransitWalkSkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddPrimarySpec({Name: "AutoSkim"})
         obj.AddUtility(util)
-        obj.AddAlternatives({AlternativesTree: Args.MandatoryAggMCModes})
+        if altTree <> null then
+            obj.AddAlternatives({AlternativesTree: altTree})
         obj.AddOutputSpec({Probability: probFile, Logsum: logsumFile, Utility: utilFile})
         ret = obj.Evaluate()
 
@@ -95,15 +194,11 @@ endMacro
 */
 Macro "Mand DC Accessibility"(Args)
     // Create empty output table
-    objTAZ = CreateObject("Table", Args.TAZGeography)
-    objOut = objTAZ.Export({FileName: Args.MandatoryDestAccessibility, FieldNames: {"TAZID"}})
-    fldsAdd = {{FieldName: "DestAccessibilityAuto", Type: "real", Width: 12, Decimals: 2},
-                {FieldName: "DestAccessibilityNM", Type: "real", Width: 12, Decimals: 2},
-                {FieldName: "DestAccessibilityPT", Type: "real", Width: 12, Decimals: 2}}
-    objOut.AddFields({Fields: fldsAdd})
+    flds = {"DestAccessibilityAuto", "DestAccessibilityNM", "DestAccessibilityPT"}
+    spec = {ReferenceFile: Args.TAZGeography, OutputFile: Args.MandatoryDestAccessibility, Fields: flds}
+    objOut = RunMacro("Create TAZ DC Logsum Table", spec)
     sortOrder = {{"TAZID", "Ascending"}}
     objOut.Sort({FieldArray: sortOrder})
-    objTAZ = null
 
     // Run DC model for each mode, and fill the column in the table
     modes = {"Auto", "NM", "PT"}
@@ -150,4 +245,94 @@ Macro "Mand DC Accessibility"(Args)
         objOut.(outFld) = vLS
     end
     objOut = null
+endMacro
+
+
+/*
+    Generate DC accessibility vectors for non mandatory tour
+    Aggregate DC model assumed
+    - Compute the accessibilty vector as the log as marginal row sum of the exponentiated utility matrix
+*/
+Macro "NonMand DC Accessibility"(Args, spec)
+    type = spec.Type             // One of 'Solo', 'Joint'
+    purp = spec.Purpose          // One of 'Other', 'Shop'
+    utilEqn = spec.UtilityFunction
+    segment = spec.Segment
+    if segment <> null then do
+        tag = type + purp + "_" + segment
+        segment = Lower(segment)
+    end
+    else
+        tag = type + purp
+    mcLSMtx = Args.("NonMand" + type + "ModeAccess" + purp)
+
+    // Compute size variable field. Add to TAZDemographics output table
+    objD = CreateObject("Table", Args.DemographicOutputs)
+    obj4D = CreateObject("Table", Args.AccessibilitiesOutputs)
+    sizeFld = type + purp + "Size"
+    newFlds = {{FieldName: sizeFld, Type: "Real", Width: 12, Decimals: 2}}
+    objD.AddFields({Fields: newFlds})
+    objJ = objD.Join({Table: obj4D, LeftFields: {"TAZ"}, RightFields: {"TAZID"}})
+    
+    opt = null
+    opt.TableObject = objJ
+    opt.Equation = spec.SizeVarEquation
+    opt.FillField = sizeFld
+    opt.ExponentiateCoeffs = 1
+    RunMacro("Compute Size Variable", opt)
+    objJ = null
+    objD = null
+    obj4D = null
+
+    // Run DC Model
+    tmpUtilFile = printf("%s\\Intermediate\\%s_Util.mtx", {Args.[Output Folder], tag})
+    obj = CreateObject("PMEChoiceModel", {ModelName: tag})
+    if segment <> null then
+        obj.Segment = segment
+    obj.OutputModelFile = printf("%s\\Intermediate\\%s.dcm", {Args.[Output Folder], tag})
+    obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
+    obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
+    obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimOP, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
+    if mcLSMtx <> null then
+        obj.AddMatrixSource({SourceName: "ModeAccessibility", File: mcLSMtx, RowIndex: "TAZ", ColIndex: "TAZ"})
+    obj.AddPrimarySpec({Name: "AutoSkim"})
+    obj.AddUtility({UtilityFunction: utilEqn})
+    obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
+    obj.AddSizeVariable({Name: "TAZData", Field: sizeFld})
+    obj.AddOutputSpec({Probability: GetTempPath() + "Prob.mtx", Utility: tmpUtilFile})
+    ret = obj.Evaluate()
+    if !ret then
+        Throw("Model Run failed while computing TAZ destination logsums for " + tag)
+
+    // Open Utility Matrix, add exp(u) core, get row marginal sums, apply ln() and write to output table
+    mObj = CreateObject("Matrix", tmpUtilFile)
+    mObj.AddCores({"ExpUtil"})
+    coreNames = mObj.GetCoreNames()
+    mObj.ExpUtil := exp(mObj.(coreNames[1]))
+    vLS = mObj.GetVector({Core: "ExpUtil", Marginal: "Row Sum"})
+    vLS = if vLS = null then null else log(vLS)
+    mObj = null
+
+    objOut = CreateObject("Table", Args.NonMandatoryDestAccessibility)
+    sortOrder = {{"TAZID", "Ascending"}}
+    objOut.Sort({FieldArray: sortOrder})
+    outFld = "Accessibility_" + tag
+    objOut.(outFld) = vLS
+endMacro
+
+
+// Create empty DC Logsum Table
+Macro "Create TAZ DC Logsum Table"(spec)
+    // Create empty output table
+    objTAZ = CreateObject("Table", spec.ReferenceFile)
+    objOut = objTAZ.Export({FileName: spec.OutputFile, FieldNames: {"TAZID"}})
+    flds = spec.Fields
+    fldsAdd = flds.Map(do(f) Return({FieldName: f, Type: "real", Width: 12, Decimals: 2}) end)
+    objOut.AddFields({Fields: fldsAdd})
+    sortOrder = {{"TAZID", "Ascending"}}
+    objOut.Sort({FieldArray: sortOrder})
+    objTAZ = null
+    Return(objOut)
 endMacro

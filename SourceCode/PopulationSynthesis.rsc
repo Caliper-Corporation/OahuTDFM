@@ -596,7 +596,10 @@ Macro "PopSyn Postprocess"(spec)
                 {Name: "PreSchKids", Type: "Short", Description: "Number of pre-school kids in the household (Age < 5)"},
                 {Name: "Females", Type: "Short"},
                 {Name: "Males", Type: "Short"},
+                {Name: "AdultFemales", Type: "Short"},
                 {Name: "Workers", Type: "Short", Description: "Number of workers in the household (IndustryCategory < 10)"},
+                {Name: "KidsPerAdult", Type: "Real", Decimals: 2, Description: "Number of Kids in HH divided by number of adults"},
+                {Name: "KidsPerNonWorkingAdult", Type: "Real", Decimals: 2, Description: "Number of Kids in HH divided by number of non working adults"},
                 {Name: "Seniors", Type: "Short", Description: "Number of seniors in the household (Age >= 65)"},
                 {Name: "IncomeLevel", Type: "Short", Description: "HH Income level: 1 if HHIncome is below $50K, 2 if HHIncome is [50K, 100K), 3 if HHIncome is gte $100K"},
                 {Name: "AvgWrkIncCategory", Type: "Short", Description: "Avg Worker Income level: 1 if HHIncome/HHWorkers is below $50K, 2 if HHIncome/HHWorkers is [50K, 100K), 3 if HHIncome/HHWorkers is gte $100K"}
@@ -610,11 +613,12 @@ Macro "PopSyn Postprocess"(spec)
                     {Seniors: "(Age >= 65).Count", DefaultValue: 0},
                     {Males: "(Gender = 1).Count", DefaultValue: 0},
                     {Females: "(Gender = 2).Count", DefaultValue: 0},
+                    {AdultFemales: "(Gender = 2 and Age >= 18).Count", DefaultValue: 0},
                     {Workers: "(IndustryCategory < 10).Count", DefaultValue: 0}}
     abm.AggregatePersonData(aggOpts)
 
     // Fill IncomeLevel and AvgWrkIncCategory fields
-    vecs = abm.GetHHVectors({"Inc_Category", "Workers"})
+    vecs = abm.GetHHVectors({"Inc_Category", "Workers", "Kids", "Adults", "HHSize"})
     vecsSet = null
     vecsSet.IncomeLevel = if vecs.Inc_Category <= 2 then 1 
                             else if vecs.Inc_Category <= 4 then 2 
@@ -629,6 +633,9 @@ Macro "PopSyn Postprocess"(spec)
                                 else if vecs.Inc_Category >= 6 and vecs.Workers = 3 then 2
                                 else if vecs.Inc_Category >= 6 and vecs.Workers < 3 then 3
                                 else null
+    vecsSet.KidsPerAdult = vecs.Kids/vecs.Adults
+    vNW  = vecs.HHSize - vecs.Kids - vecs.Workers
+    vecsSet.KidsPerNonWorkingAdult = if (vNW > 0) then vecs.Kids/vNW else 0
     abm.SetHHVectors(vecsSet)
 
     // Add pop syn metadata

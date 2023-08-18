@@ -72,6 +72,10 @@ macro "HighwayNetworkSkim" (Args)
         idxint = m.AddIndex({IndexName: "InternalTAZ",
                     ViewName: NodeLayer, Dimension: "Both",
                     OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
+        idxext = m.AddIndex({IndexName: "External",
+                    ViewName: NodeLayer, Dimension: "Both",
+                    OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'External'"})
+
             
     end
 

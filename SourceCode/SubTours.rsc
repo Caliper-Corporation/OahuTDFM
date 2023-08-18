@@ -226,8 +226,19 @@ Macro "SubTour Mode"(Args)
     Args.[SubTour Mode Spec] = CopyArray(ret)
     obj = null
 
+    // For people who chose 'AutoDriver', determine how many are drive alone vs carpool 
+    n = objT.SelectByQuery({SetName: "_SubToursAutoDriver", Query: "SubTour = 1 and Lower(SubTourMode) = 'autodriver'"})
+    if n > 0 then do
+        SetRandomSeed(4600003)
+        params = null
+        params.population = {"drivealone", "carpool"}
+        params.weight = {Args.SubTourDAPct, 100 - Args.SubTourDAPct}
+        vSamples = RandSamples(n, "Discrete", params)
+        objT.SubTourMode = vSamples
+    end
+
     // Attach Mode code
-    codeMap = {AutoDriver: 11, AutoPass: 12, Walk: 3, Bike: 4, Other: 7}
+    codeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, Other: 7}
     objT.SelectByQuery({SetName: "_SubTours", Query: "SubTour = 1"})
     v = objT.SubTourMode
     arrModeCode = v2a(v).Map(do (f) Return(codeMap.(f)) end)
@@ -300,80 +311,6 @@ Macro "SubTour PostProcess"(Args)
     end
     objT = null
     Return(true)
-endMacro
-
-
-Macro "Write WorkBased Trip Diary"(opt)
-    // Write Temporary File
-    tempFile = GetTempPath() + "\\WBTrips.bin"
-    RunMacro("Create Trip Diary File", tempFile)
-    objT = CreateObject("AddTables", {TableName: tempFile})
-    vw1 = objT.TableView
-    vw = ExportView(vw1 + "|", "MEM", "TempFile",,)
-
-    // Get Tours View
-    vwT = opt.View
-    SetView(vwT)
-    n = SelectByQuery("__Selection", "several", "Select * where " + opt.Filter,)
-    if n = 0 then
-        Throw("No records with work based tours in work tours file. Check outputs.")
-
-    {flds, specs} = GetFields(vwT,)
-    vecOpts = null
-    vecOpts.OptArray = 1
-    vecOpts.SortOrder = {{"PersonID", "Ascending"}}
-    vecs = GetDataVectors(vwT + "|__Selection", flds, vecOpts)
-
-    // Write trip from Work to Destination TAZ    
-    optV = null
-    optV.Specs = {HHID: vecs.HHID, HHTAZ: vecs.HomeTAZ, PersonID: vecs.PersonID, TourFile: 1, TourIDinFile: vecs.TourID, TourPurpose: "WorkBased",
-                Mode: if vecs.WBTourMode = "AutoDriver" then "DriveAlone" else if vecs.WBTourMode = "AutoPass" then "Carpool2" else vecs.WBTourMode, 
-                AssignTrip: if vecs.WBTourMode = "AutoPass" then 0 else 1,
-                AssignFraction: if vecs.WBTourMode = "AutoPass" then 0 else 1, 
-                OrigTAZ: vecs.DestTAZ, OrigDep: vecs.WBTourDepartWork, DestTAZ: vecs.WBTourTAZ,
-                OrigPurp: "Work", DestPurp: "WorkBased", 
-                ActivityStart: vecs.WBTourStartTime, ActivityDuration: vecs.WBTourDuration, 
-                DestArr: vecs.WBTourStartTime, DestDep: vecs.WBTourDepartDest,
-                TripID: Vector(n, "Long", {{"Sequence", 1, 2}}),
-                TourID: Vector(n, "Long", {{"Sequence", 1, 1}})}
-    optV.OutputView = vw
-    optV.NumRecords = n
-    optV.Filter = "PersonID = null" // Filter to identify new records
-    RunMacro("Write Vectors", optV)
-
-    // Write Trip from Dest TAZ back to Work
-    optV.Specs = {HHID: vecs.HHID, HHTAZ: vecs.HomeTAZ, PersonID: vecs.PersonID, TourFile: 1, TourIDinFile: vecs.TourID, TourPurpose: "WorkBased",
-                Mode: if vecs.WBTourMode = "AutoDriver" then "DriveAlone" else if vecs.WBTourMode = "AutoPass" then "Carpool2" else vecs.WBTourMode, 
-                AssignTrip: if vecs.WBTourMode = "AutoPass" then 0 else 1,
-                AssignFraction: if vecs.WBTourMode = "AutoPass" then 0 else 1, 
-                OrigTAZ: vecs.WBTourTAZ, OrigDep: vecs.WBTourDepartDest, DestTAZ: vecs.DestTAZ,
-                OrigPurp: "WorkBased", DestPurp: "Work", DestArr: vecs.WBTourArriveWork, DestDep: vecs.DepartDest,
-                TripID: Vector(n, "Long", {{"Sequence", 2, 2}}),
-                TourID: Vector(n, "Long", {{"Sequence", 1, 1}})}
-    RunMacro("Write Vectors", optV)
-
-    // Fill Dep Arr time fields
-    inFlds = {"OrigDep", "DestArr", "DestDep", "ActivityStart"}
-    outFlds = {"DepartOrig", "ArriveDest", "DepartDest", "ActivityStartTime"}
-    RunMacro("Create Display Time Fields", {View: vw, InputFields: inFlds, OutputFields: outFlds, ConvertType: 0})
-
-    // Export to final table
-    expOpts = null
-    expOpts.[Row Order] = {{"HHID", "Ascending"}, {"PersonID", "Ascending"}, {"OrigDep", "Ascending"}}
-    ExportView(vw + "|", "FFB", opt.OutputFile, , expOpts)
-    objT = null
-    CloseView(vw)
-
-    // Open final table and change type of time fields (This fails on a memory table and so is perfomed here on the final output table)
-    objF = CreateObject("AddTables", {TableName: opt.OutputFile})
-    vwFinal = objF.TableView
-    modify = CreateObject("CC.ModifyTableOperation", vwFinal)
-    for fld in outFlds do
-        modify.ChangeField(fld, {Type: "Time", Format: "hh:mm tt"})
-    end
-    modify.Apply()
-    objF = null
-
 endMacro
 
 

@@ -436,42 +436,36 @@ Macro "Get Auto TT"(skimArgs, opt)
 endMacro
 
 
-
 // Given orig, stop and dest TAZ fields, compute the excess mode specific travel time as a result of making the stop.
 // i.e. compute OriginToStopTime + StopToDestTime - OrigToStopTime
-Macro "Calculate Detour TT"(Args, spec)
+Macro "Calculate Detour TT"(Args, opt)
     // Open Table or use view passed
-    vw = spec.ToursView
-    ODInfo = spec.ODInfo
-    dir = spec.Direction
-    if dir = "Forward" then 
-        depFld = 'TourStartTime'
-    else 
-        depFld = 'DestDepTime'
-    
-    modeFld = dir + "Mode"
-    stopFld = "Stop" + dir + "TAZ"
-    filter = printf("N%sStops > 0", {dir})
+    toursObj = opt.ToursObj
+    ODInfo = opt.ODInfo
+    depFld = opt.DepTimeField
+    modeFld = opt.ModeField
+    filter = opt.Filter
+    stopFld = opt.StopTAZField
 
     // Add temporary fields
-    toursObj = CreateObject("Table", vw)
     flds = {{FieldName: "OrigToStopTT"}, 
             {FieldName: "StopToDestTT"}, 
             {FieldName: "OrigToDestTT"}}
     toursObj.AddFields({Fields: flds})
 
     // Fill travel times from origin to stop, stop to dest and orig to dest
-    opt = {View: vw, Filter: filter, OField: ODInfo.Origin, DField: stopFld, DepTimeField: depFld, ModeField: modeFld, FillField: "OrigToStopTT"}
-    RunMacro("Fill Travel Times", Args, opt)
+    vw = toursObj.GetView()
+    optF = {View: vw, Filter: filter, OField: ODInfo.Origin, DField: stopFld, DepTimeField: depFld, ModeField: modeFld, FillField: "OrigToStopTT"}
+    RunMacro("Fill Travel Times", Args, optF)
 
-    opt = {View: vw, Filter: filter, OField: stopFld, DField: ODInfo.Destination, DepTimeField: depFld, ModeField: modeFld, FillField: "StopToDestTT"}
-    RunMacro("Fill Travel Times", Args, opt)
+    optF = {View: vw, Filter: filter, OField: stopFld, DField: ODInfo.Destination, DepTimeField: depFld, ModeField: modeFld, FillField: "StopToDestTT"}
+    RunMacro("Fill Travel Times", Args, optF)
 
-    opt = {View: vw, Filter: filter, OField: ODInfo.Origin, DField: ODInfo.Destination, DepTimeField: depFld, ModeField: modeFld, FillField: "OrigToDestTT"}
-    RunMacro("Fill Travel Times", Args, opt)
+    optF = {View: vw, Filter: filter, OField: ODInfo.Origin, DField: ODInfo.Destination, DepTimeField: depFld, ModeField: modeFld, FillField: "OrigToDestTT"}
+    RunMacro("Fill Travel Times", Args, optF)
     
     flds = flds.Map(do (f) Return(f.FieldName) end) // {"OrigToStopTT", "StopToDestTT", "OrigToDestTT"}
-    fillField = dir + "StopDeltaTT"
+    fillField = opt.OutputField // dir + "StopDeltaTT"
     n = toursObj.CreateSet({SetName: "BaseSet", Filter: filter})
     if n = 0 then Return()
     vecs = toursObj.GetDataVectors({FieldNames: flds})
@@ -481,7 +475,6 @@ Macro "Calculate Detour TT"(Args, spec)
     // Drop temporary fields
     toursObj.DropFields({FieldNames: flds})
 endMacro
-
 
 
 // This macro tries to replicate the GetPrevRecord() and GetNext Record() on a vector
@@ -506,4 +499,97 @@ Macro "Shift Vector"(spec)
         a2 = SubArray(a, 2, a.length - 1) + {}
 
     Return(a2v(a2))
+endMacro
+
+
+/*
+    Create assignment trips matrix from mandatory trips file and from non mandatory matrices
+    Produce, one OD matrix for each period (AM, PM and OP).
+    The cores will be various modes.
+    Apply carpool occupancy as necessary and merge Taxi trips with carpool.
+*/
+Macro "Create Assignment OD Matrices"(Args)
+    RunMacro("Write ABM OD", Args)
+    RunMacro("Add External and Truck OD", Args)
+    Return(true)
+endMacro
+
+
+/*
+    Process mandatory trips and write period specific OD matrices
+*/
+Macro "Write ABM OD"(Args)
+    objT = CreateObject("Table", Args.ABM_Trips)
+    vwTrips = objT.GetView()
+    
+    // Create expression for OD period
+    periodDefs = Args.TimePeriods
+    amStart = periodDefs.AM.StartTime
+    amEnd = periodDefs.AM.EndTime
+    pmStart = periodDefs.PM.StartTime
+    pmEnd = periodDefs.PM.EndTime
+    tripTime = CreateExpression(vwTrips, "Time", "(OrigDep + DestArr)/2",)
+
+    amQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amStart), tripTime, String(amEnd)})
+    mdQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amEnd), tripTime, String(pmStart)})
+    pmQry = printf("(%s >= %s and %s < %s)", {tripTime, String(pmStart), tripTime, String(pmEnd)})
+    exprStr = printf("if %s then 'AM' else if %s then 'MD' else if %s then 'PM' else 'NT'", {amQry, mdQry, pmQry})
+    odPeriod = CreateExpression(vwTrips, "ODPeriod", exprStr,)
+
+    vMode = objT.Mode
+    modes = SortArray(v2a(vMode), {Unique: 'True'}) // {'drivealone', 'carpool', 'walk', 'bike', 'ptwalk', 'ptdrive', 'other', 'schoolbus'}
+    
+    mSkimObj = CreateObject("Matrix", Args.HighwaySkimAM)
+    mSkimObj.SetIndex("TAZ")
+    mcSkim = mSkimObj.Time
+    
+    periods = {'AM', 'MD', 'PM', 'NT'}
+    for p in periods do
+        outFile = Args.(p + "_OD")
+        label = printf("%s_OD", {p})
+
+        mOpts = {FileName: outFile, Tables:  modes + {"LTRK", "MTRK", "HTRK"}, Label: label}
+        mat = CopyMatrixStructure({mcSkim}, mOpts)
+        mObj = CreateObject("Matrix", mat)
+        
+        SetView(vwTrips)
+        filter = printf("ODPeriod = '%s'", {p})
+        qry = printf("Select * where " + filter, {p})
+        n = SelectByQuery("__Selection", "several", qry, )
+        UpdateMatrixFromView(mat, vwTrips + "|__Selection", "Origin", "Destination", GetFieldFullSpec(vwTrips, "Mode"),          
+                             {GetFieldFullSpec(vwTrips, "TripCount")}, "Add", {"Missing is zero": "Yes"})
+
+        // Update 'drivealone' core to 'drivealone' + Other and remove 'Other' core. Note Carpool core already contains vehicle trips.
+        mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other)
+        mObj.DropCores("other")
+        mObj = null
+    end
+    DestroyExpression(GetFieldFullSpec(vwTrips, odPeriod))
+    DestroyExpression(GetFieldFullSpec(vwTrips, tripTime))
+endMacro
+
+
+Macro "Add External and Truck OD"(Args)
+    LineDB = Args.HighwayDatabase
+    Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
+    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
+    NodeLayer = Node.GetView()
+    
+    periods = {'AM', 'MD', 'PM', 'NT'}
+    for p in periods do
+        mObj = CreateObject("Matrix", Args.(p + "_OD"))
+        mExt = CreateObject("Matrix", Args.(p + "ExternalTrips"))
+        mExt.SetIndex("TAZ")
+
+        mObj.drivealone := nz(mObj.drivealone) + nz(mExt.[DriveAlone VehicleTrips])
+        mObj.carpool := nz(mObj.carpool) + nz(mExt.[Carpool VehicleTrips])
+        mObj.LTRK := mExt.[LTRK Trips]
+        mObj.MTRK := mExt.[MTRK Trips]
+        mObj.HTRK := mExt.[HTRK Trips]
+
+        idx = mObj.AddIndex({IndexName: "NodeID", ViewName: NodeLayer, Dimension: "Both",
+                                OriginalID: "Centroid", NewID: "ID", Filter: "Centroid <> null"})
+        mObj = null
+        mExt = null
+    end
 endMacro

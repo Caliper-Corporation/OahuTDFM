@@ -110,14 +110,28 @@ Macro "MandatoryStops Destination"(Args)
         spec.ODInfo = ODInfo
 
         for period in periods do
+            spec.Period  = period
+            spec.StopFilter = printf("N%sStops >= 1", {dir}) // e.g. NForwardStops >= 1
+            spec.PeriodFilter = printf("TOD%s = '%s'", {dir, period})
+            skimFile = Args.("HighwaySkim" + period)
+
             // Calculate delta TT matrix
             deltaTT = GetTempPath() + "DeltaTT_" + dir + "_" + period + ".mtx"
-            deltaDist = GetTempPath() + "DeltaDist_" + dir + "_" + period + ".mtx"
-            spec.Period  = period
-            spec.DeltaTT = deltaTT
-            spec.DeltaDist = deltaDist
+            spec.DeltaSkim = deltaTT
+            spec.MatrixSpec = {File: skimFile, Core: "Time", RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"}
+            spec.OutputCoreName = "DeltaTT"
             ret = RunMacro("Calculate Delta TT", Args, spec)
             if ret = 2 then continue // No records for delta TT calculation. Move on to next period.
+            spec.DeltaTT = deltaTT
+
+            // Calculate delta Dist matrix
+            deltaDist = GetTempPath() + "DeltaDist_" + dir + "_" + period + ".mtx"
+            spec.DeltaSkim = deltaDist
+            spec.MatrixSpec = {File: skimFile, Core: "Distance", RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"}
+            spec.OutputCoreName = "DeltaDist"
+            ret = RunMacro("Calculate Delta TT", Args, spec)
+            if ret = 2 then continue // No records for delta TT calculation. Move on to next period.
+            spec.DeltaDist = deltaDist
             
             // Purposes Loop
             for type in types do
@@ -129,7 +143,15 @@ Macro "MandatoryStops Destination"(Args)
         end     // period loop
 
         // Now that destinations have been computed, fill in the realized detour travel times
-        RunMacro("Calculate Detour TT", Args, spec)
+        if dir = "Forward" then 
+            depFld = 'TourStartTime'
+        else 
+            depFld = 'DestDepTime'
+        
+        opt = {ToursObj: objT, Filter: printf("N%sStops > 0", {dir}), ODInfo: ODInfo, 
+                StopTAZField: "Stop" + dir + "TAZ", ModeField: dir + "Mode", DepTimeField: depFld, 
+                OutputField: dir + "StopDeltaTT"}
+        RunMacro("Calculate Detour TT", Args, opt)
 
         // Remove infeasible stops (where stops delta TT is null or more than 45 min)
         filter = printf("N%sStops > 0 and (%sStopDeltaTT = null or %sStopDeltaTT > 45)", {dir, dir, dir})
@@ -232,11 +254,10 @@ endMacro
 Macro "Calculate Delta TT"(Args, spec)
     vwT = spec.ToursView
     dir = spec.Direction
-    period = spec.Period
     ODInfo = spec.ODInfo
 
-    stopfilter = printf("N%sStops >= 1", {dir}) // e.g. NForwardStops >= 1
-    periodfilter = printf("TOD%s = '%s'", {dir, period})
+    stopfilter = spec.StopFilter
+    periodfilter = spec.PeriodFilter
     deltaCalcFilter = printf("(%s) and (%s)", {stopfilter, periodfilter})
 
     // Export relevant records to a table
@@ -247,34 +268,51 @@ Macro "Calculate Delta TT"(Args, spec)
     vwTmp = ExportView(vwT + "|DeltaCalc", "MEM", "TempForDeltaCalc", {"TourID", ODInfo.Origin, ODInfo.Destination},)
 
     // Need to copy matrix with only the relevant indices
-    skimMat = Args.("HighwaySkim" + period)
+    skimMat = spec.MatrixSpec.File
+    core = spec.MatrixSpec.Core
+    ridx = spec.MatrixSpec.RowIndex
+    cidx = spec.MatrixSpec.ColIndex
     m = OpenMatrix(skimMat,)
-    mc = CreateMatrixCurrency(m, "Time", "InternalTAZ", "InternalTAZ",)
+    mc = CreateMatrixCurrency(m, core, ridx, cidx,)
     mtxTemp = GetTempPath() + "TempSkim.mtx"
     mNew = CopyMatrix(mc, {"File Name": mtxTemp, Label: "TempSkim", Indices: "Current"})
     mNew = null
     mc = null
     m = null
+
+    // Copy transpose matrix (prior to transpose) if provided
+    if spec.MatrixSpecR <> null then do
+        skimMat = spec.MatrixSpecR.File
+        core = spec.MatrixSpecR.Core
+        ridx = spec.MatrixSpecR.RowIndex
+        cidx = spec.MatrixSpecR.ColIndex
+        m = OpenMatrix(skimMat,)
+        mc = CreateMatrixCurrency(m, core, ridx, cidx,)
+        mtxTempR = GetTempPath() + "TempSkimR.mtx"
+        mNew = CopyMatrix(mc, {"File Name": mtxTempR, Label: "TempSkimR", Indices: "Current"})
+        mNew = null
+        mc = null
+        m = null
+    end
     
     // Calculate Delta TT Matrix
     Opts = null
     Opts.SourceData = {ViewName: vwTmp, ID: "TourID", Row: ODInfo.Origin, Column: ODInfo.Destination}
     Opts.SkimMatrixFile = mtxTemp
-    Opts.SkimMatrixCore = "Time"
-    Opts.DeltaSkim = spec.DeltaTT
+    Opts.SkimMatrixCore = spec.MatrixSpec.Core
+    if spec.MatrixSpecR <> null then do
+        Opts.SkimMatrixFile2 = mtxTempR
+        Opts.SkimMatrixCore2 = spec.MatrixSpecR.Core
+    end
+    Opts.DeltaSkim = spec.DeltaSkim
     obj = CreateObject("TransCAD.ABM")
     ret = obj.IntermediateStopsDeltaTT(Opts)
     mc_deltaTime = ret.Matrix
-
-    // Calculate Delta Dist Matrix and change matrix label and core name
-    Opts.SkimMatrixCore = "Distance"
-    Opts.DeltaSkim = spec.DeltaDist
-    ret = obj.IntermediateStopsDeltaTT(Opts)
-    mc_deltaDist = ret.Matrix
-    
-    m = mc_deltaDist.Matrix
-    SetMatrixCoreNames(m, {"DeltaDist"})
-    RenameMatrix(m, "Delta Dist")
+    if spec.OutputCoreName <> null then do
+        m = mc_deltaTime.Matrix
+        SetMatrixCoreNames(m, {spec.OutputCoreName})
+        RenameMatrix(m, spec.OutputCoreName)
+    end
 
     CloseView(vwTmp)
     Return(1)

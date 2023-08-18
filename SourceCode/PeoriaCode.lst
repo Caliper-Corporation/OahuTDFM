@@ -13,12 +13,9 @@ SchoolDropOffPickUp.rsc
 ToursAndTrips.rsc
 SubTours.rsc
 Calibration.rsc
-../src/CreateScenario.rsc
-../src/Network Calculations.rsc
-../src/Skimming.rsc
-../src/PopulationSynthesis.rsc
-../src/Oahu Steps.rsc
-../src/utils/RoadwayProjectManagement.rsc
-../src/utils/TransitProjectManagement.rsc
-../src/utils/utils.rsc
-../src/Visitors.rsc
+PatternChoice.rsc
+NonMandatoryJointTours.rsc
+NonMandatorySoloTours.rsc
+NonMandatoryStops.rsc
+TimeManager.rsc
+NonresidentDistribution.rsc
