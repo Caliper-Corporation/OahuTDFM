@@ -8,13 +8,17 @@
             "Type":"Folder",
             "Value":"%Model Folder%\\Data"
         }
+        Args.[Master Folder] = {
+            "Type":"Folder",
+            "Value":"%Base Folder%\\Master"
+        }
         Args.ScenarioSubFolder = {
             "Type":"hidden",
             "Value":"BaseYear"
         }
         Args.[Scenario Folder] = {
             "Type":"Folder",
-            "Value":"%Data Folder%\\%ScenarioSubFolder%"
+            "Value":"%Base Folder%\\Scenarios\\base_2022"
         }
         Args.[Common Folder] = {
             "Type":"Folder",
@@ -127,25 +131,41 @@
 
 	Section = "Population Synthesis|Inputs"
 	
-        Args.CensusBlockGroups = {
+        Args.SEDMarginals = {
             "Type":"File",
-            "Caption":"Block group marginals",
-            "Value":"%Input Folder%\\Population\\Marginals\\2020_Census Block_Group_ACS_PopSyn.bin"
+            "Caption":"Output marginals from disaggregate curves",
+            "Value":"%Output Folder%\\Population\\SEDMarginals.bin"
         }
-        Args.CensusBlocks = {
+        Args.SizeCurves = {
             "Type":"File",
-            "Caption":"Block marginals",
-            "Value":"%Input Folder%\\Population\\Marginals\\2020_Census Block.bin"
+            "Caption":"Size curves",
+            "Value":"%Input Folder%\\Population\\disagg_model\\size_curves.csv"
+        }
+        Args.IncomeCurves = {
+            "Type":"File",
+            "Caption":"Income curves",
+            "Value":"%Input Folder%\\Population\\disagg_model\\income_curves.csv"
+        }
+        Args.WorkerCurves = {
+            "Type":"File",
+            "Caption":"Worker curves",
+            "Value":"%Input Folder%\\Population\\disagg_model\\worker_curves.csv"
+        }
+        Args.RegionalMedianIncome = {
+            "Type":"int",
+            "Caption":"Regional Med Income",
+            "Description":"Median income 2021 ACS Honolulu County",
+            "Value":92600
         }
         Args.PUMS_Households = {
             "Type":"File",
             "Caption":"PUMS Household seed",
-            "Value":"%Input Folder%\\Population\\Seed\\HH_Seed.bin"
+            "Value":"%Input Folder%\\Population\\Seed\\HHSeed_PUMS.bin"
         }
         Args.PUMS_Persons = {
             "Type":"File",
             "Caption":"PUMS Person seed",
-            "Value":"%Input Folder%\\Population\\Seed\\Person_Seed.bin"
+            "Value":"%Input Folder%\\Population\\Seed\\PersonSeed_PUMS.bin"
         }
         Args.PUMS_WorkIndustryCodes = {
             "Type":"File",
@@ -168,6 +188,11 @@
             "Caption":"Tolerance",
             "Description":"Convergence Threshold",
             "Value":0.001
+        }
+        Args.[Synthesized Tabulations] = {
+            "Type":"File",
+            "Caption":"Population synthesis summary tabulations",
+            "Value":"%Output Folder%\\Population\\Tabulations.bin"
         }
 	
 	Section = "Population Synthesis|Dorm Synthesis"
@@ -254,30 +279,63 @@
 	
 	Section = "GEO Master Data"
 	
+        Args.[Master Links] = {
+            "Type":"File",
+            "Description":"Master highway database",
+            "Value":"%Master Folder%\\networks\\master_links.dbd"
+        }
         Args.HighwayInputDatabase = {
             "Type":"File",
             "Description":"Input highway database",
-            "Value":"%InputFolder%\\networks\\PeoriaStreets.DBD"
+            "Value":"%Input Folder%\\networks\\scenario_links.dbd"
+        }
+        Args.[Master Routes] = {
+            "Type":"File",
+            "Description":"Master transit routes",
+            "Value":"%Master Folder%\\networks\\master_routes.rts"
         }
         Args.TransitRouteInputs = {
             "Type":"File",
             "Description":"Input transit routes",
-            "Value":"%Input Folder%\\networks\\PeoriaRoutes.rts"
+            "Value":"%Input Folder%\\networks\\scenario_routes.rts"
+        }
+        Args.[Master TAZs] = {
+            "Type":"File",
+            "Description":"Master TAZ Geography",
+            "Value":"%Master Folder%\\tazs\\master_tazs.dbd"
         }
         Args.TAZGeography = {
             "Type":"File",
             "Description":"Input TAZ Geography",
-            "Value":"%Input Folder%\\taz\\PeoriaZones.DBD"
+            "Value":"%Input Folder%\\tazs\\scenario_tazs.dbd"
+        }
+        Args.[Master SE] = {
+            "Type":"File",
+            "Description":"Master SED Demographics",
+            "Value":"%Master Folder%\\sedata\\base_2020.bin"
         }
         Args.Demographics = {
             "Type":"File",
             "Description":"Input SED Demographics",
-            "Value":"%Input Folder%\\taz\\TAZDemographics.bin"
+            "Value":"%Input Folder%\\sedata\\scenario_se.bin"
         }
         Args.SpeedCapacityLookup = {
             "Type":"File",
             "Description":"Speed and Capacity Lookup by Facility and Area Type Table",
-            "Value":"%Common Folder%\\PeoriaStreets_RoadClasses.bin"
+            "Value":"%Input Folder%\\networks\\speed_and_capacity.csv"
+        }
+        Args.AreaTypes = {
+            "Type":"array",
+            "Caption":"Area Types",
+            "Description":"Area type definitions",
+            "Style":"AreaType",
+            "Value":{
+                {"19",20,0.1,0.25},
+                {"20",20,0.1,0.3},
+                {"21",20,0.2,0.43},
+                {"22",20,0.2,0.43},
+                {"23",10,0.3,0.5},
+                {"24",10,0.3,0.5}}
         }
         Args.TransitModeTable = {
             "Type":"File",
@@ -295,7 +353,7 @@
         Args.HighwayDatabase = {
             "Type":"File",
             "Description":"Output highway database",
-            "Value":"%Output Folder%\\networks\\PeoriaStreetsOut.DBD"
+            "Value":"%Output Folder%\\networks\\scenario_links.dbd"
         }
         Args.TurnPenalties = {
             "Type":"File",
@@ -305,12 +363,12 @@
         Args.TransitRoutes = {
             "Type":"File",
             "Description":"Output transit routes",
-            "Value":"%Output Folder%\\networks\\PeoriaRoutesOut.rts"
+            "Value":"%Output Folder%\\networks\\scenario_routes.rts"
         }
         Args.DemographicOutputs = {
             "Type":"File",
             "Description":"Output SED Demographics",
-            "Value":"%Output Folder%\\taz\\TAZDemographicsOut.bin"
+            "Value":"%Output Folder%\\sedata\\scenario_se.bin"
         }
         Args.WalkSpeed = {
             "Type":"double",
@@ -330,22 +388,22 @@
         Args.HighwayNetwork = {
             "Type":"File",
             "Description":"Output highway network graph",
-            "Value":"%OutputSkims%\\highwaynet.net"
+            "Value":"%Output Folder%\\Skims\\highwaynet.net"
         }
         Args.HighwaySkimAM = {
             "Type":"File",
             "Description":"AM Highway Skim Matrix",
-            "Value":"%OutputSkims%\\HighwaySkimAM.mtx"
+            "Value":"%Output Folder%\\Skims\\HighwaySkimAM.mtx"
         }
         Args.HighwaySkimPM = {
             "Type":"File",
             "Description":"PM Highway Skim Matrix",
-            "Value":"%OutputSkims%\\HighwaySkimPM.mtx"
+            "Value":"%Output Folder%\\Skims\\HighwaySkimPM.mtx"
         }
         Args.HighwaySkimOP = {
             "Type":"File",
             "Description":"OP Highway Skim Matrix",
-            "Value":"%OutputSkims%\\HighwaySkimOP.mtx"
+            "Value":"%Output Folder%\\Skims\\HighwaySkimOP.mtx"
         }
 	
 	Section = "Skims|Public Transport"
@@ -353,37 +411,37 @@
         Args.TransitNetwork = {
             "Type":"File",
             "Description":"Output transit network graph",
-            "Value":"%OutputSkims%\\TransitNetwork.tnw"
+            "Value":"%Output Folder%\\Skims\\TransitNetwork.tnw"
         }
         Args.TransitWalkSkimAM = {
             "Type":"File",
             "Description":"Transit Walk Skim Matrix AM",
-            "Value":"%OutputSkims%\\TransitWalkSkimAM.mtx"
+            "Value":"%Output Folder%\\Skims\\Transit\\TransitWalkSkimAM.mtx"
         }
         Args.TransitDriveSkimAM = {
             "Type":"File",
             "Description":"Transit Drive Skim Matrix AM",
-            "Value":"%OutputSkims%\\TransitDriveSkimAM.mtx"
+            "Value":"%Output Folder%\\Skims\\Transit\\TransitDriveSkimAM.mtx"
         }
         Args.TransitWalkSkimPM = {
             "Type":"File",
             "Description":"Transit Walk Skim Matrix PM",
-            "Value":"%OutputSkims%\\TransitWalkSkimPM.mtx"
+            "Value":"%Output Folder%\\Skims\\Transit\\TransitWalkSkimPM.mtx"
         }
         Args.TransitDriveSkimPM = {
             "Type":"File",
             "Description":"Transit Drive Skim Matrix PM",
-            "Value":"%OutputSkims%\\TransitDriveSkimPM.mtx"
+            "Value":"%Output Folder%\\Skims\\Transit\\TransitDriveSkimPM.mtx"
         }
         Args.TransitWalkSkimOP = {
             "Type":"File",
             "Description":"Transit Walk Skim Matrix OP",
-            "Value":"%OutputSkims%\\TransitWalkSkimOP.mtx"
+            "Value":"%Output Folder%\\Skims\\Transit\\TransitWalkSkimOP.mtx"
         }
         Args.TransitDriveSkimOP = {
             "Type":"File",
             "Description":"Transit Drive Skim Matrix OP",
-            "Value":"%OutputSkims%\\TransitDriveSkimOP.mtx"
+            "Value":"%Output Folder%\\Skims\\Transit\\TransitDriveSkimOP.mtx"
         }
 	
 	Section = "Skims|NonMotorized"
@@ -391,18 +449,18 @@
         Args.WalkSkim = {
             "Type":"File",
             "Description":"Walk Skim Matrix",
-            "Value":"%OutputSkims%\\WalkSkim.mtx"
+            "Value":"%Output Folder%\\Skims\\WalkSkim.mtx"
         }
         Args.BikeSkim = {
             "Type":"File",
             "Description":"Bike Skim Matrix",
-            "Value":"%OutputSkims%\\BikeSkim.mtx"
+            "Value":"%Output Folder%\\Skims\\BikeSkim.mtx"
         }
         Args.IZMatrix = {
             "Type":"File",
             "Caption":"IntraZonal matrix",
             "Description":"IZMatrix",
-            "Value":"%OutputSkims%\\IntraZonal.mtx"
+            "Value":"%Output Folder%\\Skims\\IntraZonal.mtx"
         }
 	
 	Section = "Accessibility|Mode Logsums|Mandatory"
