@@ -111,6 +111,11 @@ Menu "TCRPC Menu"
     init do
     enditem
  
+    MenuItem "CreateScenario" text: "Create Scenario" do
+        mr = CreateObject("Model.Runtime")
+        Args = mr.GetValues()
+        mr.RunCode("Create Scenario", Args)
+    enditem
     MenuItem "Calibrate" text: "Calibrate Choice Models" menu "MENU_Calibration"
 endMenu
 
