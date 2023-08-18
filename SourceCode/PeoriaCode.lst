@@ -19,3 +19,12 @@ NonMandatorySoloTours.rsc
 NonMandatoryStops.rsc
 TimeManager.rsc
 NonresidentDistribution.rsc
+../src/utils/utils.rsc
+../src/utils/RoadwayProjectManagement.rsc
+../src/utils/TransitProjectManagement.rsc
+../src/CreateScenario.rsc
+../src/Network Calculations.rsc
+../src/Oahu Steps.rsc
+../src/PopulationSynthesis.rsc
+../src/Skimming.rsc
+../src/Visitors.rsc
