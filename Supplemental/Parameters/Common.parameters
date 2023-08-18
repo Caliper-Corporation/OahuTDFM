@@ -413,36 +413,6 @@
             "Description":"Output transit network graph",
             "Value":"%Output Folder%\\Skims\\TransitNetwork.tnw"
         }
-        Args.TransitWalkSkimAM = {
-            "Type":"File",
-            "Description":"Transit Walk Skim Matrix AM",
-            "Value":"%Output Folder%\\Skims\\Transit\\TransitWalkSkimAM.mtx"
-        }
-        Args.TransitDriveSkimAM = {
-            "Type":"File",
-            "Description":"Transit Drive Skim Matrix AM",
-            "Value":"%Output Folder%\\Skims\\Transit\\TransitDriveSkimAM.mtx"
-        }
-        Args.TransitWalkSkimPM = {
-            "Type":"File",
-            "Description":"Transit Walk Skim Matrix PM",
-            "Value":"%Output Folder%\\Skims\\Transit\\TransitWalkSkimPM.mtx"
-        }
-        Args.TransitDriveSkimPM = {
-            "Type":"File",
-            "Description":"Transit Drive Skim Matrix PM",
-            "Value":"%Output Folder%\\Skims\\Transit\\TransitDriveSkimPM.mtx"
-        }
-        Args.TransitWalkSkimOP = {
-            "Type":"File",
-            "Description":"Transit Walk Skim Matrix OP",
-            "Value":"%Output Folder%\\Skims\\Transit\\TransitWalkSkimOP.mtx"
-        }
-        Args.TransitDriveSkimOP = {
-            "Type":"File",
-            "Description":"Transit Drive Skim Matrix OP",
-            "Value":"%Output Folder%\\Skims\\Transit\\TransitDriveSkimOP.mtx"
-        }
 	
 	Section = "Skims|NonMotorized"
 	
@@ -2995,7 +2965,58 @@
             "Description":"EEMatrix",
             "Value":"%Output Folder%\\OD\\EETrips.mtx"
         }
-
+	Section = "Visitor Model"
+	
+        Args.[Vis Hotel Occ Rate] = {
+            "Type":"double",
+            "Caption":"Occupancy rate",
+            "Value":.846
+        }
+        Args.[Vis Condo Occ Rate] = {
+            "Type":"double",
+            "Caption":"Occupancy rate",
+            "Value":.846
+        }
+        Args.[Vis HH Occ Rate] = {
+            "Type":"double",
+            "Caption":"Occupancy rate",
+            "Value":.022
+        }
+        Args.[Vis Hotel Business Ratio] = {
+            "Type":"double",
+            "Caption":"The ratio of visitors in hotels that are on island for business",
+            "Value":.088
+        }
+        Args.[Vis Condo Business Ratio] = {
+            "Type":"double",
+            "Caption":"The ratio of visitors in condos that are on island for business",
+            "Value":.063
+        }
+        Args.[Vis HH Business Ratio] = {
+            "Type":"double",
+            "Caption":"The ratio of visitors in households that are on island for business",
+            "Value":.012
+        }
+        Args.[Vis Personal Party Size] = {
+            "Type":"double",
+            "Caption":"Party size for personal visitors",
+            "Value":2.64
+        }
+        Args.[Vis Business Party Size] = {
+            "Type":"double",
+            "Caption":"Party size for business visitors",
+            "Value":1.74
+        }
+        Args.[Vis Party Calibration Factor] = {
+            "Type":"double",
+            "Caption":"Calibration factor to adjust total daily visitors on island",
+            "Value":1
+        }
+        Args.[Vis Trip Rates] = {
+            "Type":"File",
+            "Caption":"Visitor trip rates",
+            "Value":"%Input Folder%\\visitors\\vis_generation.csv"
+        }
 	
 	Section = "AssignmentInputs"
 	
