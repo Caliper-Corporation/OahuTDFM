@@ -1,5 +1,5 @@
 
-216,codepage=1252
+228
 "TAZ",I,1,4,0,11,0,,"","",,"Sum",
 "TotalHH",I,5,4,0,8,0,,"","",,"Sum",
 "OccupiedHH",I,9,4,0,8,0,,"","",,"Sum",
@@ -32,3 +32,5 @@
 "Emp_Military",R,193,8,0,14,2,,"","",,"Sum",
 "VisArrivalsWork",R,201,8,0,14,2,,"","Special Generator|Daily visitor arrivals for work purposes|Currently, this is just the convention center.",,"Sum",
 "VisArrivalsRec",R,209,8,0,14,2,,"","Special Generator|Monthly visits from visitors in May 2023|https://www.hawaiitourismauthority.org/research/symphony-dashboards/||Used to capture trip attractions that aren't related to employment.",,"Sum",
+"ParkingSpaces",I,217,4,0,8,0,,"","",,"Sum",
+"ParkingCost",R,221,8,0,10,2,,"","Hourly parking cost in dollars",,"Sum",
