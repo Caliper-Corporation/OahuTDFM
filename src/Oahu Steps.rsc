@@ -57,14 +57,6 @@ Macro "Oahu Steps" (Args)
   Args.HighwaySkimOP = Args.[Output Folder] + "\\Skims\\Highway_OP.mtx"
   Args.WalkSkim = Args.[Output Folder] + "\\Skims\\Walk.mtx"
   Args.BikeSkim = Args.[Output Folder] + "\\Skims\\Bike.mtx"
-  Args.TransitWalkSkim = Args.[Output Folder] + "\\Skims\\Transit\\w_transit.mtx"
-  Args.TransitDriveSkim = Args.[Output Folder] + "\\Skims\\Transit\\d_transit.mtx"
-  Args.TransitWalkSkimAM = Args.[Output Folder] + "\\Skims\\Transit\\w_transitAM.mtx"
-  Args.TransitDriveSkimAM = Args.[Output Folder] + "\\Skims\\Transit\\d_transitAM.mtx"
-  Args.TransitWalkSkimPM = Args.[Output Folder] + "\\Skims\\Transit\\w_transitPM.mtx"
-  Args.TransitDriveSkimPM = Args.[Output Folder] + "\\Skims\\Transit\\d_transitPM.mtx"
-  Args.TransitWalkSkimOP = Args.[Output Folder] + "\\Skims\\Transit\\w_transitOP.mtx"
-  Args.TransitDriveSkimOP = Args.[Output Folder] + "\\Skims\\Transit\\d_transitOP.mtx"
   // RunMacro("HighwayAndTransitSkim Oahu", Args)
 
   // Vistors
