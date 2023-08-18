@@ -295,18 +295,20 @@ Macro "transit skim" (Args)
     
     periods = Args.Periods
     access_modes = Args.AccessModes
+    modeTable = Args.TransitModeTable
     rsFile = Args.TransitRoutes
     skim_dir = Args.OutputSkims
+
+    transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
 
     for period in periods do
         for acceMode in access_modes do
 
         tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
-
-        if acceMode = "walk" 
-            then TransModes = Args.TransitModes
+        if acceMode = "w" 
+            then TransModes = transit_modes
             // if "pnr" or "knr" remove 'all'
-            else TransModes = ExcludeArrayElements(Args.TransitModes, Args.TransitModes.position("all"), 1)
+            else TransModes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
 
             for transMode in TransModes do
                 label = period + " " + acceMode + " " + transMode + " Skim Matrix"

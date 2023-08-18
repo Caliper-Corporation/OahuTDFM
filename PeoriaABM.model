@@ -37,7 +37,7 @@ EndMacro
 Macro "Population Synthesis" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames", {"PopulationSynthesis"}},
+        {"MacroNames", {"PopulationSynthesis Oahu"}},
         {"Picture", "bmp\\planpeoplehouse_v3.bmp"},
         {"PicturePosition", "CenterRight"},
         {"TextStyle", "Left"}
@@ -77,7 +77,7 @@ EndMacro
 Macro "Preprocess Databases" (Args,Result)
     Attributes = {
         {"Picture", "bmp\\plan_config_v3.bmp"},
-        {"MacroName", "PreprocessData"}
+        {"MacroName", "Network Calculations"}
     }
 Data:
     In({ Args.[HighwayInputDatabase] })
@@ -92,14 +92,12 @@ EndMacro
 
 Macro "Build Networks" (Args,Result)
     Attributes = {
-        {"MacroName", "BuildNetworks"},
+        {"MacroName", "BuildNetworks Oahu"},
         {"Picture", "bmp\\plan_config_v3.bmp"}
     }
 Data:
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
-    Out({ Args.[HighwayNetwork] })
-    Out({ Args.[TransitNetwork] })
 EndMacro
 
 
@@ -135,14 +133,12 @@ EndMacro
 
 Macro "Skim Matrices" (Args,Result)
     Attributes = {
-        {"MacroName", "HighwayAndTransitSkim"},
+        {"MacroName", "HighwayAndTransitSkim Oahu"},
         {"Picture", "bmp\\planskim_v3.bmp"}
     }
 Data:
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
-    In({ Args.[HighwayNetwork] })
-    In({ Args.[TransitNetwork] })
     OutSections({"Skims|Motorized",
                  "Skims|Public Transport",
                  "Skims|NonMotorized"})

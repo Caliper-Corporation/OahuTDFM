@@ -926,17 +926,18 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     ParkFilter = null
 
     // build class name list and class-specific PnR/KnR option array
-    if acceMode = "walk" 
-        then TransModes = Args.TransitModes
+    transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
+    if acceMode = "w" 
+        then TransModes = transit_modes
         // if "pnr" or "knr" remove 'all'
-        else TransModes = ExcludeArrayElements(Args.TransitModes, Args.TransitModes.position("all"), 1)
+        else TransModes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
 
     for transMode in TransModes do
         UserClasses = UserClasses + {period + "-" + acceMode + "-" + transMode}
         ModeUseFld = ModeUseFld + {transMode}
         PermitAllW = PermitAllW + {false}
 
-        if acceMode = "walk" then do
+        if acceMode = "w" then do
             DrvTimeFld = DrvTimeFld + {}
             DrvInUse = DrvInUse + {false}
             AllowWacc = AllowWacc + {true}

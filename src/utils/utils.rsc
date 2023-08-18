@@ -1688,17 +1688,18 @@ Macro "Count Difference Map" (macro_opts)
 EndMacro
 
 /*
-Uses the mode table to get the transit modes in the model. Exclude "nt"
-(non-transit) as a mode.
+Uses the mode table to get the network definition column names from the mode
+table (the columns with 1s or 2s in them). These are the primary modes used
+to name the transit networks.
 */
 
-Macro "Get Transit Modes" (mode_csv)
-    mode_vw = OpenTable("mode", "CSV", {mode_csv})
-    transit_modes = V2A(GetDataVector(mode_vw + "|", "abbr", ))
-    pos = transit_modes.position("nt")
-    transit_modes = ExcludeArrayElements(transit_modes, pos, 1)
-    CloseView(mode_vw)
-    return(transit_modes)
+Macro "Get Transit Net Def Col Names" (mode_csv)
+    tbl = CreateObject("Table", mode_csv)
+    col_names = tbl.GetFieldNames()
+    pos1 = col_names.position("net_defs")
+    pos2 = col_names.position("description")
+    result = SubArray(col_names, pos1 + 1, pos2 - pos1 - 1)
+    return(result)
 endmacro
 
 /*

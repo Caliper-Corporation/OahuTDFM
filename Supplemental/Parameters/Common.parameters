@@ -340,8 +340,13 @@
         Args.TransitModeTable = {
             "Type":"File",
             "Description":"Transit Mode Table",
-            "Value":"%Common Folder%\\ModeTable.bin"
+            "Value":"%Input Folder%\\networks\\transit_mode_table.csv"
         }
+        Args.AccessModes = {
+            "Type":"hidden",
+            "Value":{"w", "pnr", "knr"}
+        }
+
         Args.TransitModeTransferTable = {
             "Type":"File",
             "Description":"Transit Mode Transfer Table",
@@ -404,14 +409,6 @@
             "Type":"File",
             "Description":"OP Highway Skim Matrix",
             "Value":"%Output Folder%\\Skims\\HighwaySkimOP.mtx"
-        }
-	
-	Section = "Skims|Public Transport"
-	
-        Args.TransitNetwork = {
-            "Type":"File",
-            "Description":"Output transit network graph",
-            "Value":"%Output Folder%\\Skims\\TransitNetwork.tnw"
         }
 	
 	Section = "Skims|NonMotorized"
