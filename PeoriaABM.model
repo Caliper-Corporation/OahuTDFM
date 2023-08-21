@@ -154,7 +154,6 @@ Data:
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
     In({ Args.[HighwaySkimAM] })
-    In({ Args.[TransitWalkSkimAM] })
     In({ Args.[WalkSkim] })
     In({ Args.[DemographicOutputs] })
     Out({ Args.[AccessibilitiesOutputs] })
