@@ -93,7 +93,7 @@ Macro "Determine Area Type" (Args)
     // Calculate total employment and density
     se_vw = OpenTable("se", "FFB", {se_bin, })
     a_fields =  {
-        // {"TotalEmp", "Integer", 10, ,,,, "Total employment"},
+        {"TotalEmployment", "Integer", 10, ,,,, "Total employment"},
         {"Density", "Real", 10, 2,,,, "Density used in area type calculation.|Considers HH and Emp."},
         {"AreaType", "Character", 10,,,,, "Area Type"},
         {"ATSmoothed", "Integer", 10,,,,, "Whether or not the area type was smoothed"},
@@ -110,11 +110,33 @@ Macro "Determine Area Type" (Args)
             "Area",
             "Population",
             "GroupQuarterPopulation",
-            "TotalEmployment"
+            "Emp_Agriculture",
+            "Emp_Manufacturing",
+            "Emp_Wholesale",
+            "Emp_Retail",
+            "Emp_TransportConstruction",
+            "Emp_FinanceRealEstate",
+            "Emp_Education",
+            "Emp_HealthCare",
+            "Emp_Services",
+            "Emp_Public",
+            "Emp_Hotel",
+            "Emp_Military"
         },
         {OptArray: TRUE, "Missing as Zero": TRUE}
     )
-    tot_emp = data.TotalEmployment
+    tot_emp = data.Emp_Agriculture + 
+        data.Emp_Manufacturing + 
+        data.Emp_Wholesale + 
+        data.Emp_Retail + 
+        data.Emp_TransportConstruction + 
+        data.Emp_FinanceRealEstate + 
+        data.Emp_Education + 
+        data.Emp_HealthCare + 
+        data.Emp_Services + 
+        data.Emp_Public + 
+        data.Emp_Hotel + 
+        data.Emp_Military
     data.HH_POP = data.Population - data.GroupQuarterPopulation
     factor = data.HH_POP.sum() / tot_emp.sum()
     density = (data.HH_POP + tot_emp * factor) / data.area
@@ -126,6 +148,7 @@ Macro "Determine Area Type" (Args)
         areatype = if density >= cutoff then name else areatype
     end
     // SetDataVector(jv + "|", "TotalEmp", tot_emp, )
+    SetDataVector(jv + "|", se_vw + ".TotalEmployment", tot_emp, )
     SetDataVector(jv + "|", se_vw + ".Density", density, )
     SetDataVector(jv + "|", se_vw + ".AreaType", areatype, )
     SetDataVector(jv + "|", se_vw + ".EmpDensity", emp_density, )
