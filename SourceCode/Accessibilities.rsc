@@ -8,6 +8,7 @@ macro "CalculateAccessibilities" (Args, Results)
     TAZData = Args.DemographicOutputs
     LineDB = Args.HighwayDatabase
     RouteSystem = Args.TransitRoutes
+    skim_dir = Args.[Output Folder] + "\\skims"
 
     Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
     Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
@@ -140,12 +141,12 @@ macro "CalculateAccessibilities" (Args, Results)
     for time in times do
 
         // open transit skim matrix
-        PTSkim = Args.TransitWalkSkimAM
+        PTSkim = skim_dir + "\\transit\\AM_w_bus.mtx"
         AutoSkim = Args.HighwaySkimAM
         // make employment and retail employment vectors row based
         PTMat = CreateObject("Matrix", PTSkim)
-        PTMat.SetRowIndex("InternalTAZ")
-        PTMat.SetColIndex("InternalTAZ")
+        PTMat.SetRowIndex("RCIndex")
+        PTMat.SetColIndex("RCIndex")
  
         AUTOMat = CreateObject("Matrix", AutoSkim) 
         AUTOMat.SetRowIndex("InternalTAZ")
@@ -208,27 +209,24 @@ macro "CalculateAccessibilities" (Args, Results)
 
       
         // write total employment accessibility, retail employment accessibility, and non-motorized accessibiilty values
-        TAZP.WriteData({ Data: {{"TransitAccessibilityToJobs"+time, origtotemploy}, 
-//                                    {"TransitAccessibilityToJobs"+time+"Decay", origtotemployDecay},
-                                    {"TransitAccessibilityToRetail"+time, origretemploy}, 
-//                                    {"TransitAccessibilityToRetail"+time+"Decay", origretemployDecay}, 
-                                    {"AutoAccessibilityToJobs"+time, origtotemploya},
-//                                    {"AutoAccessibilityToJobs"+time+"Decay", origtotemployaDecay},
-                                    {"AutoAccessibilityToRetail"+time, origretemploya}, 
-//                                    {"AutoAccessibilityToRetail"+time+"Decay", origretemployaDecay}, 
-                                    {"NonMotorizedAccessibility", origwalkemploy}}, 
-                            SortOrder: {{"TAZ", "Ascending"}}} )
+        TAZP.SetDataVectors({
+            FieldData: {{"TransitAccessibilityToJobs"+time, origtotemploy}, 
+                        {"TransitAccessibilityToRetail"+time, origretemploy}, 
+                        {"AutoAccessibilityToJobs"+time, origtotemploya},
+                        {"AutoAccessibilityToRetail"+time, origretemploya}, 
+                        {"NonMotorizedAccessibility", origwalkemploy}}, 
+            Options: {SortOrder: {{"TAZ", "Ascending"}}}} )
         end
  // calculate all operations
     // add route system, stops, line, node, and physical stops layer
     // add taz layer
-    PSTOPS = CreateObject("Table", {FileName: RouteSystem, LayerType: "PhysicalStop"})
-    PstopsLayer = PSTOPS.GetView()
+    STOPS = CreateObject("Table", {FileName: RouteSystem, LayerType: "Stop"})
+    StopsLayer = STOPS.GetView()
     
     // put in a field of 1's in the physical stop layer
-    ones = CreateExpression(PstopsLayer, "ONE", "1", )
+    ones = CreateExpression(StopsLayer, "ONE", "1", )
     // determine number of physical stops in each TAZ
-    ColumnAggregate(ptlayer+"|", 0.5, PstopsLayer+"|", {{"TransitStopDensity", "Sum", ones, }}, null)
+    ColumnAggregate(ptlayer+"|", 0.5, StopsLayer+"|", {{"TransitStopDensity", "Sum", ones, }}, null)
 
     // calculate transit stop density (number of stops / buffer area)
     TAZP.TransitStopDensity = TAZP.TransitStopDensity / area
@@ -294,8 +292,8 @@ macro "Determine Intersections" (Args)
         for link in links do
             linkrec = ID2RH(link)
             SetRecord(llyr,linkrec)
-            cls = llyr.Class
-            if cls <> 'Freeway' and cls <> 'Expressway' and cls <> 'System Ramp' and cls <> 'Interstate' and cls <> 'Centroid Connector' then
+            cls = llyr.HCMType
+            if cls <> 'Freeway' and cls <> 'Expressway' and cls <> 'Ramp' and cls <> 'CC' then
                 nlinks = nlinks + 1
             end
         nlyr.NumLinks = nlinks
