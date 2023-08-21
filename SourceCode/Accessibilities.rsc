@@ -154,10 +154,6 @@ macro "CalculateAccessibilities" (Args, Results)
        
         PTMat.AddCores({"Scratch", "Decay"}) 
         AUTOMat.AddCores({"Scratch", "Decay"}) 
-        TAZO.SelectByQuery({
-            SetName: "not_mountain",
-            Query: "MountainTAZ <> 1"
-        })
         emp_Jobs = CopyVector(TAZO.TotalEmployment)
         emp_Jobs.RowBased = true
         emp_Retail = CopyVector(TAZO.Emp_Retail)
@@ -213,10 +209,6 @@ macro "CalculateAccessibilities" (Args, Results)
 
       
         // write total employment accessibility, retail employment accessibility, and non-motorized accessibiilty values
-        TAZP.SelectByQuery({
-            SetName: "not_mountain",
-            Query: "MountainTAZ <> 1"
-        })
         TAZP.SetDataVectors({
             FieldData: {{"TransitAccessibilityToJobs"+time, origtotemploy}, 
                         {"TransitAccessibilityToRetail"+time, origretemploy}, 
