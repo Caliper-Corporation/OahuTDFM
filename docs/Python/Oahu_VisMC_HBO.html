@@ -1,0 +1,487 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns2="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/1999/xhtml"><head><script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script><script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/vega@5"></script><script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script><script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/floatthead/1.4.0/jquery.floatThead.min.js"></script><script>
+			$( document ).ready(function() {
+				var $table = $('table.floatinghead');
+				$table.floatThead({ position: 'absolute' });
+				var $tabledf = $('table.dataframe');
+				$tabledf.floatThead({ position: 'absolute' });
+			});
+			$(window).on("hashchange", function () {
+				window.scrollTo(window.scrollX, window.scrollY - 50);
+			});
+			</script><title>Oahu Visitor Mode Choice - All Trips</title><style>  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700,500italic,100italic|Roboto+Mono:300,400,700);  .error_report {color:red; font-family:monospace;}  body {font-family: "Book-Antiqua", "Palatino", serif;}  div.xmle_title {  font-family: "Book-Antiqua", "Palatino", serif;  font-size:200%;   font-weight:900;  font-style:normal;   color: #444444; }   .xmle_signature {font-size:70%; font-weight:100; font-style:italic; font-family: Roboto, Helvetica, sans-serif;} .xmle_name_signature {font-weight:400; font-style:normal; font-family: "Roboto Slab", Roboto, Helvetica, sans-serif;}  a.parameter_reference {font-style: italic; text-decoration: none}  .strut2 {min-width:1in}  .histogram_cell { padding-top:1; padding-bottom:1; vertical-align:center; }  .dicta pre {  margin:0;  font-family:"Roboto Mono", monospace;  font-weight:300;  font-size:70%; }  .raw_log pre {  font-family:"Roboto Mono", monospace;  font-weight:300;  font-size:70%;  }  caption {     caption-side: bottom;  text-align: left;  font-family: Roboto;  font-style: italic;  font-weight: 100;  font-size: 80%; }  table.dictionary { border:0px hidden !important; border-collapse: collapse !important; } div.blurb {  margin-top: 15px;  max-width: 6.5in; }  div.note {  font-size:90%;  padding-left:1em;  padding-right:1em;  border: 1px solid #999999;  border-radius: 4px; }  p.admonition-title {  font-weight: 700; }  .tooltipped {  position: relative;  display: inline-block; }  .tooltipped .tooltiptext {  visibility: hidden;  width: 180px;  background-color: black;  color: #fff;  text-align: center;  border-radius: 6px;  padding: 5px 0;  position: absolute;  z-index: 1;  top: -5px;  left: 110%; }  .tooltipped .tooltiptext::after {  content: "";  position: absolute;  top: 50%;  right: 100%;  margin-top: -5px;  border-width: 5px;  border-style: solid;  border-color: transparent black transparent transparent; } .tooltipped:hover .tooltiptext {  visibility: visible; }       body { margin-left: 200px; }    .table_of_contents_frame { width: 187px; position: fixed; margin-left: -200px; top:0; padding-top:10px; z-index:2000;}    .table_of_contents { width: 187px; position: fixed; margin-left: -200px; font-size:85%;}    .table_of_contents_head { font-weight:700; padding-left:25px;  }    .table_of_contents ul { padding-left:25px;  }    .table_of_contents ul ul { font-size:75%; padding-left:15px; }    .xmle_signature {font-size:70%; font-weight:100; font-style:italic; font-family: Roboto, Helvetica, sans-serif; width: 170px; position: fixed; left: 0px; bottom: 0px; padding-left:20px; padding-bottom:2px; background-color:rgba(255,255,255,0.9);}    .xmle_name_signature {font-weight:400; font-style:normal; font-family: "Roboto Slab", Roboto, Helvetica, sans-serif;}    a.parameter_reference {font-style: italic; text-decoration: none}    .strut2 {min-width:2in}    .histogram_cell { padding-top:1; padding-bottom:1; vertical-align:center; }    table.floatinghead thead {background-color:#FFF;}    table.dataframe thead {background-color:#FFF;}    @media print {       body { color: #000; background: #fff; width: 100%; margin: 0; padding: 0;}       /*.table_of_contents { display: none; }*/       @page {       margin: 1in;       }       h1, h2, h3 { page-break-after: avoid; }       img { max-width: 100% !important; }       ul, img, table { page-break-inside: avoid; }       .xmle_signature {font-size:70%; font-weight:100; font-style:italic; font-family: Roboto, Helvetica, sans-serif; padding:0; background-color:#fff; position: fixed; bottom: 0;}       .xmle_name_signature {font-weight:400; font-style:normal; font-family: "Roboto Slab", Roboto, Helvetica, sans-serif;}       .xmle_signature img {display:none;}       .xmle_signature .noprint {display:none;}    }    </style><meta name="pythonmetadata" content="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"></head><body><iframe class="table_of_contents_frame" style="height:calc(100% - 100px); border:none; /*background-color:rgba(128,189,1, 0.95);*/
+			  background: -webkit-linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* For Safari 5.1 to 6.0 */
+			  background: -o-linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* For Opera 11.1 to 12.0 */
+			  background: -moz-linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* For Firefox 3.6 to 15 */
+			  background: linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* Standard syntax */
+			" srcdoc="<html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;<head&gt;<script src=&quot;https://code.jquery.com/jquery-3.0.0.min.js&quot; integrity=&quot;sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=&quot; crossorigin=&quot;anonymous&quot;&gt;</script&gt;<script src=&quot;https://code.jquery.com/ui/1.11.4/jquery-ui.min.js&quot; integrity=&quot;sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=&quot; crossorigin=&quot;anonymous&quot;&gt;</script&gt;<script src=&quot;https://cdn.jsdelivr.net/npm/vega@5&quot;&gt;</script&gt;<script src=&quot;https://cdn.jsdelivr.net/npm/vega-lite@5&quot;&gt;</script&gt;<script src=&quot;https://cdn.jsdelivr.net/npm/vega-embed@6&quot;&gt;</script&gt;<script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/floatthead/1.4.0/jquery.floatThead.min.js&quot;&gt;</script&gt;<script&gt;
+			$( document ).ready(function() {
+				var $table = $('table.floatinghead');
+				$table.floatThead({ position: 'absolute' });
+				var $tabledf = $('table.dataframe');
+				$tabledf.floatThead({ position: 'absolute' });
+			});
+			$(window).on(&quot;hashchange&quot;, function () {
+				window.scrollTo(window.scrollX, window.scrollY - 50);
+			});
+			</script&gt;<title&gt;Untitled</title&gt;<style&gt;   .table_of_contents { font-size:85%; font-family: &quot;Book-Antiqua&quot;, &quot;Palatino&quot;, serif; }   .table_of_contents a:link { text-decoration: none; }   .table_of_contents a:visited { text-decoration: none; }   .table_of_contents a:hover { text-decoration: underline; }   .table_of_contents a:active { text-decoration: underline; }   .table_of_contents_head { font-weight:700; padding-left:20px }   .table_of_contents ul { padding-left:20px; }   .table_of_contents ul ul { font-size:75%; padding-left:15px; }   ::-webkit-scrollbar {    -webkit-appearance: none;    width: 7px;   }   ::-webkit-scrollbar-thumb {    border-radius: 4px;    background-color: rgba(0,0,0,.5);    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);   </style&gt;<base target=&quot;_parent&quot;&gt;</head&gt;<body&gt;<div class=&quot;table_of_contents&quot;&gt;<p class=&quot;table_of_contents_head&quot;&gt;Table of Contents</p&gt;<div&gt;<ul&gt;<li&gt;<a href=&quot;#rx6&quot;&gt;Data Statistics</a&gt;</li&gt;<li&gt;<a href=&quot;#rx7&quot;&gt;Choice Table Summary</a&gt;</li&gt;<li&gt;<a href=&quot;#rx8&quot;&gt;Utility Functions</a&gt;</li&gt;<li&gt;<a href=&quot;#rx9&quot;&gt;Parameter Summary</a&gt;</li&gt;<li&gt;<a href=&quot;#rx10&quot;&gt;Estimation Statistics</a&gt;</li&gt;</ul&gt;</div&gt;</div&gt;</body&gt;</html&gt;"></iframe><div class="xmle_html_report"><div class="xmle_title">Oahu Visitor Mode Choice - All Trips</div><h2><a name="rx6" reftxt="Data Statistics" class="toc" toclevel="2"></a>Data Statistics</h2><div><table class="dataframe larch_dataframe"><thead><th></th><th>n</th><th>minimum</th><th>maximum</th><th>median</th><th>histogram</th><th>mean</th><th>stdev</th><th>zeros</th><th>positives</th><th>negatives</th><th>nonzero_minimum</th><th>nonzero_maximum</th><th>nonzero_mean</th><th>nonzero_stdev</th></thead><tbody><tr><th>AccessWalkTime + InitWaitTime + EgressWalkTime</th><td>146</td><td>5.94417</td><td>29997</td><td>23.9901</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAAfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABMAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAANDUxhdAOY4jQpEUqkA5ju+Mnw66QKuqZjx7icNAOY5VsqYLykDkOCIU6UbQQKuqGc/+h9NAchwRihTJ1kA5jghFKgraQAAAAABAS91AlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-22T15:57:22.830376</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 20.571429  L 10.545455 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 20.571429  L 17.818182 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 20.571429  L 25.090909 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 20.571429  L 32.363636 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 20.571429  L 39.636364 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 20.571429  L 46.909091 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 20.571429  L 54.181818 20.571429  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 17.640366  L 61.454545 17.640366  z " clip-path="url(#p5fe566c42c)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p5fe566c42c">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>3926.12</td><td>10084</td><td>0</td><td>146</td><td>0</td><td>5.94417</td><td>29997</td><td>3926.12</td><td>10084</td></tr><tr><th>AutoTime</th><td>146</td><td>0.237231</td><td>57.1294</td><td>6.61935</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAASQAAAAAAAAASAAAAAAAAAAsAAAAAAAAADwAAAAAAAAAHAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAFAAAAAAAAAAkAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAAGCZXc4/5DiOe/07GkDkOA4Wh8IpQKuqKreHMzNA5DhO48uFOUAdx3EPENg/QKuqyh0qFUNAyHHcM0w+RkDkOO5JbmdJQAAAAGCQkExAlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-22T15:57:22.863376</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 15.740565  L 10.545455 15.740565  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 17.619234  L 17.818182 17.619234  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 16.545709  L 25.090909 16.545709  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 18.692759  L 32.363636 18.692759  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 19.497903  L 39.636364 19.497903  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 19.497903  L 46.909091 19.497903  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 19.229522  L 54.181818 19.229522  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 18.155997  L 61.454545 18.155997  z " clip-path="url(#p0ee6938e36)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p0ee6938e36">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>14.4661</td><td>15.9071</td><td>0</td><td>146</td><td>0</td><td>0.237231</td><td>57.1294</td><td>14.4661</td><td>15.9071</td></tr><tr><th>BikeTime</th><td>146</td><td>0.580385</td><td>194.815</td><td>16.8475</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAAUQAAAAAAAAAQAAAAAAAAAAgAAAAAAAAADwAAAAAAAAADAAAAAAAAAAYAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAsAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAAMCCkuI/AAAAMHcpNkAAAAAlLd9FQAAAAFnPVFBAAACAHwi6VUAAAADmQB9bQAAAQNY8QmBAAACAOdn0YkAAAMCcdadlQAAAAAASWmhAlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-22T15:57:22.893668</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 16.701436  L 10.545455 16.701436  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 18.636432  L 17.818182 18.636432  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 16.943311  L 25.090909 16.943311  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 19.845805  L 32.363636 19.845805  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 19.120181  L 39.636364 19.120181  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 20.08768  L 46.909091 20.08768  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 19.60393  L 54.181818 19.60393  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 17.910809  L 61.454545 17.910809  z " clip-path="url(#p55090865ca)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p55090865ca">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>46.4732</td><td>55.7961</td><td>0</td><td>146</td><td>0</td><td>0.580385</td><td>194.815</td><td>46.4732</td><td>55.7961</td></tr><tr><th>PT_IVTT</th><td>146</td><td>0.145665</td><td>9999</td><td>9.71015</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAAfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABMAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAAOAmpcI/HMdploRckUAcR84BOlyhQKqqZ7gxCqpAHIeAtxRcsUDjOM2SELO1QKrqGW4MCrpAcZxmSQhhvkAcp1kSAlzBQAAAAACAh8NAlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-22T15:57:22.924698</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 20.571429  L 10.545455 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 20.571429  L 17.818182 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 20.571429  L 25.090909 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 20.571429  L 32.363636 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 20.571429  L 39.636364 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 20.571429  L 46.909091 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 20.571429  L 54.181818 20.571429  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 17.640366  L 61.454545 17.640366  z " clip-path="url(#p72296b1dea)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p72296b1dea">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>1318.56</td><td>3357.6</td><td>0</td><td>146</td><td>0</td><td>0.145665</td><td>9999</td><td>1318.56</td><td>3357.6</td></tr><tr><th>WalkTime</th><td>146</td><td>2.78585</td><td>935.111</td><td>80.8679</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAAUQAAAAAAAAAQAAAAAAAAAAgAAAAAAAAADwAAAAAAAAADAAAAAAAAAAYAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAsAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAAMBpSQZAq6qqmiiYWkCrqqrzAj9qQAAAAM34mHNAq6oqIHASekCrqqq580WAQAAAQGOvgoNAVlXVDGu/hkCrqmq2JvyJQAAAAGDiOI1AlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-22T15:57:22.956475</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 16.701436  L 10.545455 16.701436  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 18.636432  L 17.818182 18.636432  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 16.943311  L 25.090909 16.943311  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 19.845805  L 32.363636 19.845805  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 19.120181  L 39.636364 19.120181  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 20.08768  L 46.909091 20.08768  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 19.60393  L 54.181818 19.60393  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 17.910809  L 61.454545 17.910809  z " clip-path="url(#pae8aebd0da)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pae8aebd0da">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>223.071</td><td>267.821</td><td>0</td><td>146</td><td>0</td><td>2.78585</td><td>935.111</td><td>223.071</td><td>267.821</td></tr></tbody></table></div><h2><a name="rx7" reftxt="Choice Table Summary" class="toc" toclevel="2"></a>Choice Table Summary</h2><div>
+<style scoped="1">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>chosen</th>
+      <th>available</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>auto</td>
+      <td>72.0</td>
+      <td>146.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>bus</td>
+      <td>15.0</td>
+      <td>146.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>tnc</td>
+      <td>26.0</td>
+      <td>146.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>walk</td>
+      <td>31.0</td>
+      <td>146.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>bike</td>
+      <td>2.0</td>
+      <td>146.0</td>
+    </tr>
+    <tr>
+      <th>&lt; Total All Alternatives &gt;</th>
+      <td></td>
+      <td>146.0</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</div><h2><a name="rx8" reftxt="Utility Functions" class="toc" toclevel="2"></a>Utility Functions</h2><div><table class="floatinghead" style="margin-top:1px;"><thead><tr><th>alt</th><th style="text-align:left;">formula</th></tr></thead><tbody><tr><td>1</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.ASC_auto</span><br> + <span class="LinearFunc_Param">P.Time</span> * <span class="LinearFunc_Data">X.AutoTime</span></td></tr><tr><td>2</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.ASC_bus</span><br> + <span class="LinearFunc_Param">P.Time</span> * <span class="LinearFunc_Data">X.PT_IVTT</span><br> + <span class="LinearFunc_Param">P.AccessEgressInitWaitTimes</span> * <span class="LinearFunc_Data">X('AccessWalkTime + InitWaitTime + EgressWalkTime')</span></td></tr><tr><td>3</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.Time</span> * <span class="LinearFunc_Data">X.AutoTime</span></td></tr><tr><td>4</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.ASC_walk</span><br> + <span class="LinearFunc_Param">P.Time_NM</span> * <span class="LinearFunc_Data">X.WalkTime</span></td></tr><tr><td>5</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.ASC_bike</span><br> + <span class="LinearFunc_Param">P.Time_NM</span> * <span class="LinearFunc_Data">X.BikeTime</span></td></tr></tbody></table></div><h2><a name="rx9" reftxt="Parameter Summary" class="toc" toclevel="2"></a>Parameter Summary</h2><div><style type="text/css">
+#T_0fe01 th {
+  vertical-align: top;
+  text-align: left;
+}
+#T_0fe01 td {
+  vertical-align: top;
+  text-align: left;
+}
+#T_0fe01_row0_col0, #T_0fe01_row0_col1, #T_0fe01_row0_col2, #T_0fe01_row0_col3, #T_0fe01_row0_col4, #T_0fe01_row1_col0, #T_0fe01_row1_col1, #T_0fe01_row1_col2, #T_0fe01_row1_col3, #T_0fe01_row1_col4, #T_0fe01_row2_col0, #T_0fe01_row2_col1, #T_0fe01_row2_col2, #T_0fe01_row2_col3, #T_0fe01_row2_col4, #T_0fe01_row3_col0, #T_0fe01_row3_col1, #T_0fe01_row3_col2, #T_0fe01_row3_col3, #T_0fe01_row3_col4, #T_0fe01_row4_col0, #T_0fe01_row4_col1, #T_0fe01_row4_col2, #T_0fe01_row4_col3, #T_0fe01_row4_col4, #T_0fe01_row5_col0, #T_0fe01_row5_col1, #T_0fe01_row5_col2, #T_0fe01_row5_col3, #T_0fe01_row5_col4, #T_0fe01_row6_col0, #T_0fe01_row6_col1, #T_0fe01_row6_col2, #T_0fe01_row6_col3, #T_0fe01_row6_col4 {
+  font-family: monospace;
+}
+</style>
+<table id="T_0fe01">
+  <thead>
+    <tr>
+      <th class="blank">&#160;</th>
+      <th class="blank level0">&#160;</th>
+      <th id="T_0fe01_level0_col0" class="col_heading level0 col0">Value</th>
+      <th id="T_0fe01_level0_col1" class="col_heading level0 col1">Std Err</th>
+      <th id="T_0fe01_level0_col2" class="col_heading level0 col2">t Stat</th>
+      <th id="T_0fe01_level0_col3" class="col_heading level0 col3">Signif</th>
+      <th id="T_0fe01_level0_col4" class="col_heading level0 col4">Null Value</th>
+      <th id="T_0fe01_level0_col5" class="col_heading level0 col5">Constrained</th>
+    </tr>
+    <tr>
+      <th class="index_name level0">Category</th>
+      <th class="index_name level1">Parameter</th>
+      <th class="blank col0">&#160;</th>
+      <th class="blank col1">&#160;</th>
+      <th class="blank col2">&#160;</th>
+      <th class="blank col3">&#160;</th>
+      <th class="blank col4">&#160;</th>
+      <th class="blank col5">&#160;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_0fe01_level0_row0" class="row_heading level0 row0" rowspan="4">ASCs</th>
+      <th id="T_0fe01_level1_row0" class="row_heading level1 row0">ASC_auto</th>
+      <td id="T_0fe01_row0_col0" class="data row0 col0">&#160;1.02</td>
+      <td id="T_0fe01_row0_col1" class="data row0 col1">&#160;0.229</td>
+      <td id="T_0fe01_row0_col2" class="data row0 col2">&#160;4.45</td>
+      <td id="T_0fe01_row0_col3" class="data row0 col3">***</td>
+      <td id="T_0fe01_row0_col4" class="data row0 col4"> 0.00</td>
+      <td id="T_0fe01_row0_col5" class="data row0 col5"></td>
+    </tr>
+    <tr>
+      <th id="T_0fe01_level1_row1" class="row_heading level1 row1">ASC_bike</th>
+      <td id="T_0fe01_row1_col0" class="data row1 col0">-0.574</td>
+      <td id="T_0fe01_row1_col1" class="data row1 col1">&#160;0.797</td>
+      <td id="T_0fe01_row1_col2" class="data row1 col2">-0.72</td>
+      <td id="T_0fe01_row1_col3" class="data row1 col3"></td>
+      <td id="T_0fe01_row1_col4" class="data row1 col4"> 0.00</td>
+      <td id="T_0fe01_row1_col5" class="data row1 col5"></td>
+    </tr>
+    <tr>
+      <th id="T_0fe01_level1_row2" class="row_heading level1 row2">ASC_bus</th>
+      <td id="T_0fe01_row2_col0" class="data row2 col0">&#160;1.52</td>
+      <td id="T_0fe01_row2_col1" class="data row2 col1">&#160;0.687</td>
+      <td id="T_0fe01_row2_col2" class="data row2 col2">&#160;2.21</td>
+      <td id="T_0fe01_row2_col3" class="data row2 col3">*</td>
+      <td id="T_0fe01_row2_col4" class="data row2 col4"> 0.00</td>
+      <td id="T_0fe01_row2_col5" class="data row2 col5"></td>
+    </tr>
+    <tr>
+      <th id="T_0fe01_level1_row3" class="row_heading level1 row3">ASC_walk</th>
+      <td id="T_0fe01_row3_col0" class="data row3 col0">&#160;4.53</td>
+      <td id="T_0fe01_row3_col1" class="data row3 col1">&#160;0.705</td>
+      <td id="T_0fe01_row3_col2" class="data row3 col2">&#160;6.42</td>
+      <td id="T_0fe01_row3_col3" class="data row3 col3">***</td>
+      <td id="T_0fe01_row3_col4" class="data row3 col4"> 0.00</td>
+      <td id="T_0fe01_row3_col5" class="data row3 col5"></td>
+    </tr>
+    <tr>
+      <th id="T_0fe01_level0_row4" class="row_heading level0 row4" rowspan="3">Other</th>
+      <th id="T_0fe01_level1_row4" class="row_heading level1 row4">AccessEgressInitWaitTimes</th>
+      <td id="T_0fe01_row4_col0" class="data row4 col0">-0.0745</td>
+      <td id="T_0fe01_row4_col1" class="data row4 col1">&#160;0.0306</td>
+      <td id="T_0fe01_row4_col2" class="data row4 col2">-2.44</td>
+      <td id="T_0fe01_row4_col3" class="data row4 col3">*</td>
+      <td id="T_0fe01_row4_col4" class="data row4 col4"> 0.00</td>
+      <td id="T_0fe01_row4_col5" class="data row4 col5"></td>
+    </tr>
+    <tr>
+      <th id="T_0fe01_level1_row5" class="row_heading level1 row5">Time</th>
+      <td id="T_0fe01_row5_col0" class="data row5 col0">-0.0250</td>
+      <td id="T_0fe01_row5_col1" class="data row5 col1">&#160;NA</td>
+      <td id="T_0fe01_row5_col2" class="data row5 col2">&#160;NA</td>
+      <td id="T_0fe01_row5_col3" class="data row5 col3"></td>
+      <td id="T_0fe01_row5_col4" class="data row5 col4">-0.03</td>
+      <td id="T_0fe01_row5_col5" class="data row5 col5">fixed value</td>
+    </tr>
+    <tr>
+      <th id="T_0fe01_level1_row6" class="row_heading level1 row6">Time_NM</th>
+      <td id="T_0fe01_row6_col0" class="data row6 col0">-0.106</td>
+      <td id="T_0fe01_row6_col1" class="data row6 col1">&#160;0.0230</td>
+      <td id="T_0fe01_row6_col2" class="data row6 col2">-4.61</td>
+      <td id="T_0fe01_row6_col3" class="data row6 col3">***</td>
+      <td id="T_0fe01_row6_col4" class="data row6 col4"> 0.00</td>
+      <td id="T_0fe01_row6_col5" class="data row6 col5"></td>
+    </tr>
+  </tbody>
+</table>
+</div><h2><a name="rx10" reftxt="Estimation Statistics" class="toc" toclevel="2"></a>Estimation Statistics</h2><div><table><thead><tr><th>Statistic</th><th>Aggregate</th><th>Per Case</th></tr><tr><td>Number of Cases</td><td colspan="2">146</td></tr><tr><td>Log Likelihood at Convergence</td><td>-128.12</td><td>-0.88</td></tr><tr><td>Log Likelihood at Null Parameters</td><td>-255.32</td><td>-1.75</td></tr><tr><td>Rho Squared w.r.t. Null Parameters</td><td colspan="2">0.498</td></tr></thead><tbody></tbody></table></div></div><div class="xmle_signature"><p><div><img width="14" height="14" src="data:image/png;base64,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%3D" style="position:relative;top:2px;"><span class="larch_name_signature"> Larch 5.7.2</span></div><br>Report generated on <br class="noprint">Tuesday 22 August 2023 <br class="noprint">03:57:22 PM</p></div></body></html>

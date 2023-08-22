@@ -168,7 +168,7 @@ determine_trip_purpose <- trip_tbl %>%
       a_purp == "shop" ~ "HBShop",
       a_purp == "business" ~ "HBW",
       a_purp == "eat" ~ "HBEat",
-      TRUE ~ "Other"
+      TRUE ~ "HBO"
     )
   )
 ```
