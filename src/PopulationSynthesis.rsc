@@ -5,6 +5,7 @@
 Macro "PopulationSynthesis Oahu" (Args)
     RunMacro("DisaggregateSED", Args)
     RunMacro("Synthesize Population", Args)
+    RunMacro("Dorm Residents Synthesis", Args)
     RunMacro("PopSynth Post Process", Args)
     return(1)
 endmacro
@@ -396,4 +397,184 @@ Macro "Create Output HH Expressions"(vw_hhM, specs)
         aggflds = aggflds + {{flds[nClasses], "sum",}}
     end
     Return(aggflds)
+endMacro
+
+
+/* Dorm Synthesis
+    Synthesize HHs and Persons for University residents from University Group Quarters information
+    - HH TAZ and Univ TAZ known
+    - HH Size = 1 (Each person constitutes a HH)
+    - Income distribution (low or low-medium) based on input parameter
+    - Age distributions into one of the six age groups (19-24)
+    - Auto based on input table containing probability of owning a car by age compiled from available statistics
+    - Equal Gender Split
+    - Part time worker distribution based on age based probabilities
+    - WorK industry for part time worker either service or retail based on a fixed probability
+*/
+Macro "Dorm Residents Synthesis"(Args)
+    // Open Existing HH and Pop file after HH Resident Synthesis
+    if !GetFileInfo(Args.Households) or !GetFileInfo(Args.Persons) then
+        Throw("Please ensuure that the resident synthesis is complete")
+    
+    abm = RunMacro("Get ABM Manager", Args)
+    abm.ClosePersonHHView()
+
+    // Add new fields to HH and Person Table
+    newFlds = {{Name: "UnivGQ", Type: "Short", Width: 2, Description: "1 if this is a university dorm HH (resident)"},
+               {Name: "Univ", Type: "String", Width: 10, Description: "University Name (Filled from dorm synthesis)"},
+               {Name: "Autos", Type: "Short", Description: "Number of autos in the HH"}}
+    abm.AddHHFields(newFlds)
+
+    newFlds = { {Name: "UnivGQStudent", Type: "Short", Width: 2, Description: "1 if this is a university student"},
+                {Name: "UnivTAZ", Type: "Long", Width: 12, Description: "TAZID of university that the student belongs to"},
+                {Name: "License", Type: "Short", Description: "License Status: 1 - Has driver license 2 - Does not have driver license"},
+                {Name: "WorkerCategory", Type: "Short", Description: "WorkerType: 1 - FullTime 2 - PartTime"},
+                {Name: "WorkDays", Type: "Short", Width: 10, Description: "Number of work days per week"},
+                {Name: "WorkAttendance", Type: "Short", Width: 2, Description: "Does person work on given day? Based on value of WorkDays"},
+                {Name: "AttendUniv", Type: "Short", Width: 2, Description: "Does person (non-dorm resident) attend university?|1: Yes|2: No.|Filled for Age >= 19"}}
+    abm.AddPersonFields(newFlds)
+
+    // ***** TAZ Data
+    // Get relevant data from TAZ
+    objT = CreateObject("Table", Args.Demographics)
+    nUniv = objT.SelectByQuery({SetName: "Selection", Query: "UnivGQ = 1 and GroupQuarterPopulation > 0"})
+    if nUniv = 0 then
+        Throw("Check university group quarter data in TAZ Demograhics file")
+    vecs = objT.GetDataVectors({FieldNames: {"TAZ", "GroupQuarterPopulation", "UnivGQ", "University", "UnivTAZ"}})
+    objT = null
+
+    // ***** Process
+    // Add records
+    vHHID = abm.[HH.HouseholdID]
+    maxHHID = vHHID.Max()
+    vPersonID = abm.[Person.PersonID]
+    maxPersonID = vPersonID.Max()
+    
+    vecsOutHH = null
+    vecsOutPersons = null
+    vUnivResidents = vecs.GroupQuarterPopulation
+    
+    pbar = CreateObject("G30 Progress Bar", "Processing University Zones...", true, vUnivResidents.length)
+    for i = 1 to vUnivResidents.length do
+        nUniv = r2i(vUnivResidents[i])
+        vecsDist = RunMacro("Get Univ Distributions", Args, nUniv)
+        
+        vHHID = Vector(nUniv, "Long", {{"Sequence", maxHHID + 1, 1}})
+        vPersonID = Vector(nUniv, "Long", {{"Sequence", maxPersonID + 1, 1}})
+        vOne = Vector(nUniv, "Short", {{"Constant", 1}})
+        vUnivTAZ = Vector(nUniv, "Long", {{"Constant", vecs.UnivTAZ[i]}})
+        vUniv = Vector(nUniv, "String", {{"Constant", vecs.University[i]}})
+
+        // Add records, select and set HH vectors
+        // vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+        vecsOutHH = {ZoneID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+                     IncomeCategory: vecsDist.IncomeCategory, HHKids: vOne, HHSeniors: vOne,
+                     UnivGQ: vOne, Univ: vUniv}
+        AddRecords(abm.HHView,,,{"Empty Records": nUniv})
+        abm.CreateHHSet({Filter: 'HouseholdID = null', Activate: 1})
+        abm.SetHHVectors(vecsOutHH)
+
+        // Add records, select and set Person vectors
+        vecsOutPersons = {HouseholdID: vHHID, PersonID: vPersonID, Gender: vecsDist.Gender, Age: s2i(vecsDist.Age),
+                          UnivGQStudent: vOne, UnivTAZ: vUnivTAZ, WorkerCategory: vecsDist.WorkerCategory,
+                          WorkDays: vecsDist.WorkDays, WorkAttendance: vecsDist.WorkAttendance,
+                          License: vecsDist.License, 
+                        // TODO: add this back
+                        //   IndustryCategory: vecsDist.IndustryCategory,
+                        //   WorkIndustry: vecsDist.WorkIndustry,
+                          AttendUniv: vOne}
+        AddRecords(abm.PersonView,,,{"Empty Records": nUniv})
+        abm.CreatePersonSet({Filter: 'PersonID = null', Activate: 1})
+        abm.SetPersonVectors(vecsOutPersons)
+        
+        // Reset Max IDs
+        maxHHID = vHHID[nUniv]
+        maxPersonID = vPersonID[nUniv]
+        if pbar.Step() then
+            Return()
+    end
+    pbar.Destroy()
+    abm.ActivateHHSet()
+    abm.ActivatePersonSet()
+    Return(true)
+endMacro
+
+
+// Macro that generates vectors for Age, Gender, IncomeCategory, WorkerStatus and Vehicle
+// The number of records are passed to the macro
+// The distributions are based on input probability numbers/tables
+Macro "Get Univ Distributions"(Args, nUniv)
+    vecsDist = null
+    
+    // Gender
+    SetRandomSeed(42*nUniv + 1)
+    fPct = Args.FemaleStudentsPct
+    mPct = 100 - fPct
+    params = null
+    params.population = {1, 2}
+    params.weight = {mPct, fPct}
+    vecsDist.Gender = RandSamples(nUniv, "Discrete", params)
+
+    // Income
+    SetRandomSeed(42*nUniv + 2)
+    IncCat1Pct = Args.IncCategory1Pct
+    IncCat2Pct = 100 - IncCat1Pct
+    params.weight = {IncCat1Pct, IncCat2Pct}
+    vecsDist.IncomeCategory = RandSamples(nUniv, "Discrete", params)
+
+    // ***** Age Related Distributions
+    ageChars = Args.StudentCharacteristics
+    arrAge = ageChars.Age
+    arrAgePct = ageChars.Percentage
+    if Sum(arrAgePct) <> 100 then
+        Throw("Incorrect Age Percentages in 'StudentCharacteristics' table for dorm population synthesis. They do not sum up to 100.0")
+
+    // Age
+    params = null
+    params.population = arrAge
+    params.weight = arrAgePct
+    vecsDist.Age = RandSamples(nUniv, "Discrete", params)
+
+    // Vehicle Availability
+    vProbVeh = Vector(nUniv, "Double",)
+    vProbWrk = Vector(nUniv, "Double",)
+    // Get Prob Vector First
+    for i = 1 to arrAge.length do
+        age = arrAge[i]
+        probVeh = ageChars.[Vehicle Probability][i]
+        probWrk = ageChars.[Worker Probability][i]
+        vProbVeh = if vecsDist.Age = age then probVeh else vProbVeh
+        vProbWrk = if vecsDist.Age = age then probWrk else vProbWrk 
+    end
+
+    SetRandomSeed(42*nUniv + 3)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.Vehicles = if vRand <= vProbVeh then 1 else 0
+    vecsDist.License = if vRand <= vProbVeh then 1 else 2
+
+    // Worker Category (PartTime or NonWorker)
+    SetRandomSeed(42*nUniv + 4)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.WorkerCategory = if vRand <= vProbWrk then 2 else null
+    vecsDist.WorkDays = if vecsDist.WorkerCategory = 2 then 3 else null
+    
+    SetRandomSeed(42*nUniv + 5)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.WorkAttendance = if vecsDist.WorkerCategory = 2 and vRand <= 0.6 then 1
+                              else if vecsDist.WorkerCategory = 2 then 0
+                              else null
+
+    // Work Industry (One of Service or Retail)
+    SetRandomSeed(42*nUniv + 6)
+    SvcPct = Args.ServiceEmpPct
+    RetPct = 100 - SvcPct
+    params.weight = {SvcPct, RetPct}
+    params.population = {8, 5}
+    vecsDist.IndustryCategory = RandSamples(nUniv, "Discrete", params)   // Note only generating enough records for the workers
+    vecsDist.IndustryCategory = if vecsDist.WorkerCategory = 2 then vecsDist.IndustryCategory else 10
+    vecsDist.WorkIndustry = if vecsDist.IndustryCategory = 8 then 9 
+                            else if vecsDist.IndustryCategory = 10 then 12
+                            else vecsDist.IndustryCategory
+
+    Return(vecsDist)
 endMacro
