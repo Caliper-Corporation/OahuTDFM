@@ -113,7 +113,6 @@ Data:
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
     OutSections({"Skims|Motorized",
-                 "Skims|Public Transport",
                  "Skims|NonMotorized",
                  "Accessibility|Output"})
 Body:
@@ -140,7 +139,6 @@ Data:
     In({ Args.[HighwayDatabase] })
     In({ Args.[TransitRoutes] })
     OutSections({"Skims|Motorized",
-                 "Skims|Public Transport",
                  "Skims|NonMotorized"})
 EndMacro
 
