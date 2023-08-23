@@ -900,29 +900,6 @@ EndMacro
 
 
 Macro "Supplementary Models" (Args, Result)
-Body:
-    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
-    model = FlowChart({"External Model"},{"Other Model"},)
-    
-    // FlowChartNode(model,NodeName,MacroName,UI,Description)
-    FlowChartNode(model,"External Model",,,)
-    FlowChartNode(model,"Other Model",,,)
-    
-    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
-    FlowChartLink(model,"External Model","Other Model",True,,)
-    Return(model)
-EndMacro
-
-Macro "External Model" (Args,Result)
-    Attributes = {
-        {"MacroName", "External DistributionAndTOD"}
-    }
-Data:
-    InSections({"External Model|Inputs"})
-    OutSections({"External Model|Outputs"})
-EndMacro
-
-Macro "Other Model" (Args,Result)
     Attributes = {
         {"MacroName", "OtherModel"}
     }
