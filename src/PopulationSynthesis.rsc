@@ -5,6 +5,7 @@
 Macro "PopulationSynthesis Oahu" (Args)
     RunMacro("DisaggregateSED", Args)
     RunMacro("Synthesize Population", Args)
+    RunMacro("Generate Tabulations", Args)
     RunMacro("Dorm Residents Synthesis", Args)
     RunMacro("PopSynth Post Process", Args)
     return(1)

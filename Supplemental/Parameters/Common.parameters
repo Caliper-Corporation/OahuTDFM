@@ -131,11 +131,6 @@
 
 	Section = "Population Synthesis|Inputs"
 	
-        Args.SEDMarginals = {
-            "Type":"File",
-            "Caption":"Output marginals from disaggregate curves",
-            "Value":"%Output Folder%\\Population\\SEDMarginals.bin"
-        }
         Args.SizeCurves = {
             "Type":"File",
             "Caption":"Size curves",
@@ -189,11 +184,6 @@
             "Description":"Convergence Threshold",
             "Value":0.001
         }
-        Args.[Synthesized Tabulations] = {
-            "Type":"File",
-            "Caption":"Population synthesis summary tabulations",
-            "Value":"%Output Folder%\\Population\\Tabulations.bin"
-        }
 	
 	Section = "Population Synthesis|Dorm Synthesis"
 	
@@ -233,7 +223,12 @@
         }
 	
 	Section = "Population Synthesis|Outputs"
-	
+
+        Args.SEDMarginals = {
+            "Type":"File",
+            "Caption":"Output marginals from disaggregate curves",
+            "Value":"%Output Folder%\\Population\\SEDMarginals.bin"
+        }
         Args.HHSeed = {
             "Type":"File",
             "Caption":"Processed household seed",
@@ -275,6 +270,11 @@
             "Type":"File",
             "Caption":"Output block group tabulations",
             "Value":"%Output Folder%\\Population\\PopSyn_BGTabulations.bin"
+        }
+        Args.[Synthesized Tabulations] = {
+            "Type":"File",
+            "Caption":"Population synthesis summary tabulations",
+            "Value":"%Output Folder%\\Population\\Tabulations.bin"
         }
 	
 	Section = "GEO Master Data"
