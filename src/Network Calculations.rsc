@@ -4,6 +4,7 @@
 
 Macro "Network Calculations" (Args)
     RunMacro("CopyDataToOutputFolder", Args)
+    RunMacro("Filter Transit Modes", Args)
     RunMacro("Expand DTWB", Args)
     RunMacro("Mark KNR Nodes", Args)
     RunMacro("Determine Area Type", Args)
@@ -12,6 +13,34 @@ Macro "Network Calculations" (Args)
     RunMacro("Compute Intrazonal Matrix", Args)
 
     return(1)
+endmacro
+
+/*
+Remove network columns from the mode table that if that mode doesn't exist in 
+the scenario. This will in turn control which networks (tnw) get created.
+*/
+
+Macro "Filter Transit Modes" (Args)
+    rts_file = Args.TransitRoutes
+    mode_file = Args.TransitModeTable
+
+    // Open a map and determine if rail is present
+    map = CreateObject("Map", rts_file)
+    {nlyr, llyr, rlyr, slyr} = map.GetLayerNames()
+    n = map.SelectByQuery({
+        SetName: "rail",
+        Query: "Mode = 7"
+    })
+    map = null
+
+    if n = 0 then do
+        // Can't edit CSVs directly, so convert to a MEM table
+        temp = CreateObject("Table", mode_file)
+        tbl = temp.Export({ViewName: "temp"})
+        tbl.DropFields("rail")
+        temp = null
+        tbl.Export({FileName: mode_file})
+    end
 endmacro
 
 /*
