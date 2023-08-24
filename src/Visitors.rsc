@@ -4,8 +4,9 @@
 
 Macro "Visitor Model" (Args)
 
-    RunMacro("Visitor Lodging Locations", Args)
-    RunMacro("Visitor Trip Generation", Args)
+    // RunMacro("Visitor Lodging Locations", Args)
+    // RunMacro("Visitor Trip Generation", Args)
+    RunMacro("Visitor Calculate MC", Args)
     return(1)
 endmacro
 
@@ -48,4 +49,60 @@ Macro "Visitor Trip Generation" (Args)
         view: se_vw, factor_file: rate_file,
         field_desc: "CV Productions and Attractions|See " + name + ext + " for details."
     })
+endmacro
+
+
+/*
+Loops over purposes and preps options for the "MC" macro
+*/
+
+Macro "Visitor Calculate MC" (Args)
+
+    scen_dir = Args.[Scenario Folder]
+    skims_dir = scen_dir + "\\output\\skims\\"
+    input_dir = Args.[Input Folder]
+    input_mc_dir = input_dir + "/visitor/mc"
+    output_dir = Args.[Output Folder] + "/visitor/mc"
+    periods = Args.TimePeriods
+    mode_table = Args.TransitModeTable
+    access_modes = Args.AccessModes
+    se_file = Args.DemographicOutputs
+    
+    // Specify trip purposes and transit modes
+    trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW", "NHB"}
+    transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
+    pos = transit_modes.position("all")
+    if pos > 0 then transit_modes = ExcludeArrayElements(transit_modes, pos, 1)
+
+    opts = null
+    opts.primary_spec = {Name: "bus_skim"}
+    for trip_type in trip_types do
+        opts.segments = {"personal", "business"}
+        opts.trip_type = trip_type
+        opts.util_file = input_mc_dir + "/" + trip_type + ".csv"
+        nest_file = input_mc_dir + "/" + trip_type + "_nest.csv"
+        if GetFileInfo(nest_file) <> null 
+            then opts.nest_file = nest_file
+            else opts.nest_file = null
+
+        // Set sources
+        opts.tables = {
+            se: {File: se_file, IDField: "TAZ"}
+        }
+        for period in periods do
+            opts.period = period
+            opts.matrices = {
+                auto_skim: {File: skims_dir + "\\HighwaySkim" + period + "mtx"}
+            }
+            // Transit skims depend on which modes are present in the scenario
+            for transit_mode in transit_modes do
+                source_name = transit_mode + "_skim"
+                file_name = skims_dir + "transit\\" + periods + "_w_" + transit_mode + ".mtx"
+                if GetFileInfo(file_name) <> null then opts.matrices.(source_name) = {File: file_name}
+            end
+
+            opts.output_dir = output_dir
+            RunMacro("MC", opts)
+        end
+    end
 endmacro
