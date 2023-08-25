@@ -4,8 +4,9 @@
 
 Macro "Visitor Model" (Args)
 
-    // RunMacro("Visitor Lodging Locations", Args)
-    // RunMacro("Visitor Trip Generation", Args)
+    RunMacro("Visitor Lodging Locations", Args)
+    RunMacro("Visitor Trip Generation", Args)
+    RunMacro("Visitor Create MC Features", Args)
     RunMacro("Visitor Calculate MC", Args)
     return(1)
 endmacro
@@ -51,6 +52,20 @@ Macro "Visitor Trip Generation" (Args)
     })
 endmacro
 
+/*
+Create any features needed by the visitor mc model
+*/
+
+Macro "Visitor Create MC Features" (Args)
+    se_file = Args.DemographicOutputs
+
+    se = CreateObject("Table", se_file)
+    se.AddField("AreaTypeNum")
+    se.AreaTypeNum = if se.AreaType = "Downtown" then 1
+        else if se.AreaType = "Urban" then 2
+        else if se.AreaType = "Suburban" then 3
+        else if se.AreaType = "Rural" then 4
+endmacro
 
 /*
 Loops over purposes and preps options for the "MC" macro
@@ -61,8 +76,8 @@ Macro "Visitor Calculate MC" (Args)
     scen_dir = Args.[Scenario Folder]
     skims_dir = scen_dir + "\\output\\skims\\"
     input_dir = Args.[Input Folder]
-    input_mc_dir = input_dir + "/visitor/mc"
-    output_dir = Args.[Output Folder] + "/visitor/mc"
+    input_mc_dir = input_dir + "/visitors/mc"
+    output_dir = Args.[Output Folder] + "/visitors/mc"
     periods = Args.TimePeriods
     mode_table = Args.TransitModeTable
     access_modes = Args.AccessModes
@@ -70,7 +85,7 @@ Macro "Visitor Calculate MC" (Args)
     
     // Specify trip purposes and transit modes
     trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW", "NHB"}
-    transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
+    transit_modes = RunMacro("Get Transit Net Def Col Names", mode_table)
     pos = transit_modes.position("all")
     if pos > 0 then transit_modes = ExcludeArrayElements(transit_modes, pos, 1)
 
@@ -89,15 +104,19 @@ Macro "Visitor Calculate MC" (Args)
         opts.tables = {
             se: {File: se_file, IDField: "TAZ"}
         }
-        for period in periods do
+        for i = 1 to periods.length do
+            period = periods[i][1]
             opts.period = period
             opts.matrices = {
-                auto_skim: {File: skims_dir + "\\HighwaySkim" + period + "mtx"}
+                auto_skim: {File: skims_dir + "\\HighwaySkim" + period + ".mtx"},
+                walk_skim: {File: skims_dir + "\\WalkSkim.mtx"},
+                bike_skim: {File: skims_dir + "\\BikeSkim.mtx"},
+                iz_skim: {File: skims_dir + "\\IntraZonal.mtx"}
             }
             // Transit skims depend on which modes are present in the scenario
             for transit_mode in transit_modes do
                 source_name = transit_mode + "_skim"
-                file_name = skims_dir + "transit\\" + periods + "_w_" + transit_mode + ".mtx"
+                file_name = skims_dir + "transit\\" + period + "_w_" + transit_mode + ".mtx"
                 if GetFileInfo(file_name) <> null then opts.matrices.(source_name) = {File: file_name}
             end
 
