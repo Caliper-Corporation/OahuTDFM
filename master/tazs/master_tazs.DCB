@@ -1,6 +1,6 @@
 master_tazs
-32,codepage=1252
-"Master_ID",I,1,4,0,4,0,,"","",,"Sum",
+32
+"ID",I,1,4,0,10,0,,"","",,"Sum",
 "TAZID",I,5,4,0,8,0,,"Copy","Official TAZ IDs||The ID column is managed automatically and can update|in unexpected ways if editing. This field can be controlled|manually to ensure proper IDs.",,"Copy",
 "PUMA",C,9,16,0,16,0,,"","",,"Sum",
 "District23",I,25,4,0,8,0,,"","",,"Sum",
