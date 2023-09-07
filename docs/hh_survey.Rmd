@@ -241,6 +241,8 @@ mark_anchor <- id_tours %>%
       TRUE ~ anchor
     ),
     anchor = ifelse(anchor == max(anchor), 1, 0),
+    anchor_taz = ifelse(anchor == max(anchor), DestinationTAZ, 0),
+    anchor_dwell = ifelse(anchor == max(anchor), DWELTIME, 0),
     check = cumsum(anchor),
     anchor = ifelse(check > 1, 0, anchor),
     int_stop = case_when(
@@ -325,6 +327,8 @@ tour_file <- id_tour_mode %>%
     tour_type = first(tour_type),
     tour_num = first(tour_num),
     num_trips = n(),
+    anchor_taz = max(anchor_taz),
+    anchor_dwell = max(anchor_dwell),
     anchor_time = ENDTIME_local[anchor == 1],
     int_stop_fwd = sum(int_stop_fwd),
     int_stop_ret = sum(int_stop_ret),
