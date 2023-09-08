@@ -402,9 +402,9 @@ per_add_tour_counts %>%
 
 ```{r}
 # Outputs
-write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv")
-write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv")
-write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv")
-write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv")
+write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv", na = "")
+write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv", na = "")
+write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv", na = "")
+write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv", na = "")
 ```
 
