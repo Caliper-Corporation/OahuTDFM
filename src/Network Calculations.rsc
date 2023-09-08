@@ -8,6 +8,7 @@ Macro "Network Calculations" (Args)
     RunMacro("Expand DTWB", Args)
     RunMacro("Mark KNR Nodes", Args)
     RunMacro("Determine Area Type", Args)
+    RunMacro("Add Cluster Info to SE Data", Args)
     RunMacro("Speeds and Capacities", Args)
     RunMacro("CalculateTransitSpeeds Oahu", Args)
     RunMacro("Compute Intrazonal Matrix", Args)
@@ -345,6 +346,29 @@ Macro "Tag Highway with Area Type" (Args, map, views)
     // If this script modified the user setting for inclusion, change it back.
     if reset_inclusion = "true" then SetSelectInclusion("Enclosed")
 EndMacro
+
+/*
+DC models for residents and visitors need the cluster information on the se
+data table.
+*/
+
+Macro "Add Cluster Info to SE Data" (Args)
+
+    se_file = Args.DemographicOutputs
+    taz_file = Args.TAZGeography
+
+    se = CreateObject("Table", se_file)
+    se.AddField({FieldName: "Cluster", type: "integer"})
+    se.AddField({FieldName: "ClusterName", type: "string"})
+    taz = CreateObject("Table", taz_file)
+    join = se.Join({
+        Table: taz,
+        LeftFields: "TAZ",
+        RightFields: "TAZID"
+    })
+    join.Cluster = join.District7
+    join.ClusterName = "c" + String(join.District7)
+endmacro
 
 macro "Speeds and Capacities" (Args, Result)
     ret_value = 1
