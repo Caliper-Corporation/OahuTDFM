@@ -9,9 +9,11 @@ Macro "Network Calculations" (Args)
     RunMacro("Mark KNR Nodes", Args)
     RunMacro("Determine Area Type", Args)
     RunMacro("Add Cluster Info to SE Data", Args)
+    RunMacro("Create Visitor Clusters", Args)
     RunMacro("Speeds and Capacities", Args)
     RunMacro("CalculateTransitSpeeds Oahu", Args)
     RunMacro("Compute Intrazonal Matrix", Args)
+    RunMacro("Create Intra Cluster Matrix", Args)
 
     return(1)
 endmacro
@@ -368,6 +370,23 @@ Macro "Add Cluster Info to SE Data" (Args)
     })
     join.Cluster = join.District7
     join.ClusterName = "c" + String(join.District7)
+endmacro
+
+/*
+The visitor model uses the Cluster field from the se data, but
+collapses district 3 into 1 due to a lack of observations in the
+survey.
+*/
+
+Macro "Create Visitor Clusters" (Args)
+    se_file = Args.DemographicOutputs
+    se = CreateObject("Table", se_file)
+    se.AddField({FieldName: "VisCluster", type: "integer"})
+    se.AddField({FieldName: "VisClusterName", type: "string"})
+    se.VisCluster = if se.Cluster = 3
+        then 1
+        else se.Cluster
+    se.VisClusterName = "c" + String(se.VisCluster)
 endmacro
 
 macro "Speeds and Capacities" (Args, Result)
