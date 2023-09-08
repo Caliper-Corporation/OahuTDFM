@@ -1,0 +1,15 @@
+Field,vis_HBEat_size,Description
+Emp_Agriculture,0,Attractions/Size terms for destination choice
+Emp_Manufacturing,0,
+Emp_Wholesale,0,
+Emp_Retail,0.00461,
+Emp_TransportConstruction,0,
+Emp_FinanceRealEstate,0,
+Emp_Education,0,
+Emp_HealthCare,0,
+Emp_Services,0.01046,
+Emp_Public,0,
+Emp_Hotel,0,
+Emp_Military,0,
+VisArrivalsWork,0,
+VisArrivalsRec,0,
