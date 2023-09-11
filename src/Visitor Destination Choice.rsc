@@ -11,7 +11,6 @@ Macro "Visitor Calculate DC" (Args)
     // HB models
     RunMacro("Visitor DC", Args)
     RunMacro("Apportion Visitor Trips", Args)
-    Throw()
     // NHB model
     RunMacro("Visitor Scale NHB Size", Args)
     RunMacro("Visitor DC", Args, nhb = "true")
@@ -135,7 +134,8 @@ Macro "Calculate Destination Choice" (Args, trip_types)
         opts.zone_utils = input_dc_dir + "/" + trip_type + "_zone.csv"
         opts.cluster_data = input_dc_dir + "/" + trip_type + "_cluster.csv"
         
-        for period in periods do
+        for i = 1 to periods.length do
+            period = periods[i][1]
             opts.period = period
             
             // Determine which sov skim to use
@@ -255,9 +255,9 @@ Macro "Apportion Visitor Trips" (Args, nhb)
 
     se_file = Args.DemographicOutputs
     out_dir = Args.[Output Folder]
-    dc_dir = out_dir + "/resident/dc"
-    mc_dir = out_dir + "/resident/mode"
-    trip_dir = out_dir + "/resident/trip_matrices"
+    dc_dir = out_dir + "/visitors/dc"
+    mc_dir = out_dir + "/visitors/mc"
+    trip_dir = out_dir + "/visitors/trip_matrices"
     periods = Args.TimePeriods
     access_modes = Args.access_modes
 
@@ -272,16 +272,20 @@ Macro "Apportion Visitor Trips" (Args, nhb)
         then trip_types = {"NHB"}
         else trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
 
-    for period in periods do
+    for i = 1 to periods.length do
+        period = periods[i][1]
 
         for trip_type in trip_types do
-            segments = {"business", "personal"}
+            if trip_type = "HBW"
+                then segments = {"business"}
+                else segments = {"business", "personal"}
             
             out_mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
             if GetFileInfo(out_mtx_file) <> null then DeleteFile(out_mtx_file)
 
             for segment in segments do
                 name = trip_type + "_" + segment + "_" + period
+                prod_field = "prod_v" + Left(segment, 1) + trip_type + "_" + period // e.g. prod_vbHBRec_AM
                 
                 dc_mtx_file = dc_dir + "/probabilities/probability_" + name + "_zone.mtx"
                 dc_mtx = CreateObject("Matrix", dc_mtx_file)
@@ -299,7 +303,7 @@ Macro "Apportion Visitor Trips" (Args, nhb)
                 mc_mtx = CreateObject("Matrix", mc_mtx_file)
                 mc_cores = mc_mtx.GetCores()
 
-                v_prods = nz(se.(name))
+                v_prods = nz(se.(prod_field))
                 v_prods.rowbased = "false"
 
                 mode_names = mc_mtx.GetCoreNames()
