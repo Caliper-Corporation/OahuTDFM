@@ -5,91 +5,15 @@
 Macro "Destination Probabilities" (Args)
 
     if Args.FeedbackIteration = 1 then do
-        RunMacro("Split Employment by Earnings", Args)
-        RunMacro("DC Attractions", Args)
         RunMacro("DC Size Terms", Args)
     end
-    RunMacro("HBW DC", Args)
-    RunMacro("Other HB DC", Args)
+    RunMacro("Visitor HB DC", Args)
     return(1)
 endmacro
 
 Macro "Application of Probabilities" (Args)
     RunMacro("Apportion Resident HB Trips", Args)
     return(1)
-endmacro
-
-/*
-The resident DC model needs the low-earning fields for the attraction models.
-For work trips, this helps send low income households to low earning jobs.
-*/
-
-Macro "Split Employment by Earnings" (Args)
-
-    se_file = Args.SE
-    se_vw = OpenTable("se", "FFB", {se_file})
-    a_fields = {
-        {"Industry_EL", "Real", 10, 2, , , , "Low paying industry jobs"},
-        {"Industry_EH", "Real", 10, 2, , , , "High paying industry jobs"},
-        {"Office_EL", "Real", 10, 2, , , , "Low paying office jobs"},
-        {"Office_EH", "Real", 10, 2, , , , "High paying office jobs"},
-        {"Retail_EL", "Real", 10, 2, , , , "Low paying retail jobs"},
-        {"Retail_EH", "Real", 10, 2, , , , "High paying retail jobs"},
-        {"Service_RateLow_EL", "Real", 10, 2, , , , "Low paying service_rl jobs"},
-        {"Service_RateLow_EH", "Real", 10, 2, , , , "High paying service_rl jobs"},
-        {"Service_RateHigh_EL", "Real", 10, 2, , , , "Low paying service_rh jobs"},
-        {"Service_RateHigh_EH", "Real", 10, 2, , , , "High paying service_rh jobs"}
-    }
-    RunMacro("Add Fields", {view: se_vw, a_fields: a_fields})
-
-    input = GetDataVectors(
-        se_vw + "|",
-        {"Industry", "Office", "Retail", "Service_RateLow", "Service_RateHigh", "PctHighPay"},
-        {OptArray: "true"}
-    )
-    output.Industry_EH = input.Industry * input.PctHighPay/100
-    output.Industry_EL = input.Industry * (1 - input.PctHighPay/100)
-    output.Office_EH = input.Office * input.PctHighPay/100
-    output.Office_EL = input.Office * (1 - input.PctHighPay/100)
-    output.Retail_EH = input.Retail * input.PctHighPay/100
-    output.Retail_EL = input.Retail * (1 - input.PctHighPay/100)
-    output.Service_RateLow_EH = input.Service_RateLow * input.PctHighPay/100
-    output.Service_RateLow_EL = input.Service_RateLow * (1 - input.PctHighPay/100)
-    output.Service_RateHigh_EH = input.Service_RateHigh * input.PctHighPay/100
-    output.Service_RateHigh_EL = input.Service_RateHigh * (1 - input.PctHighPay/100)
-    SetDataVectors(se_vw + "|", output, )
-endmacro
-
-/*
-Calculates attractions for the HB work trip type. These attractions are used
-as targets for double constraint in the DC.
-*/
-
-Macro "DC Attractions" (Args)
-
-    se_file = Args.SE
-    rate_file = Args.ResDCAttrRates
-    tod_file = Args.ResTODFactors
-
-    se_vw = OpenTable("se", "FFB", {se_file})
-    {drive, folder, name, ext} = SplitPath(rate_file)
-    RunMacro("Create Sum Product Fields", {
-        view: se_vw, factor_file: rate_file,
-        field_desc: "Resident DC Attractions|Used for double constraint.|See " + name + ext + " for details."
-    })
-
-    // Balance these to match total hbw productions
-    {p1, p2, p3, p4, p5, v_a} = GetDataVectors(
-        se_vw + "|",
-        {"W_HB_W_All_v0", "W_HB_W_All_ilvi", "W_HB_W_All_ilvs", "W_HB_W_All_ihvi", "W_HB_W_All_ihvs", "w_hbw_a"},
-    )
-    total_p = p1 + p2 + p3 + p4 + p5
-    p_sum = VectorStatistic(total_p, "sum",)
-    a_sum = VectorStatistic(v_a, "sum",)
-    total_a = v_a * (p_sum / a_sum)
-    SetDataVector(se_vw + "|", "w_hbw_a", total_a, )
-
-    CloseView(se_vw)
 endmacro
 
 /*
@@ -156,33 +80,30 @@ Macro "Compute Size Terms"(sizeSpec)
 endMacro
 
 /*
-Applies double constraint to work trips. Iterates 3 times.
+The visitor model uses the Cluster field from the se data, but
+collapses district 3 into 1 due to a lack of observations in the
+survey.
 */
 
-Macro "HBW DC" (Args)
-
-    if Args.FeedbackIteration = 1 then RunMacro("Create Intra Cluster Matrix", Args)
-
-    trip_types = {"W_HB_W_All"}
-    max_iters = 3
-    for i = 1 to max_iters do
-        RunMacro("Calculate Destination Choice", Args, trip_types)
-        if i < max_iters then prmse = RunMacro("Update Shadow Price", Args, trip_types)
-
-        // If the %RMSE is <2, then stop early. For the base year, the starting shadow
-        // prices will be close enough to not need repeated runs.
-        if abs(prmse) < 2 then break
-    end
+Macro "Create Visitor Clusters" (Args)
+    se_file = Args.DemographicOutputs
+    se = CreateObject("Table", se_file)
+    se.AddField({FieldName: "VisCluster", type: "integer"})
+    se.AddField({FieldName: "VisClusterName", type: "string"})
+    se.VisCluster = if se.Cluster = 3
+        then 1
+        else se.Cluster
+    se.VisClusterName = "c" + String(se.VisCluster)
 endmacro
 
 /*
-Remaining trip types are not doubly constrained
+
 */
 
-Macro "Other HB DC" (Args)
-    trip_types = RunMacro("Get HB Trip Types", Args)
-    pos = trip_types.position("W_HB_W_All")
-    trip_types = ExcludeArrayElements(trip_types, pos, 1)
+Macro "Visitor HB DC" (Args)
+    // trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
+    // TODO: remove after testing
+    trip_types = {"HBEat"}
     RunMacro("Calculate Destination Choice", Args, trip_types)
 endmacro
 
@@ -195,10 +116,9 @@ Macro "Calculate Destination Choice" (Args, trip_types)
     scen_dir = Args.[Scenario Folder]
     skims_dir = scen_dir + "\\output\\skims\\"
     input_dir = Args.[Input Folder]
-    input_dc_dir = input_dir + "/resident/dc"
-    output_dir = Args.[Output Folder] + "/resident/dc"
-    periods = RunMacro("Get Unconverged Periods", Args)
-    sp_file = Args.ShadowPrices
+    input_dc_dir = input_dir + "/visitors/dc"
+    output_dir = Args.[Output Folder] + "/visitors/dc"
+    periods = {"AM", "MD"}
 
     opts = null
     opts.output_dir = output_dir
