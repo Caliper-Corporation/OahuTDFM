@@ -9,10 +9,11 @@ Macro "Visitor Calculate DC" (Args)
         RunMacro("Create Visitor Clusters", Args)
     end
     // HB models
-    RunMacro("Visitor DC", Args)
-    RunMacro("Apportion Visitor Trips", Args)
+    // RunMacro("Visitor DC", Args)
+    // RunMacro("Apportion Visitor Trips", Args)
     // NHB model
     RunMacro("Visitor Scale NHB Size", Args)
+    Throw()
     RunMacro("Visitor DC", Args, nhb = "true")
     RunMacro("Apportion Visitor Trips", Args, nhb = "true")
     return(1)
@@ -106,7 +107,51 @@ endmacro
 */
 
 Macro "Visitor Scale NHB Size" (Args)
+    
+    se_file = Args.DemographicOutputs
+    periods = Args.TimePeriods
+    trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
+    out_dir = Args.[Output Folder]
+    trip_dir = out_dir + "/visitors/trip_matrices"
 
+    // Add up all HB trip ends
+    for trip_type in trip_types do
+        for i = 1 to periods.length do
+            period = periods[i][1]
+
+            mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
+            mtx = CreateObject("Matrix", mtx_file)
+            v_b = mtx.GetVector({Core: "dc_business", Marginal: "Column Sum"})
+            if TypeOf(v_trip_ends) = "null" then do
+                v_trip_ends = Vector(v_b.length, "double", {Constant: 0})
+            end
+            v_trip_ends = v_trip_ends + nz(v_b)
+            if trip_type <> "HBW" then do
+                v_p = mtx.GetVector({Core: "dc_personal", Marginal: "Column Sum"})
+                v_trip_ends = v_trip_ends + nz(v_p)
+            end
+        end
+    end
+    
+    // Add to SE table
+    se = CreateObject("Table", se_file)
+    se.AddField({
+        FieldName: "vis_hb_tripends", 
+        Description: "Visitor trip ends from HB purposes.|Used to scale vis NHB trips."
+    })
+    se.AddField({
+        FieldName: "vis_hb_frac", 
+        Description: "Visitor hb trip ends as a fraction of column total"
+    })
+    se.vis_hb_tripends = v_trip_ends
+    se.vis_hb_frac = v_trip_ends / v_trip_ends.sum()
+    
+    // Create scaled size fields
+    total_size = se.vis_NHB_Size.sum()
+    v_temp = se.vis_NHB_Size * se.vis_hb_frac
+    v_scaled_size = v_temp * (total_size / v_temp.sum())
+    se.AddField("vis_NHB_size_scaled")
+    se.vis_NHB_size_scaled = v_scaled_size    
 endmacro
 
 /*
