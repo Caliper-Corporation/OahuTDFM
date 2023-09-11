@@ -2413,7 +2413,7 @@ periods have finished. This macro returns the periods that are not converged.
 */
 
 Macro "Get Unconverged Periods" (Args)
-  periods = Args.periods
+  periods = Args.TimePeriods
   converged_periods = Args.converged_periods
 
   if converged_periods = null then return(periods)

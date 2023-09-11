@@ -4,10 +4,11 @@
 
 Macro "Visitor Model" (Args)
 
-    RunMacro("Visitor Lodging Locations", Args)
-    RunMacro("Visitor Trip Generation", Args)
-    RunMacro("Visitor Create MC Features", Args)
-    RunMacro("Visitor Calculate MC", Args)
+    // RunMacro("Visitor Lodging Locations", Args)
+    // RunMacro("Visitor Trip Generation", Args)
+    // RunMacro("Visitor Create MC Features", Args)
+    // RunMacro("Visitor Calculate MC", Args)
+    RunMacro("Visitor Calculate DC", Args)
     return(1)
 endmacro
 
