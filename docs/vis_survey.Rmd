@@ -11,6 +11,7 @@ options(dplyr.summarise.inform = FALSE)
 options(scipen = 999)
 
 library(tidyverse)
+library(lubridate)
 ```
 
 ```{r, include=FALSE}
@@ -213,9 +214,32 @@ trip_rates <- add_skims %>%
     visitor_type = paste0("visitors_", visitor_type)
   ) %>%
   pivot_wider(names_from = trip_purp, values_from = rate, values_fill = 0) %>%
-  rename(Field = visitor_type)
-  
+  rename(Field = visitor_type) %>%
+  mutate(Description = NA)
 ```
+
+## Time of Day
+
+```{r}
+add_tod <- add_skims %>%
+  mutate(
+    test = mdy_hms(deptime),
+    dep_hour = hour(test),
+    tod = case_when(
+      dep_hour >= 6 & dep_hour < 9 ~ "AM",
+      dep_hour >= 15 & dep_hour < 19 ~ "PM",
+      TRUE ~ "OP"
+    )
+  )
+
+tod_factors <- add_tod %>%
+  filter(trip_purp != "H") %>%
+  group_by(trip_purp, tod) %>%
+  summarize(trips = sum(weight)) %>%
+  mutate(factor = trips / sum(trips)) %>%
+  select(-trips)
+```
+
 
 # DBET Info
 
@@ -232,7 +256,8 @@ This was done to ensure the validation to 2019 traffic counts would not be
 impacted by COVID-related reductions in visitor numbers.
 
 ```{r, eval=FALSE}
-write_csv(add_skims, "data/_private/vis_survey/output/vis_trips.csv", na = "")
+write_csv(add_tod, "data/_private/vis_survey/output/vis_trips.csv", na = "")
 write_csv(trip_rates, "data/_private/vis_survey/output/vis_generation.csv", na = "")
+write_csv(tod_factors, "data/_private/vis_survey/output/vis_tod_factors.csv", na = "")
 ```
 

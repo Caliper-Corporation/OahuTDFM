@@ -6,6 +6,7 @@ Macro "Visitor Model" (Args)
 
     // RunMacro("Visitor Lodging Locations", Args)
     // RunMacro("Visitor Trip Generation", Args)
+    // RunMacro("Visitor Time of Day", Args)
     // RunMacro("Visitor Create MC Features", Args)
     // RunMacro("Visitor Calculate MC", Args)
     RunMacro("Visitor Calculate DC", Args)
@@ -51,6 +52,48 @@ Macro "Visitor Trip Generation" (Args)
         view: se_vw, factor_file: rate_file,
         field_desc: "CV Productions and Attractions|See " + name + ext + " for details."
     })
+endmacro
+
+/*
+
+*/
+
+Macro "Visitor Time of Day" (Args)
+
+    se_file = Args.DemographicOutputs
+    input_dir = Args.[Input Folder]
+    tod_file = input_dir + "\\visitors\\vis_tod_factors.csv"
+
+    se_vw = OpenTable("per", "FFB", {se_file})
+    fac_vw = OpenTable("tod_fac", "CSV", {tod_file})
+    v_purp = GetDataVector(fac_vw + "|", "trip_purp", )
+    v_tod = GetDataVector(fac_vw + "|", "tod", )
+    v_fac = GetDataVector(fac_vw + "|", "factor", )
+
+    for i = 1 to v_purp.length do
+        purp = v_purp[i]
+        tod = v_tod[i]
+        fac = v_fac[i]
+
+        if purp = "HBW" 
+            then segments = {"business"}
+            else segments = {"business", "personal"}
+
+        for segment in segments do
+            daily_name = "prod_v" + Left(segment, 1) + purp // e.g. prod_vbHBRec
+            v_daily = GetDataVector(se_vw + "|", daily_name, )
+            v_result = v_daily * fac
+            field_name = daily_name + "_" + tod
+            a_fields_to_add = a_fields_to_add + {
+                {field_name, "Real", 10, 2,,,, "Visitor productions by TOD"}
+            }
+            data.(field_name) = v_result
+        end
+    end
+    RunMacro("Add Fields", {view: se_vw, a_fields: a_fields_to_add})
+    SetDataVectors(se_vw + "|", data, )    
+    CloseView(se_vw)
+    CloseView(fac_vw)
 endmacro
 
 /*
