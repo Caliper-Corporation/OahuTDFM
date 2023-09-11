@@ -8,7 +8,14 @@ Macro "Visitor Calculate DC" (Args)
         RunMacro("DC Size Terms", Args)
         RunMacro("Create Visitor Clusters", Args)
     end
-    RunMacro("Visitor HB DC", Args)
+    // HB models
+    RunMacro("Visitor DC", Args)
+    RunMacro("Apportion Visitor Trips", Args)
+    Throw()
+    // NHB model
+    RunMacro("Visitor Scale NHB Size", Args)
+    RunMacro("Visitor DC", Args, nhb = "true")
+    RunMacro("Apportion Visitor Trips", Args, nhb = "true")
     return(1)
 endmacro
 
@@ -20,6 +27,9 @@ endmacro
 /*
 Creates sum product fields using DC size coefficients. Then takes the log
 of those fields so it can be fed directly into the DC utility equation.
+
+Note: this generates initial NHB size variables, but these are scaled
+based on HB trip ends after those DC models are run.
 */
 
 Macro "DC Size Terms" (Args)
@@ -85,11 +95,19 @@ endmacro
 
 */
 
-Macro "Visitor HB DC" (Args)
-    // trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
-    // TODO: remove after testing
-    trip_types = {"HBEat"}
+Macro "Visitor DC" (Args, nhb)
+    if nhb
+        then trip_types = {"NHB"}
+        else trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
     RunMacro("Calculate Destination Choice", Args, trip_types)
+endmacro
+
+/*
+
+*/
+
+Macro "Visitor Scale NHB Size" (Args)
+
 endmacro
 
 /*
@@ -227,32 +245,37 @@ to avoid duplicate code.
 /*
 With DC and MC probabilities calculated, resident trip productions can be 
 distributed into zones and modes.
+
+The 'nhb' input is used because this macro is called twice. First for HB trips
+only. The results of this first call are used to scale NHB size terms. After
+NHB dc runs, this is called again to apportion those trips.
 */
 
-Macro "Apportion Resident HB Trips" (Args)
+Macro "Apportion Visitor Trips" (Args, nhb)
 
-    se_file = Args.SE
+    se_file = Args.DemographicOutputs
     out_dir = Args.[Output Folder]
     dc_dir = out_dir + "/resident/dc"
     mc_dir = out_dir + "/resident/mode"
     trip_dir = out_dir + "/resident/trip_matrices"
-    periods = RunMacro("Get Unconverged Periods", Args)
+    periods = Args.TimePeriods
     access_modes = Args.access_modes
 
-    se_vw = OpenTable("se", "FFB", {se_file})
+    se = CreateObject("Table", se_file)
 
-    // Create a folder to hold the trip matrices
+    // Create output folders
+    RunMacro("Create Directory", dc_dir)
+    RunMacro("Create Directory", mc_dir)
     RunMacro("Create Directory", trip_dir)
 
-    trip_types = RunMacro("Get HB Trip Types", Args)
+    if nhb
+        then trip_types = {"NHB"}
+        else trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
 
     for period in periods do
 
-        // Resident trips
         for trip_type in trip_types do
-            if Lower(trip_type) = "w_hb_w_all"
-                then segments = {"v0", "ilvi", "ilvs", "ihvi", "ihvs"}
-                else segments = {"v0", "vi", "vs"}
+            segments = {"business", "personal"}
             
             out_mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
             if GetFileInfo(out_mtx_file) <> null then DeleteFile(out_mtx_file)
@@ -268,9 +291,6 @@ Macro "Apportion Resident HB Trips" (Args)
                     CopyFile(mc_mtx_file, out_mtx_file)
                     out_mtx = CreateObject("Matrix", out_mtx_file)
                     core_names = out_mtx.GetCoreNames()
-                    // create extra mc cores that can be used for summaries (not modified by parking)
-                    mc_cores = V2A("mc_" + A2V(core_names))
-                    out_mtx.AddCores(mc_cores)
                     cores = out_mtx.GetCores()
                     for core_name in core_names do
                         cores.(core_name) := nz(cores.(core_name)) * 0
@@ -279,7 +299,7 @@ Macro "Apportion Resident HB Trips" (Args)
                 mc_mtx = CreateObject("Matrix", mc_mtx_file)
                 mc_cores = mc_mtx.GetCores()
 
-                v_prods = nz(GetDataVector(se_vw + "|", name, ))
+                v_prods = nz(se.(name))
                 v_prods.rowbased = "false"
 
                 mode_names = mc_mtx.GetCoreNames()
@@ -287,10 +307,6 @@ Macro "Apportion Resident HB Trips" (Args)
                 for mode in mode_names do
                     out_cores.(mode) := nz(out_cores.(mode)) + v_prods * nz(dc_cores.final_prob) * nz(mc_cores.(mode))
                     
-                    // Create extra cores that just hold dc/mc results that are not
-                    // modified by subsequent model steps. These are created primarily
-                    // for summary/auditing. The model does not use them during feedback.
-                    out_cores.("mc_" + mode) := nz(out_cores.("mc_" + mode)) + v_prods * nz(dc_cores.final_prob) * nz(mc_cores.(mode))
                     if mode = mode_names[1] then do
                         // Add extra cores to hold dc-only results
                         dc_core = "dc_" + segment
@@ -300,22 +316,6 @@ Macro "Apportion Resident HB Trips" (Args)
                     end
                 end
             end
-
-            // Create an extra core the combines all transit modes together
-            // This is not assigned, but is used in the NHB trip generation
-            // model.
-            core_names = out_mtx.GetCoreNames()
-            out_mtx.AddCores({"all_transit"})
-            cores = out_mtx.GetCores()
-            cores.all_transit := 0
-            for core_name in core_names do
-                parts = ParseString(core_name, "_")
-                access_mode = parts[1]
-                // skip non-transit cores
-                if access_modes.position(access_mode) = 0 then continue
-                cores.all_transit := nz(cores.all_transit) + nz(cores.(core_name))
-            end
-            cores.all_transit := if cores.all_transit = 0 then null else cores.all_transit
         end
     end
 endmacro
