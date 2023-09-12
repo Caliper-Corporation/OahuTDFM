@@ -9,12 +9,13 @@ Macro "Visitor Calculate DC" (Args)
         RunMacro("Create Visitor Clusters", Args)
     end
     // HB models
-    // RunMacro("Visitor DC", Args)
-    // RunMacro("Visitor Apply Probabilities", Args)
+    RunMacro("Visitor DC", Args)
+    RunMacro("Visitor Apply Probabilities", Args)
     // NHB model
-    // RunMacro("Visitor Scale NHB Productions", Args)
-    // RunMacro("Visitor DC", Args, nhb = "true")
-    RunMacro("Visitor Apply Probabilities", Args, nhb = "true")
+    nhb = "true"
+    RunMacro("Visitor Scale NHB Productions", Args)
+    RunMacro("Visitor DC", Args, nhb)
+    RunMacro("Visitor Apply Probabilities", Args, nhb)
     return(1)
 endmacro
 
@@ -285,8 +286,8 @@ With DC and MC probabilities calculated, resident trip productions can be
 distributed into zones and modes.
 
 The 'nhb' input is used because this macro is called twice. First for HB trips
-only. The results of this first call are used to scale NHB size terms. After
-NHB dc runs, this is called again to apportion those trips.
+only. The results of this first call are used to scale NHB productions. After
+NHB dc runs, this is called again to multiply those trips.
 */
 
 Macro "Visitor Apply Probabilities" (Args, nhb)
