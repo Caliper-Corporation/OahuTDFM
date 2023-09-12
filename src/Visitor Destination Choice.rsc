@@ -10,19 +10,15 @@ Macro "Visitor Calculate DC" (Args)
     end
     // HB models
     // RunMacro("Visitor DC", Args)
-    // RunMacro("Apportion Visitor Trips", Args)
+    // RunMacro("Visitor Apply Probabilities", Args)
     // NHB model
-    RunMacro("Visitor Scale NHB Size", Args)
-    Throw()
-    RunMacro("Visitor DC", Args, nhb = "true")
-    RunMacro("Apportion Visitor Trips", Args, nhb = "true")
+    // RunMacro("Visitor Scale NHB Productions", Args)
+    // RunMacro("Visitor DC", Args, nhb = "true")
+    RunMacro("Visitor Apply Probabilities", Args, nhb = "true")
     return(1)
 endmacro
 
-Macro "Apply Visitor MC/DC Probabilities" (Args)
-    RunMacro("Apportion Resident HB Trips", Args)
-    return(1)
-endmacro
+
 
 /*
 Creates sum product fields using DC size coefficients. Then takes the log
@@ -103,10 +99,12 @@ Macro "Visitor DC" (Args, nhb)
 endmacro
 
 /*
-
+The total visitor NHB productions are kept from trip gen, but the locations
+are scaled to match HB trip attractions from HB destination choice. This
+ensures that visitor NHB trips happen near visitor HB trips.
 */
 
-Macro "Visitor Scale NHB Size" (Args)
+Macro "Visitor Scale NHB Productions" (Args)
     
     se_file = Args.DemographicOutputs
     periods = Args.TimePeriods
@@ -114,44 +112,39 @@ Macro "Visitor Scale NHB Size" (Args)
     out_dir = Args.[Output Folder]
     trip_dir = out_dir + "/visitors/trip_matrices"
 
-    // Add up all HB trip ends
-    for trip_type in trip_types do
-        for i = 1 to periods.length do
-            period = periods[i][1]
+    se = CreateObject("Table", se_file)
 
-            mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
-            mtx = CreateObject("Matrix", mtx_file)
-            v_b = mtx.GetVector({Core: "dc_business", Marginal: "Column Sum"})
-            if TypeOf(v_trip_ends) = "null" then do
-                v_trip_ends = Vector(v_b.length, "double", {Constant: 0})
+    // For each period, add up all HB attractions and set them to NHB prods
+    // after scaling.
+    for i = 1 to periods.length do
+        period = periods[i][1]
+
+        for segment in {"business", "personal"} do
+            v_hb_attrs = null
+            
+            // Add up HB attractions    
+            for trip_type in trip_types do
+                if trip_type = "HBW" and segment = "personal" then continue
+
+                mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
+                mtx = CreateObject("Matrix", mtx_file)
+
+                v = mtx.GetVector({Core: "dc_" + segment, Marginal: "Column Sum"})
+                if TypeOf(v_hb_attrs) = "null" then do
+                    v_hb_attrs = Vector(v.length, "double", {Constant: 0})
+                end
+                v_hb_attrs = v_hb_attrs + nz(v)
             end
-            v_trip_ends = v_trip_ends + nz(v_b)
-            if trip_type <> "HBW" then do
-                v_p = mtx.GetVector({Core: "dc_personal", Marginal: "Column Sum"})
-                v_trip_ends = v_trip_ends + nz(v_p)
-            end
+
+            // Scale HB attractions to match total NHB productions and set
+            // them as NHB productions.
+            // NHB prod fields look like "prod_vbNHB_OP"
+            bp = Left(segment, 1)
+            field_name = "prod_v" + bp + "NHB_" + period
+            factor = se.(field_name).sum() / v_hb_attrs.sum()
+            se.(field_name) = v_hb_attrs * factor
         end
     end
-    
-    // Add to SE table
-    se = CreateObject("Table", se_file)
-    se.AddField({
-        FieldName: "vis_hb_tripends", 
-        Description: "Visitor trip ends from HB purposes.|Used to scale vis NHB trips."
-    })
-    se.AddField({
-        FieldName: "vis_hb_frac", 
-        Description: "Visitor hb trip ends as a fraction of column total"
-    })
-    se.vis_hb_tripends = v_trip_ends
-    se.vis_hb_frac = v_trip_ends / v_trip_ends.sum()
-    
-    // Create scaled size fields
-    total_size = se.vis_NHB_Size.sum()
-    v_temp = se.vis_NHB_Size * se.vis_hb_frac
-    v_scaled_size = v_temp * (total_size / v_temp.sum())
-    se.AddField("vis_NHB_size_scaled")
-    se.vis_NHB_size_scaled = v_scaled_size    
 endmacro
 
 /*
@@ -296,7 +289,7 @@ only. The results of this first call are used to scale NHB size terms. After
 NHB dc runs, this is called again to apportion those trips.
 */
 
-Macro "Apportion Visitor Trips" (Args, nhb)
+Macro "Visitor Apply Probabilities" (Args, nhb)
 
     se_file = Args.DemographicOutputs
     out_dir = Args.[Output Folder]
