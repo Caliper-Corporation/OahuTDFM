@@ -1,5 +1,5 @@
 
-220
+224
 "TAZ",I,1,4,0,11,0,,"","",,"Sum",
 "TotalHH",I,5,4,0,8,0,,"","",,"Sum",
 "OccupiedHH",I,9,4,0,8,0,,"","",,"Sum",
@@ -33,3 +33,4 @@
 "VisArrivalsRec",R,201,8,0,14,2,,"","Special Generator|Monthly visits from visitors in May 2023|https://www.hawaiitourismauthority.org/research/symphony-dashboards/||Used to capture trip attractions that aren't related to employment.",,"Sum",
 "ParkingSpaces",I,209,4,0,8,0,,"","",,"Sum",
 "ParkingCost",R,213,8,0,10,2,,"","Hourly parking cost in dollars",,"Sum",
+"AirportTrips",I,221,4,0,8,0,,"","Daily trips to/from the airport",,"Sum",
