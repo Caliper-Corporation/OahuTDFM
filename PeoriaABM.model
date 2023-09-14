@@ -870,7 +870,7 @@ EndMacro
 
 Macro "Other Models" (Args, Result)
     Attributes = {
-        {"MacroName", "OtherModel"}
+        {"MacroNames", {"Airport Model"}}
     }
 EndMacro
 

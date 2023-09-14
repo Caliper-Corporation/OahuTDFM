@@ -2934,9 +2934,9 @@
 
     Section = "Airport"
 
-    Args.[Airport Trip Rates] = {
+    Args.[Airport Attraction Rates] = {
             "Type":"File",
-            "Caption":"Airport Trip Rates",
+            "Caption":"Airport Attraction Rates",
             "Value":"%Input Folder%\\airport\\air_attr_rates.csv"
         }
 
@@ -2944,6 +2944,12 @@
             "Type":"File",
             "Caption":"Airport Gravity Parameters",
             "Value":"%Input Folder%\\airport\\air_gravity.csv"
+        }
+
+    Args.[Airport Vis Ratio] = {
+            "Type":"double",
+            "Caption":"Ratio of visitor trips to total.",
+            "Value":0.481
         }
 	
 	Section = "AssignmentInputs"
