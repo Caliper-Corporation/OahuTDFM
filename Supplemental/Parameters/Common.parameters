@@ -2931,6 +2931,20 @@
             "Caption":"Visitor trip rates",
             "Value":"%Input Folder%\\visitors\\vis_generation.csv"
         }
+
+    Section = "Airport"
+
+    Args.[Airport Trip Rates] = {
+            "Type":"File",
+            "Caption":"Airport Trip Rates",
+            "Value":"%Input Folder%\\airport\\air_attr_rates.csv"
+        }
+
+    Args.[Airport Gravity Params] = {
+            "Type":"File",
+            "Caption":"Airport Gravity Parameters",
+            "Value":"%Input Folder%\\airport\\air_gravity.csv"
+        }
 	
 	Section = "AssignmentInputs"
 	
