@@ -2940,16 +2940,16 @@
             "Value":"%Input Folder%\\airport\\air_attr_rates.csv"
         }
 
-    Args.[Airport Gravity Params] = {
-            "Type":"File",
-            "Caption":"Airport Gravity Parameters",
-            "Value":"%Input Folder%\\airport\\air_gravity.csv"
-        }
-
     Args.[Airport Vis Ratio] = {
             "Type":"double",
             "Caption":"Ratio of visitor trips to total.",
             "Value":0.481
+        }
+
+    Args.[Airport TOD Rates] = {
+            "Type":"File",
+            "Caption":"Airport Time of Day Factors",
+            "Value":"%Input Folder%\\airport\\air_tod.csv"
         }
 	
 	Section = "AssignmentInputs"

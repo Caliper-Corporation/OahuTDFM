@@ -4,8 +4,8 @@ Called by flowchart
 
 Macro "Airport Model" (Args)
     RunMacro("Airport Generation", Args)
+    RunMacro("Airport TOD", Args)
     RunMacro("Airport Gravity", Args)
-    // RunMacro("Airport TOD", Args)
     return(1)
 endmacro
 
@@ -38,41 +38,46 @@ Macro "Airport Generation" (Args)
 EndMacro
 
 /*
+Split airport productions and attractions into time periods
+*/
+
+Macro "Airport TOD" (Args)
+
+    se_file = Args.DemographicOutputs
+    rate_file = Args.[Airport TOD Rates]
+
+    se = CreateObject("Table", se_file)
+    se_vw = se.GetView()
+
+    {drive, folder, name, ext} = SplitPath(rate_file)
+    RunMacro("Create Sum Product Fields", {
+        view: se_vw, factor_file: rate_file,
+        field_desc: "Airport Productions and Attractions by Time of Day|See " + name + ext + " for details."
+    })
+
+endmacro
+
+
+/*
 Prepares arguments for the "Gravity" macro in the utils.rsc library.
 */
 
 Macro "Airport Gravity" (Args)
 
     se_file = Args.DemographicOutputs
-    param_file = Args.[Airport Gravity Params]
+    periods = {"AM", "PM", "OP"}
+    param_dir = Args.[Input Folder] + "/airport"
     out_dir = Args.[Output Folder]
     air_dir = out_dir + "/airport"
     RunMacro("Create Directory", air_dir)
     
-
-    RunMacro("Gravity", {
-        se_file: se_file,
-        skim_file: out_dir + "/skims/HighwaySkimAM.mtx",
-        param_file: param_file,
-        output_matrix: air_dir + "/air_gravity.mtx"
-    })
+    for period in periods do
+        RunMacro("Gravity", {
+            se_file: se_file,
+            skim_file: out_dir + "/skims/HighwaySkim" + period + ".mtx",
+            param_file: param_dir + "/air_gravity_" + period + ".csv",
+            output_matrix: air_dir + "/air_gravity_" + period + ".mtx"
+        })
+    end
 EndMacro
 
-/*
-Split CV productions and attractions into time periods
-*/
-
-Macro "Airport TOD" (Args)
-
-    se_file = Args.SE
-    rate_file = Args.[CV TOD Rates]
-
-    se_vw = OpenTable("se", "FFB", {se_file})
-    {drive, folder, name, ext} = SplitPath(rate_file)
-    RunMacro("Create Sum Product Fields", {
-        view: se_vw, factor_file: rate_file,
-        field_desc: "CV Productions and Attractions by Time of Day|See " + name + ext + " for details."
-    })
-
-    CloseView(se_vw)
-endmacro

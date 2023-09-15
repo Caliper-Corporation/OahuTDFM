@@ -1,0 +1,3 @@
+purpose,p_field,a_field,constraint,imp_core,a,b,c
+air_vis,air_vis_p_OP,air_vis_a,Production,Time,1.2082,-0.2124,0.0176
+air_res,air_res_p_OP,air_res_a,Production,Time,1.2082,-0.2124,0.0176
