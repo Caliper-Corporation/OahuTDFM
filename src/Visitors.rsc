@@ -4,11 +4,11 @@
 
 Macro "Visitor Model" (Args)
 
-    // RunMacro("Visitor Lodging Locations", Args)
-    // RunMacro("Visitor Trip Generation", Args)
-    // RunMacro("Visitor Time of Day", Args)
-    // RunMacro("Visitor Create MC Features", Args)
-    // RunMacro("Visitor Calculate MC", Args)
+    RunMacro("Visitor Lodging Locations", Args)
+    RunMacro("Visitor Trip Generation", Args)
+    RunMacro("Visitor Time of Day", Args)
+    RunMacro("Visitor Create MC Features", Args)
+    RunMacro("Visitor Calculate MC", Args)
     RunMacro("Visitor Calculate DC", Args)
     return(1)
 endmacro
@@ -122,7 +122,7 @@ Macro "Visitor Calculate MC" (Args)
     input_dir = Args.[Input Folder]
     input_mc_dir = input_dir + "/visitors/mc"
     output_dir = Args.[Output Folder] + "/visitors/mc"
-    periods = Args.TimePeriods
+    periods = {"AM", "PM", "OP"}
     mode_table = Args.TransitModeTable
     access_modes = Args.AccessModes
     se_file = Args.DemographicOutputs
@@ -148,8 +148,8 @@ Macro "Visitor Calculate MC" (Args)
         opts.tables = {
             se: {File: se_file, IDField: "TAZ"}
         }
-        for i = 1 to periods.length do
-            period = periods[i][1]
+
+        for period in periods do
             opts.period = period
             opts.matrices = {
                 auto_skim: {File: skims_dir + "\\HighwaySkim" + period + ".mtx"},

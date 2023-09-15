@@ -108,7 +108,7 @@ ensures that visitor NHB trips happen near visitor HB trips.
 Macro "Visitor Scale NHB Productions" (Args)
     
     se_file = Args.DemographicOutputs
-    periods = Args.TimePeriods
+    periods = {"AM", "PM", "OP"}
     trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
     out_dir = Args.[Output Folder]
     trip_dir = out_dir + "/visitors/trip_matrices"
@@ -117,9 +117,7 @@ Macro "Visitor Scale NHB Productions" (Args)
 
     // For each period, add up all HB attractions and set them to NHB prods
     // after scaling.
-    for i = 1 to periods.length do
-        period = periods[i][1]
-
+    for period in periods do
         for segment in {"business", "personal"} do
             v_hb_attrs = null
             
@@ -160,7 +158,7 @@ Macro "Calculate Destination Choice" (Args, trip_types)
     input_dc_dir = input_dir + "/visitors/dc"
     output_dir = Args.[Output Folder] + "/visitors/dc"
     se_file = Args.DemographicOutputs
-    periods = Args.TimePeriods
+    periods = {"AM", "PM", "OP"}
 
     opts = null
     opts.output_dir = output_dir
@@ -173,8 +171,7 @@ Macro "Calculate Destination Choice" (Args, trip_types)
         opts.zone_utils = input_dc_dir + "/" + trip_type + "_zone.csv"
         opts.cluster_data = input_dc_dir + "/" + trip_type + "_cluster.csv"
         
-        for i = 1 to periods.length do
-            period = periods[i][1]
+        for period in periods do
             opts.period = period
             
             // Determine which sov skim to use
@@ -297,7 +294,7 @@ Macro "Visitor Apply Probabilities" (Args, nhb)
     dc_dir = out_dir + "/visitors/dc"
     mc_dir = out_dir + "/visitors/mc"
     trip_dir = out_dir + "/visitors/trip_matrices"
-    periods = Args.TimePeriods
+    periods = {"AM", "PM", "OP"}
     access_modes = Args.access_modes
 
     se = CreateObject("Table", se_file)
@@ -311,9 +308,7 @@ Macro "Visitor Apply Probabilities" (Args, nhb)
         then trip_types = {"NHB"}
         else trip_types = {"HBEat", "HBO", "HBRec", "HBShop", "HBW"}
 
-    for i = 1 to periods.length do
-        period = periods[i][1]
-
+    for period in periods do
         for trip_type in trip_types do
             if trip_type = "HBW"
                 then segments = {"business"}
