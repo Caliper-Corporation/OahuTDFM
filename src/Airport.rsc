@@ -6,6 +6,7 @@ Macro "Airport Model" (Args)
     RunMacro("Airport Generation", Args)
     RunMacro("Airport TOD", Args)
     RunMacro("Airport Gravity", Args)
+    RunMacro("Airport Directionality", Args)
     return(1)
 endmacro
 
@@ -76,8 +77,29 @@ Macro "Airport Gravity" (Args)
             se_file: se_file,
             skim_file: out_dir + "/skims/HighwaySkim" + period + ".mtx",
             param_file: param_dir + "/air_gravity_" + period + ".csv",
-            output_matrix: air_dir + "/air_gravity_" + period + ".mtx"
+            output_matrix: air_dir + "/air_gravity_pa_" + period + ".mtx"
         })
     end
 EndMacro
 
+/*
+
+*/
+
+Macro "Airport Directionality" (Args)
+    
+    out_dir = Args.[Output Folder]
+    air_dir = out_dir + "/airport"
+    periods = {"AM", "PM", "OP"}
+
+    for period in periods do
+        pa_mtx_file = air_dir + "/air_gravity_pa_" + period + ".mtx"
+        od_mtx_file = air_dir + "/air_gravity_od_" + period + ".mtx"
+
+        pa_mtx = CreateObject("Matrix", pa_mtx_file)
+        od_mtx = pa_mtx.Transpose({OutputFile: od_mtx_file})
+        for core_name in pa_mtx.GetCoreNames() do
+            od_mtx.(core_name) := od_mtx.(core_name) * .5 + pa_mtx.(core_name) * .5
+        end
+    end
+endmacro
