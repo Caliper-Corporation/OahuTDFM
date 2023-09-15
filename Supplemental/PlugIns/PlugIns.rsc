@@ -117,10 +117,10 @@ Body:
 
     // Set time period arguments
     periods = null
-    periods.AM.StartTime = 420 // 7 AM
+    periods.AM.StartTime = 360 // 7 AM
     periods.AM.EndTime = 540   // 9 AM
-    periods.PM.StartTime = 960 // 4 PM
-    periods.PM.EndTime = 1080  // 6 PM
+    periods.PM.StartTime = 900 // 3 PM
+    periods.PM.EndTime = 1140  // 7 PM
 
     // Create empty ABM Manager object
     abm = CreateObject("ABM_Manager")
