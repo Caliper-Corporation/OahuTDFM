@@ -2946,6 +2946,18 @@
             "Value":0.481
         }
 
+    Args.[Airport Vis Occupancy] = {
+            "Type":"double",
+            "Caption":"Average vehicle occupancy for visitor airport trips",
+            "Value":1.88
+        }
+
+    Args.[Airport Res Occupancy] = {
+            "Type":"double",
+            "Caption":"Average vehicle occupancy for resident airport trips",
+            "Value":2
+        }
+
     Args.[Airport TOD Rates] = {
             "Type":"File",
             "Caption":"Airport Time of Day Factors",

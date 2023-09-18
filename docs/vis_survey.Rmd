@@ -53,6 +53,10 @@ translate_vis <- translate_table(vis)
 fix_party <- translate_vis %>%
   mutate(trip_party = pmax(1, trip_party))
 
+# avg party size = 1.88
+# fix_party %>%
+#   summarize(avg_party = mean(trip_party))
+
 # Update survey from the old 764 zone system to the new 1000+ system
 update_tazs <- fix_party %>%
   left_join(taz_equiv, by = "TAZ") %>%

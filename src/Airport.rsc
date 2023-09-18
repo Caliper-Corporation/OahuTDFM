@@ -6,7 +6,7 @@ Macro "Airport Model" (Args)
     RunMacro("Airport Generation", Args)
     RunMacro("Airport TOD", Args)
     RunMacro("Airport Gravity", Args)
-    RunMacro("Airport Directionality", Args)
+    RunMacro("Airport Directionality and Occupancy", Args)
     return(1)
 endmacro
 
@@ -86,20 +86,27 @@ EndMacro
 
 */
 
-Macro "Airport Directionality" (Args)
+Macro "Airport Directionality and Occupancy" (Args)
     
     out_dir = Args.[Output Folder]
     air_dir = out_dir + "/airport"
     periods = {"AM", "PM", "OP"}
+    vis_occ = Args.[Airport Vis Occupancy]
+    res_occ = Args.[Airport Res Occupancy]
 
     for period in periods do
         pa_mtx_file = air_dir + "/air_gravity_pa_" + period + ".mtx"
-        od_mtx_file = air_dir + "/air_gravity_od_" + period + ".mtx"
+        od_mtx_file = air_dir + "/air_trips_od_veh_" + period + ".mtx"
 
         pa_mtx = CreateObject("Matrix", pa_mtx_file)
         od_mtx = pa_mtx.Transpose({OutputFile: od_mtx_file})
         for core_name in pa_mtx.GetCoreNames() do
             od_mtx.(core_name) := od_mtx.(core_name) * .5 + pa_mtx.(core_name) * .5
+
+            if Position(core_name, "_vis") > 0
+                then occ = vis_occ
+                else occ = res_occ
+            od_mtx.(core_name) := od_mtx.(core_name) / occ
         end
     end
 endmacro
