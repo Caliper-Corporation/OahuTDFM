@@ -4,14 +4,46 @@
 
 Macro "Network Calculations" (Args)
     RunMacro("CopyDataToOutputFolder", Args)
+    RunMacro("Filter Transit Modes", Args)
     RunMacro("Expand DTWB", Args)
     RunMacro("Mark KNR Nodes", Args)
     RunMacro("Determine Area Type", Args)
+    RunMacro("Add Cluster Info to SE Data", Args)
+    RunMacro("Create Visitor Clusters", Args)
     RunMacro("Speeds and Capacities", Args)
     RunMacro("CalculateTransitSpeeds Oahu", Args)
     RunMacro("Compute Intrazonal Matrix", Args)
+    RunMacro("Create Intra Cluster Matrix", Args)
 
     return(1)
+endmacro
+
+/*
+Remove network columns from the mode table that if that mode doesn't exist in 
+the scenario. This will in turn control which networks (tnw) get created.
+*/
+
+Macro "Filter Transit Modes" (Args)
+    rts_file = Args.TransitRoutes
+    mode_file = Args.TransitModeTable
+
+    // Open a map and determine if rail is present
+    map = CreateObject("Map", rts_file)
+    {nlyr, llyr, rlyr, slyr} = map.GetLayerNames()
+    n = map.SelectByQuery({
+        SetName: "rail",
+        Query: "Mode = 7"
+    })
+    map = null
+
+    if n = 0 then do
+        // Can't edit CSVs directly, so convert to a MEM table
+        temp = CreateObject("Table", mode_file)
+        tbl = temp.Export({ViewName: "temp"})
+        tbl.DropFields("rail")
+        temp = null
+        tbl.Export({FileName: mode_file})
+    end
 endmacro
 
 /*
@@ -316,6 +348,46 @@ Macro "Tag Highway with Area Type" (Args, map, views)
     // If this script modified the user setting for inclusion, change it back.
     if reset_inclusion = "true" then SetSelectInclusion("Enclosed")
 EndMacro
+
+/*
+DC models for residents and visitors need the cluster information on the se
+data table.
+*/
+
+Macro "Add Cluster Info to SE Data" (Args)
+
+    se_file = Args.DemographicOutputs
+    taz_file = Args.TAZGeography
+
+    se = CreateObject("Table", se_file)
+    se.AddField({FieldName: "Cluster", type: "integer"})
+    se.AddField({FieldName: "ClusterName", type: "string"})
+    taz = CreateObject("Table", taz_file)
+    join = se.Join({
+        Table: taz,
+        LeftFields: "TAZ",
+        RightFields: "TAZID"
+    })
+    join.Cluster = join.District7
+    join.ClusterName = "c" + String(join.District7)
+endmacro
+
+/*
+The visitor model uses the Cluster field from the se data, but
+collapses district 3 into 1 due to a lack of observations in the
+survey.
+*/
+
+Macro "Create Visitor Clusters" (Args)
+    se_file = Args.DemographicOutputs
+    se = CreateObject("Table", se_file)
+    se.AddField({FieldName: "VisCluster", type: "integer"})
+    se.AddField({FieldName: "VisClusterName", type: "string"})
+    se.VisCluster = if se.Cluster = 3
+        then 1
+        else se.Cluster
+    se.VisClusterName = "c" + String(se.VisCluster)
+endmacro
 
 macro "Speeds and Capacities" (Args, Result)
     ret_value = 1
@@ -875,7 +947,7 @@ endmacro
 Macro "Create Transit Networks" (Args)
 
     rsFile = Args.TransitRoutes
-    Periods = Args.periods
+    Periods = Args.TimePeriods
     AccessModes = Args.AccessModes
     skim_dir = Args.OutputSkims
 

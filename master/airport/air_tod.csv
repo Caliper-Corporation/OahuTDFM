@@ -1,0 +1,7 @@
+to_field,from_field,factor,Description
+air_vis_p_AM,air_vis_p,0.25,
+air_vis_p_OP,air_vis_p,0.42,
+air_vis_p_PM,air_vis_p,0.33,
+air_res_p_AM,air_res_p,0.25,
+air_res_p_OP,air_res_p,0.42,
+air_res_p_PM,air_res_p,0.33,

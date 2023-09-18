@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns2="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/1999/xhtml"><head><script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script><script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" integrity="sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/vega@5"></script><script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script><script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/floatthead/1.4.0/jquery.floatThead.min.js"></script><script>
+			$( document ).ready(function() {
+				var $table = $('table.floatinghead');
+				$table.floatThead({ position: 'absolute' });
+				var $tabledf = $('table.dataframe');
+				$tabledf.floatThead({ position: 'absolute' });
+			});
+			$(window).on("hashchange", function () {
+				window.scrollTo(window.scrollX, window.scrollY - 50);
+			});
+			</script><title>Oahu Visitor Mode Choice - All Trips</title><style>  @import url(https://fonts.googleapis.com/css?family=Roboto:400,700,500italic,100italic|Roboto+Mono:300,400,700);  .error_report {color:red; font-family:monospace;}  body {font-family: "Book-Antiqua", "Palatino", serif;}  div.xmle_title {  font-family: "Book-Antiqua", "Palatino", serif;  font-size:200%;   font-weight:900;  font-style:normal;   color: #444444; }   .xmle_signature {font-size:70%; font-weight:100; font-style:italic; font-family: Roboto, Helvetica, sans-serif;} .xmle_name_signature {font-weight:400; font-style:normal; font-family: "Roboto Slab", Roboto, Helvetica, sans-serif;}  a.parameter_reference {font-style: italic; text-decoration: none}  .strut2 {min-width:1in}  .histogram_cell { padding-top:1; padding-bottom:1; vertical-align:center; }  .dicta pre {  margin:0;  font-family:"Roboto Mono", monospace;  font-weight:300;  font-size:70%; }  .raw_log pre {  font-family:"Roboto Mono", monospace;  font-weight:300;  font-size:70%;  }  caption {     caption-side: bottom;  text-align: left;  font-family: Roboto;  font-style: italic;  font-weight: 100;  font-size: 80%; }  table.dictionary { border:0px hidden !important; border-collapse: collapse !important; } div.blurb {  margin-top: 15px;  max-width: 6.5in; }  div.note {  font-size:90%;  padding-left:1em;  padding-right:1em;  border: 1px solid #999999;  border-radius: 4px; }  p.admonition-title {  font-weight: 700; }  .tooltipped {  position: relative;  display: inline-block; }  .tooltipped .tooltiptext {  visibility: hidden;  width: 180px;  background-color: black;  color: #fff;  text-align: center;  border-radius: 6px;  padding: 5px 0;  position: absolute;  z-index: 1;  top: -5px;  left: 110%; }  .tooltipped .tooltiptext::after {  content: "";  position: absolute;  top: 50%;  right: 100%;  margin-top: -5px;  border-width: 5px;  border-style: solid;  border-color: transparent black transparent transparent; } .tooltipped:hover .tooltiptext {  visibility: visible; }       body { margin-left: 200px; }    .table_of_contents_frame { width: 187px; position: fixed; margin-left: -200px; top:0; padding-top:10px; z-index:2000;}    .table_of_contents { width: 187px; position: fixed; margin-left: -200px; font-size:85%;}    .table_of_contents_head { font-weight:700; padding-left:25px;  }    .table_of_contents ul { padding-left:25px;  }    .table_of_contents ul ul { font-size:75%; padding-left:15px; }    .xmle_signature {font-size:70%; font-weight:100; font-style:italic; font-family: Roboto, Helvetica, sans-serif; width: 170px; position: fixed; left: 0px; bottom: 0px; padding-left:20px; padding-bottom:2px; background-color:rgba(255,255,255,0.9);}    .xmle_name_signature {font-weight:400; font-style:normal; font-family: "Roboto Slab", Roboto, Helvetica, sans-serif;}    a.parameter_reference {font-style: italic; text-decoration: none}    .strut2 {min-width:2in}    .histogram_cell { padding-top:1; padding-bottom:1; vertical-align:center; }    table.floatinghead thead {background-color:#FFF;}    table.dataframe thead {background-color:#FFF;}    @media print {       body { color: #000; background: #fff; width: 100%; margin: 0; padding: 0;}       /*.table_of_contents { display: none; }*/       @page {       margin: 1in;       }       h1, h2, h3 { page-break-after: avoid; }       img { max-width: 100% !important; }       ul, img, table { page-break-inside: avoid; }       .xmle_signature {font-size:70%; font-weight:100; font-style:italic; font-family: Roboto, Helvetica, sans-serif; padding:0; background-color:#fff; position: fixed; bottom: 0;}       .xmle_name_signature {font-weight:400; font-style:normal; font-family: "Roboto Slab", Roboto, Helvetica, sans-serif;}       .xmle_signature img {display:none;}       .xmle_signature .noprint {display:none;}    }    </style><meta name="pythonmetadata" content="eJwllbvyuogBhdNskTKP4AiOyJgBFZRBFBERReQiolCIihe8cFXu/pyk3y7/fZ08W3Y2pzhfc5qvOv/67Y///v1vf+X3fzwPke380/VP5+f/+9fvv4l/8T+/oH//Yv74czliCqPXvdPUHSktQT8r2wGNfzmdph4vOpsllGKeNOIyTGtCL5bDQPHX23xXm+mbhs2ns10FjhWtnQCxosAdvb+UxtqjBTc/o6O8cPR1SDCM9oJKGVOi+2qq2qaNszfbrIVdZ3t7SFCFROs9Zs1eEahdC9IvvDiolWv/iDWxLSbSI4oNEqQEPt/rstfetvndt6KFKct8h36rFZO+fSUa523Av5vLBdWxG3eyNnpi06jHWVwm+urCMnPPmTD6vqfAyIxQRTlDZF53tuDJ1Xi/o4/mflVcMnoMpfgKHEzI3d3gR8AEGN4jYbj+6ioZeiqgoVBSD2o5Tj0quapPjWA72DkLVKolXN4cW2NXfJZ9Px31FfBx3dP5Z/Ea7bQ5BN8andyfYImbF2OeDWicUNw/FTiQdQUl0HtHDHkxObp5ctMLM/yGc+8mVDywPZ/d3xOr9V3rkfFY7hh8HhZBPAAaxX0B2EK2CvLOUiTwNcZNyqdKkuyly62WdSsbFCiGXDtCfBk8K9UO5WX+s7Gldp1tO/ja27FEXiDwut/H9Hvoe0nrhwlIw9vXu8v2UlQLsn+PO9R03MP34Q0+qU6TIKbtCKtO27gyO8NnJBt0f6ZU0cf2xhAzw/dh1V5areJUzoR+YZh+zdjdKOFxhfdakrF0qrpZpfOarHtw7s4nyNkWG+HpeZ96dJvwNnHnIXu4WlvcqjNhOD5LjKqHznJ7p4ZUzVfLT/+x6gvslrg+3iyRvtq7tLQ+SIILzNLmhbc/kTFiTEHLiUmU6fqATtuSkijn7I3MPU05n+vlEbOiHfi1Lqy4vU8opSEYBYFOo+tYqmUjZ2b+IG007Zp1LkIr2q65SGT+IzY6l0Z4BC6+9NFI6NCHR6NeAObr6oWzjl7c96L3OnVxrh7IjRLl6/JhDvWKZn7c287jcfEQmHnnc0FUMlD8ZEFffLl3daU3QfcoLX2mMtuXod5ynyEEv3IOtZjSBTi1sb6A+l4u22L5ci5jnCWmylqRDPk8kXHdgZ4Vq1npduvUzcUj+Shq23RgEwW6MQ1W3K+wNaGU68GrJNXIwFtyun3C7RbyrTyzRch7Q7hb2ZUXXQiOimVu+mwTW9wOO9rEIXZzhQ0iq/VwdswBb4+UpupRkMt+IzjLDSPciEmX7S/utXabHhQzEbiq547ryUOLU2/6VdXE4aXsGgwo4GbQ0eJyikGefKAmjBTOq4P5PeewSF35dtm8hAUDsgq3iy9oXqAuhPNW0Os9gvpFIEZTgWeIxbLbePej+o24Jryxj+z8UrN+Niqma4dmvRdvcLYfyZ4DFyu8faqHH3k+n53dr8vEMXJwH17t1rcXtQ0PHq+pUFHplTyDE8jpBsb0VqsYK1FYoKcylYUGoyu+gtwS5MIYzY15G/PfCr3ft3Ixi62UQDhuY6oC6mxbbG9eAA8Gv1FRupF4O8na5Oa124mufZb48widEJDQNH+yKESFK7s+SH5M76RXkfnsl49emNoaRPDN2lh5N6pIhudi2k5b8dBYn8Kzi7iJ7q8wR/vLctiZjrL56cbiTiklwHB4tf0IRGuckLVEMnQcl+M5dlkDsveY7yrA6yb6myodwWuxnutKmzS/1/pE2OfDnISag3lqd3/CNR4ysQkudXIUrWpmQJB8VmwNcGt31nNgDIRcudwonq1b1Rkm3OkZz+4ne4d+NAAsEiBFVWMEobrTbNEo4vW6bte1nV4ZLqcg904Z/kOCCzteDiGGw8MTp3zU48nuOxt6dAxKcUzsbqi+eKhHC+8BSZe5XJWHJC8/545CTYTrprrq//jAmm8mp1OruHZ93HrFxX52K00wn6Nqq9H+8xXKZ0yAJ/Zhb8OgeTfvq/N0IoxoiG72vJ/iXhFkFvB/bELiNbiqgZX5QVyNO6JSZwEV8C7Nc3cII/PO7NohAxD1GKbpufljsRz18uJNmpG2BjtoIXQljJbJH6XnFABTS2L4fpbduHub7m604Fwb3/rdga5WnWJXaWtOoOTwFbOJPgNxWVJSJOm/p+/tKB69a8CcpttQvRUcjUX91BqbJB7EMU/qq3dQdPMdZPuMAC/sgdQwd4IbCAi26ZYCVzeF6u2e9c3jOPSF+93fPu+v+sqBNb+RJdEc0w7UuZwtXmkwJRH5wNGH2fi6OxHplJqzrdaggrIG9ZF+2jxmlsQK5it8GsGmmqQjp7l/0vn4Uam+pItbPVb36vYTN3vJA9LQ1qw9Oo29qzgAVmcWfE5y1fDOtWkATcUchetUuLgZmHtKPsLjclSkQWuJQEBXdYYnzB0uyhjgq/gHlfC0N/G6s0gdM24CVZtXDFqgvHwB+WejuzgOvHwmuWXbKXB09ZhrCBZbgEaM2sOXw0DUMlVZb/0FsUHnpBqr55t5/bisnoya5sg6GjBVpCWKfnjnM4uSbr4ce8FxM6+TQ3wwosJO4YW0QtTrYeJ1Htzk1Gj3V8cPWM3m9Eqxkrc0+1mN4gb19ho2cB5GulVz+57pQnxnvz5LZ7yV7WuAcRr2ssounHXc6Ed+ZeC76d7hQ3K6iR/IttLR8bj77A9cFbOAN11Fw2vATwCFBsOeuvuCt0PDLLDOexuzQAkHkpYcqonXh3eCGE83uEa+hSN3OA+PWFmmj3iCrwwaQZBfx3/+DyueG5g="></head><body><iframe class="table_of_contents_frame" style="height:calc(100% - 100px); border:none; /*background-color:rgba(128,189,1, 0.95);*/
+			  background: -webkit-linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* For Safari 5.1 to 6.0 */
+			  background: -o-linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* For Opera 11.1 to 12.0 */
+			  background: -moz-linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* For Firefox 3.6 to 15 */
+			  background: linear-gradient(rgba(128,189,1, 0.95), rgba(255, 255, 255, 0.95)); /* Standard syntax */
+			" srcdoc="<html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;<head&gt;<script src=&quot;https://code.jquery.com/jquery-3.0.0.min.js&quot; integrity=&quot;sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=&quot; crossorigin=&quot;anonymous&quot;&gt;</script&gt;<script src=&quot;https://code.jquery.com/ui/1.11.4/jquery-ui.min.js&quot; integrity=&quot;sha256-xNjb53/rY+WmG+4L6tTl9m6PpqknWZvRt0rO1SRnJzw=&quot; crossorigin=&quot;anonymous&quot;&gt;</script&gt;<script src=&quot;https://cdn.jsdelivr.net/npm/vega@5&quot;&gt;</script&gt;<script src=&quot;https://cdn.jsdelivr.net/npm/vega-lite@5&quot;&gt;</script&gt;<script src=&quot;https://cdn.jsdelivr.net/npm/vega-embed@6&quot;&gt;</script&gt;<script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/floatthead/1.4.0/jquery.floatThead.min.js&quot;&gt;</script&gt;<script&gt;
+			$( document ).ready(function() {
+				var $table = $('table.floatinghead');
+				$table.floatThead({ position: 'absolute' });
+				var $tabledf = $('table.dataframe');
+				$tabledf.floatThead({ position: 'absolute' });
+			});
+			$(window).on(&quot;hashchange&quot;, function () {
+				window.scrollTo(window.scrollX, window.scrollY - 50);
+			});
+			</script&gt;<title&gt;Untitled</title&gt;<style&gt;   .table_of_contents { font-size:85%; font-family: &quot;Book-Antiqua&quot;, &quot;Palatino&quot;, serif; }   .table_of_contents a:link { text-decoration: none; }   .table_of_contents a:visited { text-decoration: none; }   .table_of_contents a:hover { text-decoration: underline; }   .table_of_contents a:active { text-decoration: underline; }   .table_of_contents_head { font-weight:700; padding-left:20px }   .table_of_contents ul { padding-left:20px; }   .table_of_contents ul ul { font-size:75%; padding-left:15px; }   ::-webkit-scrollbar {    -webkit-appearance: none;    width: 7px;   }   ::-webkit-scrollbar-thumb {    border-radius: 4px;    background-color: rgba(0,0,0,.5);    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);   </style&gt;<base target=&quot;_parent&quot;&gt;</head&gt;<body&gt;<div class=&quot;table_of_contents&quot;&gt;<p class=&quot;table_of_contents_head&quot;&gt;Table of Contents</p&gt;<div&gt;<ul&gt;<li&gt;<a href=&quot;#rx1&quot;&gt;Data Statistics</a&gt;</li&gt;<li&gt;<a href=&quot;#rx2&quot;&gt;Choice Table Summary</a&gt;</li&gt;<li&gt;<a href=&quot;#rx3&quot;&gt;Utility Functions</a&gt;</li&gt;<li&gt;<a href=&quot;#rx4&quot;&gt;Parameter Summary</a&gt;</li&gt;<li&gt;<a href=&quot;#rx5&quot;&gt;Estimation Statistics</a&gt;</li&gt;</ul&gt;</div&gt;</div&gt;</body&gt;</html&gt;"></iframe><div class="xmle_html_report"><div class="xmle_title">Oahu Visitor Mode Choice - All Trips</div><h2><a name="rx1" reftxt="Data Statistics" class="toc" toclevel="2"></a>Data Statistics</h2><div><table class="dataframe larch_dataframe"><thead><th></th><th>n</th><th>minimum</th><th>maximum</th><th>median</th><th>histogram</th><th>mean</th><th>stdev</th><th>zeros</th><th>positives</th><th>negatives</th><th>nonzero_minimum</th><th>nonzero_maximum</th><th>nonzero_mean</th><th>nonzero_stdev</th></thead><tbody><tr><th>AutoTime</th><td>117</td><td>0.21319</td><td>64.2049</td><td>3.23534</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAAQgAAAAAAAAAPAAAAAAAAABAAAAAAAAAABgAAAAAAAAAIAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAAIDNScs/5DiOQyNLHUDkOI4N/N0sQKuqqjwzizVA5DiOcminPECO4zjUzuFBQKuqKm/pb0VAyHEcCgT+SEDkOA6lHoxMQAAAAKAcDVBAlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-23T17:07:35.581569</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 16.118738  L 10.545455 16.118738  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 15.821892  L 17.818182 15.821892  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 18.790353  L 25.090909 18.790353  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 18.19666  L 32.363636 18.19666  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 19.384045  L 39.636364 19.384045  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 20.571429  L 46.909091 20.571429  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 20.274583  L 54.181818 20.274583  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 20.274583  L 61.454545 20.274583  z " clip-path="url(#pe17f6cacfc)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pe17f6cacfc">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>10.9625</td><td>13.0222</td><td>0</td><td>117</td><td>0</td><td>0.21319</td><td>64.2049</td><td>10.9625</td><td>13.0222</td></tr><tr><th>WalkTime</th><td>117</td><td>2.78497</td><td>944.996</td><td>37.4695</td><td><div class="figure" metadata="gAWVkAEAAAAAAAB9lCiMC2Jpbl9oZWlnaHRzlIwSbnVtcHkuY29yZS5udW1lcmljlIwLX2Zyb21idWZmZXKUk5QolkgAAAAAAAAARgAAAAAAAAALAAAAAAAAABAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAYAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAlIwFbnVtcHmUjAVkdHlwZZSTlIwCaTiUiYiHlFKUKEsDjAE8lE5OTkr/////Sv////9LAHSUYksJhZSMAUOUdJRSlIwJYmluX2VkZ2VzlGgEKJZQAAAAAAAAAAAAAMCgRwZAVVVVBWfeWkBVVVWCSIVqQAAAAMGuzXNAVVXVQLlYekBVVVXg4XGAQAAAQCBnt4NAqqoqYOz8hkBVVRWgcUKKQAAAAOD2h41AlGgIjAJmOJSJiIeUUpQoSwNoDE5OTkr/////Sv////9LAHSUYksKhZRoD3SUUpSMEXplcm9zX2FyZV9kcm9wcGVklImMEnJhbmdlX2lzX3RydW5jYXRlZJRLAHUu" zeros_are_dropped="False" range_is_truncated="0" style="min-width:Truein"><svg width="72pt" height="20.571429pt" viewBox="0 0 72 20.571429" version="1.1">
+ <metadata>
+  <rdf:RDF>
+   <ns2:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"></dc:type>
+    <dc:date>2023-08-23T17:07:35.613249</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <ns2:Agent>
+      <dc:title>Matplotlib v3.7.2, https://matplotlib.org/</dc:title>
+     </ns2:Agent>
+    </dc:creator>
+   </ns2:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <title></title><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 20.571429  L 72 20.571429  L 72 0  L 0 0  L 0 20.571429  z " style="fill: none"></path>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 3.272727 20.571429  L 10.545455 20.571429  L 10.545455 0.979592  L 3.272727 0.979592  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_3">
+    <path d="M 10.545455 20.571429  L 17.818182 20.571429  L 17.818182 17.492711  L 10.545455 17.492711  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_4">
+    <path d="M 17.818182 20.571429  L 25.090909 20.571429  L 25.090909 16.093294  L 17.818182 16.093294  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_5">
+    <path d="M 25.090909 20.571429  L 32.363636 20.571429  L 32.363636 19.451895  L 25.090909 19.451895  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_6">
+    <path d="M 32.363636 20.571429  L 39.636364 20.571429  L 39.636364 19.451895  L 32.363636 19.451895  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_7">
+    <path d="M 39.636364 20.571429  L 46.909091 20.571429  L 46.909091 18.892128  L 39.636364 18.892128  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_8">
+    <path d="M 46.909091 20.571429  L 54.181818 20.571429  L 54.181818 19.451895  L 46.909091 19.451895  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_9">
+    <path d="M 54.181818 20.571429  L 61.454545 20.571429  L 61.454545 20.571429  L 54.181818 20.571429  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="patch_10">
+    <path d="M 61.454545 20.571429  L 68.727273 20.571429  L 68.727273 20.011662  L 61.454545 20.011662  z " clip-path="url(#p92edf02ed8)" style="fill: #1d8bcc"></path>
+   </g>
+   <g id="matplotlib.axis_1"></g>
+   <g id="matplotlib.axis_2"></g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p92edf02ed8">
+   <rect x="0" y="-0" width="72" height="20.571429"></rect>
+  </clipPath>
+ </defs>
+</svg></div></td><td>160.351</td><td>212.683</td><td>0</td><td>117</td><td>0</td><td>2.78497</td><td>944.996</td><td>160.351</td><td>212.683</td></tr></tbody></table></div><h2><a name="rx2" reftxt="Choice Table Summary" class="toc" toclevel="2"></a>Choice Table Summary</h2><div>
+<style scoped="1">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>chosen</th>
+      <th>available</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>auto</td>
+      <td>53.0</td>
+      <td>117.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>bus</td>
+      <td>0.0</td>
+      <td>117.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>tnc</td>
+      <td>20.0</td>
+      <td>117.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>walk</td>
+      <td>44.0</td>
+      <td>117.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>bike</td>
+      <td>0.0</td>
+      <td>117.0</td>
+    </tr>
+    <tr>
+      <th>&lt; Total All Alternatives &gt;</th>
+      <td></td>
+      <td>117.0</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</div><h2><a name="rx3" reftxt="Utility Functions" class="toc" toclevel="2"></a>Utility Functions</h2><div><table class="floatinghead" style="margin-top:1px;"><thead><tr><th>alt</th><th style="text-align:left;">formula</th></tr></thead><tbody><tr><td>1</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.ASC_auto</span><br> + <span class="LinearFunc_Param">P.Time</span> * <span class="LinearFunc_Data">X.AutoTime</span></td></tr><tr><td>2</td><td style="text-align:left;"><div></div></td></tr><tr><td>3</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.Time</span> * <span class="LinearFunc_Data">X.AutoTime</span></td></tr><tr><td>4</td><td style="text-align:left;"><div></div> + <span class="LinearFunc_Param">P.ASC_walk</span><br> + <span class="LinearFunc_Param">P.Time</span> * <span class="LinearFunc_Data">X.WalkTime</span></td></tr><tr><td>5</td><td style="text-align:left;"><div></div></td></tr></tbody></table></div><h2><a name="rx4" reftxt="Parameter Summary" class="toc" toclevel="2"></a>Parameter Summary</h2><div><style type="text/css">
+#T_2debd th {
+  vertical-align: top;
+  text-align: left;
+}
+#T_2debd td {
+  vertical-align: top;
+  text-align: left;
+}
+#T_2debd_row0_col0, #T_2debd_row0_col1, #T_2debd_row0_col2, #T_2debd_row0_col3, #T_2debd_row0_col4, #T_2debd_row1_col0, #T_2debd_row1_col1, #T_2debd_row1_col2, #T_2debd_row1_col3, #T_2debd_row1_col4, #T_2debd_row2_col0, #T_2debd_row2_col1, #T_2debd_row2_col2, #T_2debd_row2_col3, #T_2debd_row2_col4 {
+  font-family: monospace;
+}
+</style>
+<table id="T_2debd">
+  <thead>
+    <tr>
+      <th class="blank">&#160;</th>
+      <th class="blank level0">&#160;</th>
+      <th id="T_2debd_level0_col0" class="col_heading level0 col0">Value</th>
+      <th id="T_2debd_level0_col1" class="col_heading level0 col1">Std Err</th>
+      <th id="T_2debd_level0_col2" class="col_heading level0 col2">t Stat</th>
+      <th id="T_2debd_level0_col3" class="col_heading level0 col3">Signif</th>
+      <th id="T_2debd_level0_col4" class="col_heading level0 col4">Null Value</th>
+    </tr>
+    <tr>
+      <th class="index_name level0">Category</th>
+      <th class="index_name level1">Parameter</th>
+      <th class="blank col0">&#160;</th>
+      <th class="blank col1">&#160;</th>
+      <th class="blank col2">&#160;</th>
+      <th class="blank col3">&#160;</th>
+      <th class="blank col4">&#160;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_2debd_level0_row0" class="row_heading level0 row0" rowspan="2">ASCs</th>
+      <th id="T_2debd_level1_row0" class="row_heading level1 row0">ASC_auto</th>
+      <td id="T_2debd_row0_col0" class="data row0 col0">&#160;2.39</td>
+      <td id="T_2debd_row0_col1" class="data row0 col1">&#160;0.281</td>
+      <td id="T_2debd_row0_col2" class="data row0 col2">&#160;8.52</td>
+      <td id="T_2debd_row0_col3" class="data row0 col3">***</td>
+      <td id="T_2debd_row0_col4" class="data row0 col4"> 0.00</td>
+    </tr>
+    <tr>
+      <th id="T_2debd_level1_row1" class="row_heading level1 row1">ASC_walk</th>
+      <td id="T_2debd_row1_col0" class="data row1 col0">&#160;3.68</td>
+      <td id="T_2debd_row1_col1" class="data row1 col1">&#160;0.415</td>
+      <td id="T_2debd_row1_col2" class="data row1 col2">&#160;8.87</td>
+      <td id="T_2debd_row1_col3" class="data row1 col3">***</td>
+      <td id="T_2debd_row1_col4" class="data row1 col4"> 0.00</td>
+    </tr>
+    <tr>
+      <th id="T_2debd_level0_row2" class="row_heading level0 row2">Other</th>
+      <th id="T_2debd_level1_row2" class="row_heading level1 row2">Time</th>
+      <td id="T_2debd_row2_col0" class="data row2 col0">-0.0253</td>
+      <td id="T_2debd_row2_col1" class="data row2 col1">&#160;0.00642</td>
+      <td id="T_2debd_row2_col2" class="data row2 col2">-3.94</td>
+      <td id="T_2debd_row2_col3" class="data row2 col3">***</td>
+      <td id="T_2debd_row2_col4" class="data row2 col4"> 0.00</td>
+    </tr>
+  </tbody>
+</table>
+</div><h2><a name="rx5" reftxt="Estimation Statistics" class="toc" toclevel="2"></a>Estimation Statistics</h2><div><table><thead><tr><th>Statistic</th><th>Aggregate</th><th>Per Case</th></tr><tr><td>Number of Cases</td><td colspan="2">117</td></tr><tr><td>Log Likelihood at Convergence</td><td>-112.11</td><td>-0.96</td></tr><tr><td>Log Likelihood at Null Parameters</td><td>-188.30</td><td>-1.61</td></tr><tr><td>Rho Squared w.r.t. Null Parameters</td><td colspan="2">0.405</td></tr></thead><tbody></tbody></table></div></div><div class="xmle_signature"><p><div><img width="14" height="14" src="data:image/png;base64,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%3D" style="position:relative;top:2px;"><span class="larch_name_signature"> Larch 5.7.2</span></div><br>Report generated on <br class="noprint">Wednesday 23 August 2023 <br class="noprint">05:07:35 PM</p></div></body></html>

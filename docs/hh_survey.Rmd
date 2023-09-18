@@ -16,12 +16,15 @@ library(readxl)
 ```
 
 ```{r, include=FALSE}
-hh <- read_csv("data/_private/hh_survey/input/AddonHH_OahuV1draft.csv")
+hh <- read_csv("data/_private/hh_survey/input/AddonHH_OahuV2.csv")
 per <- read_csv(
-  "data/_private/hh_survey/input/AddonPER_OahuV1draft.csv",
+  "data/_private/hh_survey/input/AddonPER_OahuV2.csv",
   col_types = cols(SCHTYP_O = col_character())
 )
-trip <- read_csv("data/_private/hh_survey/input/AddonTRIP_OahuV1draft.csv")
+per_driver <- read_excel("data/_private/hh_survey/input/Oahu_PER_DRIVER.xlsx")
+per <- per %>%
+  left_join(per_driver, c("HOUSEID", "PERSONID"))
+trip <- read_csv("data/_private/hh_survey/input/AddonTRIP_OahuV2.csv")
 ```
 
 ```{r}
@@ -72,7 +75,7 @@ translate_hh %>%
 
 translate_trip %>%
   group_by(HOUSEID, PERSONID) %>%
-  mutate(check = ifelse(origin_LOCTYPE == "Home", 1, 0)) %>%
+  mutate(check = ifelse(ORIGIN_LOCTYPE == "Home", 1, 0)) %>%
   summarize(home_count = sum(check))
 
 ```
@@ -81,27 +84,27 @@ translate_trip %>%
 
 ```{r, include=FALSE}
 hh_pts <- hh %>%
-  mutate(unique_id = paste(confirmedhome_longitude, confirmedhome_latitude, sep = "_")) %>%
+  mutate(unique_id = paste(CONFIRMEDHOME_LONGITUDE, CONFIRMEDHOME_LATITUDE, sep = "_")) %>%
   select(
     unique_id,
-    longitude = confirmedhome_longitude,
-    latitude = confirmedhome_latitude
+    longitude = CONFIRMEDHOME_LONGITUDE,
+    latitude = CONFIRMEDHOME_LATITUDE
   )
 per_pts <- bind_rows(
   per %>%
-    mutate(unique_id = paste(WORKADDRESS_Lon, WORKADDRESS_Lat, sep = "_")) %>%
-    select(unique_id, longitude = WORKADDRESS_Lon, latitude = WORKADDRESS_Lat),
+    mutate(unique_id = paste(WORKADDRESS_LON, WORKADDRESS_LAT, sep = "_")) %>%
+    select(unique_id, longitude = WORKADDRESS_LON, latitude = WORKADDRESS_LAT),
   per %>%
-    mutate(unique_id = paste(SCHOOLADDRESS_Lon, SCHOOLADDRESS_Lat, sep = "_")) %>%
-    select(unique_id, longitude = SCHOOLADDRESS_Lon, latitude = SCHOOLADDRESS_Lat)
+    mutate(unique_id = paste(SCHOOLADDRESS_LON, SCHOOLADDRESS_LAT, sep = "_")) %>%
+    select(unique_id, longitude = SCHOOLADDRESS_LON, latitude = SCHOOLADDRESS_LAT)
 )
 trip_pts <- bind_rows(
   trip %>%
-    mutate(unique_id = paste(origin_Lon, origin_Lat, sep = "_")) %>%
-    select(unique_id, longitude = origin_Lon, latitude = origin_Lat),
+    mutate(unique_id = paste(ORIGIN_LON, ORIGIN_LAT, sep = "_")) %>%
+    select(unique_id, longitude = ORIGIN_LON, latitude = ORIGIN_LAT),
   trip %>%
-    mutate(unique_id = paste(destination_Lon, destination_Lat, sep = "_")) %>%
-    select(unique_id, longitude = destination_Lon, latitude = destination_Lat)
+    mutate(unique_id = paste(DESTINATION_LON, DESTINATION_LAT, sep = "_")) %>%
+    select(unique_id, longitude = DESTINATION_LON, latitude = DESTINATION_LAT)
 )
 
 # Use this table in TransCAD to geocode points to TAZs then read back in
@@ -113,25 +116,25 @@ geocoded_pts <- read_csv("data/_private/hh_survey/output/geocoded_points.csv") %
   select(unique_id, TAZ)
 
 hh_with_tazs <- translate_hh %>%
-  mutate(unique_id = paste(confirmedhome_longitude, confirmedhome_latitude, sep = "_")) %>%
+  mutate(unique_id = paste(CONFIRMEDHOME_LONGITUDE, CONFIRMEDHOME_LATITUDE, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(HomeTAZ = TAZ) %>%
   select(-unique_id)
 
 per_with_taz <- translate_per %>%
-  mutate(unique_id = paste(WORKADDRESS_Lon, WORKADDRESS_Lat, sep = "_")) %>%
+  mutate(unique_id = paste(WORKADDRESS_LON, WORKADDRESS_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(WorkTAZ = TAZ) %>%
-  mutate(unique_id = paste(SCHOOLADDRESS_Lon, SCHOOLADDRESS_Lat, sep = "_")) %>%
+  mutate(unique_id = paste(SCHOOLADDRESS_LON, SCHOOLADDRESS_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(SchoolTAZ = TAZ) %>%
   select(-unique_id)
 
 trip_with_taz <- translate_trip %>%
-  mutate(unique_id = paste(origin_Lon, origin_Lat, sep = "_")) %>%
+  mutate(unique_id = paste(ORIGIN_LON, ORIGIN_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(OriginTAZ = TAZ) %>%
-  mutate(unique_id = paste(destination_Lon, destination_Lat, sep = "_")) %>%
+  mutate(unique_id = paste(DESTINATION_LON, DESTINATION_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(DestinationTAZ = TAZ) %>%
   select(-unique_id)
@@ -211,7 +214,7 @@ id_tours <- split_k12_univ %>%
   mutate(
     tour_start = case_when(
       TRIPID == 1 ~ 1,
-      origin_LOCTYPE == "Home" ~ 1,
+      ORIGIN_LOCTYPE == "Home" ~ 1,
       TRUE ~ 0
     ),
     tour_num = cumsum(tour_start)
@@ -231,7 +234,7 @@ id_tours <- split_k12_univ %>%
 # Mark tour anchor and intermediate stops
 mark_anchor <- id_tours %>%
   mutate(
-    temp_dwel = ifelse(destination_LOCTYPE == "Home", 0, DWELTIME),
+    temp_dwel = ifelse(DESTINATION_LOCTYPE == "Home", 0, DWELTIME),
     temp_dwel = ifelse(sum(temp_dwel) == 0 & TRIPID == 1, 1, temp_dwel),
     anchor = ifelse(temp_dwel == max(temp_dwel), 100, 0),
     anchor = case_when(
@@ -241,6 +244,8 @@ mark_anchor <- id_tours %>%
       TRUE ~ anchor
     ),
     anchor = ifelse(anchor == max(anchor), 1, 0),
+    anchor_taz = ifelse(anchor == max(anchor), DestinationTAZ, 0),
+    anchor_dwell = ifelse(anchor == max(anchor), DWELTIME, 0),
     check = cumsum(anchor),
     anchor = ifelse(check > 1, 0, anchor),
     int_stop = case_when(
@@ -325,7 +330,9 @@ tour_file <- id_tour_mode %>%
     tour_type = first(tour_type),
     tour_num = first(tour_num),
     num_trips = n(),
-    anchor_time = ENDTIME_local[anchor == 1],
+    anchor_taz = max(anchor_taz),
+    anchor_dwell = max(anchor_dwell),
+    anchor_time = ENDTIME[anchor == 1],
     int_stop_fwd = sum(int_stop_fwd),
     int_stop_ret = sum(int_stop_ret),
     primary_mode = first(primary_mode),
@@ -355,7 +362,7 @@ hh_add_tours <- hh_with_structure %>%
     BasicPattern = paste0(
       "P_",
       WorkersThatDay,
-      NUMADULT - WorkersThatDay, # adults not working that day,
+      NUMADLT - WorkersThatDay, # adults not working that day,
       HHKids
     )
   )
@@ -379,28 +386,11 @@ per_add_tour_counts <- per_wrk_stat %>%
   mutate(across(Other_tours:Univ_tours, ~replace_na(.x, 0)))
 ```
 
-```{r}
-# check to see how many people by work status are making 0 work tours
-per_add_tour_counts %>%
-  group_by(WORKER) %>%
-  summarize(total_persons = n()) %>%
-  left_join(
-    per_add_tour_counts %>%
-      filter(Work_tours == 0) %>%
-      group_by(WORKER) %>%
-      summarize(per_with_0work = n()),
-    by = "WORKER"
-  ) %>%
-  mutate(percent = per_with_0work / total_persons * 100) %>%
-  arrange(desc(total_persons)) %>%
-  View()
-```
-
-```{r}
+```{r, eval=FALSE}
 # Outputs
-write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv")
-write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv")
-write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv")
-write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv")
+write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv", na = "")
+write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv", na = "")
+write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv", na = "")
+write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv", na = "")
 ```
 
