@@ -2,20 +2,12 @@
 
 */
 
-Macro "Disaggregate Curves" (Args)
+Macro "PopulationSynthesis Oahu" (Args)
     RunMacro("DisaggregateSED", Args)
-    return(1)
-endmacro
-
-Macro "IPU Synthesis" (Args)
     RunMacro("Synthesize Population", Args)
+    RunMacro("Generate Tabulations", Args)
+    RunMacro("Dorm Residents Synthesis", Args)
     RunMacro("PopSynth Post Process", Args)
-    return(1)
-endmacro
-
-Macro "Auto Ownership" (Args)
-    RunMacro("Create AO Features", Args)
-    RunMacro("Calculate Auto Ownership", Args)
     return(1)
 endmacro
 
@@ -27,9 +19,9 @@ Creates output file defined by 'Args.SEDMarginals'
 Macro "DisaggregateSED"(Args)
 
     // Open SED Data and check table for missing fields
-    obj = CreateObject("AddTables", {TableName: Args.SE})
+    obj = CreateObject("AddTables", {TableName: Args.Demographics})
     vwSED = obj.TableView
-    flds = {"TAZ", "Type", "HH", "HH_Pop", "Median_Inc", "Pct_Worker", "Pct_Child", "Pct_Senior"}
+    flds = {"TAZ", "OccupiedHH", "Population", "GroupQuarterPopulation", "Median_Inc", "Pct_Worker", "Pct_Child", "Pct_Senior"}
     expOpts.[Additional Fields] = {{"Kids", "Integer", 12,,,,},
                                    {"AdultsUnder65", "Integer", 12,,,,},
                                    {"Seniors", "Integer", 12,,,,},
@@ -42,7 +34,7 @@ Macro "DisaggregateSED"(Args)
 
     // Run models to disaggregate curves
     // 1. ==== Size
-    opt = {View: vw, Curve: Args.SizeCurves, KeyExpression: "HH_Pop/HH", LookupField: "avg_size"}
+    opt = {View: vw, Curve: Args.SizeCurves, KeyExpression: "(Population-GroupQuarterPopulation)/OccupiedHH", LookupField: "avg_size"}
     RunMacro("Disaggregate SE HH Data", opt)
 
     // 2. ==== Income
@@ -50,11 +42,12 @@ Macro "DisaggregateSED"(Args)
     RunMacro("Disaggregate SE HH Data", opt)
 
     // 3. ==== Workers
-    opt = {View: vw, Curve: Args.WorkerCurves, KeyExpression: "((Pct_Worker/100)*HH_Pop)/HH", LookupField: "avg_workers"}
+    opt = {View: vw, Curve: Args.WorkerCurves, KeyExpression: "((Pct_Worker/100)*(Population-GroupQuarterPopulation))/OccupiedHH", LookupField: "avg_workers"}
     RunMacro("Disaggregate SE HH Data", opt)
 
     // Fill number of kids, adults and seniors
-    vecs = GetDataVectors(vw + '|', {"HH_Pop", "Pct_Child", "Pct_Senior"}, {OptArray: 1})
+    vecs = GetDataVectors(vw + '|', {"Population", "GroupQuarterPopulation", "Pct_Child", "Pct_Senior"}, {OptArray: 1})
+    vecs.HH_Pop = vecs.Population - vecs.GroupQuarterPopulation
     vecsSet = null
     vecsSet.Kids = r2i(vecs.HH_Pop * vecs.Pct_Child/100)
     vecsSet.Seniors = r2i(vecs.HH_Pop * vecs.Pct_Senior/100)
@@ -62,9 +55,9 @@ Macro "DisaggregateSED"(Args)
     SetDataVectors(vw + '|', vecsSet,)
 
     // Fill PUMA5 field using PUMA info from the master TAZ database
-    objLyrs = CreateObject("AddDBLayers", {FileName: Args.TAZs})
+    objLyrs = CreateObject("AddDBLayers", {FileName: Args.TAZGeography})
     {TAZLayer} = objLyrs.Layers
-    vwJ = JoinViews("SED_TAZ", GetFieldFullSpec(vw, "TAZ"), GetFieldFullSpec(TAZLayer, "ID"),)
+    vwJ = JoinViews("SED_TAZ", GetFieldFullSpec(vw, "TAZ"), GetFieldFullSpec(TAZLayer, "TAZID"),)
     v = GetDataVector(vwJ + "|", "PUMA",)
     vOut = s2i(Right(v,5))
     SetDataVector(vwJ + "|", "PUMA5", vOut,)
@@ -133,16 +126,16 @@ Macro "Disaggregate SE HH Data"(opt)
     // Join SED Data to Lookup and compute values
     vecsOut = null
     vwJ = JoinViews("SEDLookup", GetFieldFullSpec(vw, exprFinal), GetFieldFullSpec(vwC, exprL),)
-    vecs = GetDataVectors(vwJ + "|", {"HH"} + categoryFlds, {OptArray: 1})
-    vTotal = Vector(vecs.HH.Length, "Long", {{"Constant", 0}})
+    vecs = GetDataVectors(vwJ + "|", {"OccupiedHH"} + categoryFlds, {OptArray: 1})
+    vTotal = Vector(vecs.OccupiedHH.Length, "Long", {{"Constant", 0}})
     for i = 2 to categoryFlds.length do // Do not compute for first category yet, hence the 2.
         fld = categoryFlds[i]
-        vVal = r2i(vecs.HH * vecs.(fld))    // Intentional truncation of decimal part
+        vVal = r2i(vecs.OccupiedHH * vecs.(fld))    // Intentional truncation of decimal part
         vecsOut.("HH_" + fld) = nz(vVal)
         vTotal = vTotal + nz(vVal)      
     end
     finalFld = categoryFlds[1]
-    vecsOut.("HH_" + finalFld) = nz(vecs.HH) - vTotal // Done to maintain clean marginals that exactly sum up to HH
+    vecsOut.("HH_" + finalFld) = nz(vecs.OccupiedHH) - vTotal // Done to maintain clean marginals that exactly sum up to HH
     SetDataVectors(vwJ + "|", vecsOut,)
     CloseView(vwJ)
     objC = null
@@ -167,11 +160,11 @@ Macro "Synthesize Population"(Args)
     o.RandomSeed = 314159
     
     // Define Seed Data. Specify relationship between HH file and TAZ and between HH and Person file
-    o.HouseholdFile({FileName: Args.[PUMS HH Seed], /*Filter: "NP <= 10",*/ ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
-    o.PersonFile({FileName: Args.[PUMS Person Seed], ID: "PersonID", HHID: "HHID"})
+    o.HouseholdFile({FileName: Args.PUMS_Households, ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
+    o.PersonFile({FileName: Args.PUMS_Persons, ID: "PERID", HHID: "HHID"})
     
     // Define the marginals data (Disaggregated SED marginals)
-    marginalData = {FileName: Args.SEDMarginals, Filter: "HH > 0", ID: "TAZ", MatchingID: "PUMA5"}
+    marginalData = {FileName: Args.SEDMarginals, Filter: "OccupiedHH > 0", ID: "TAZ", MatchingID: "PUMA5"}
     o.MarginalFile(marginalData)     
     o.IPUMarginalFile(marginalData)             
 
@@ -229,14 +222,14 @@ Macro "Synthesize Population"(Args)
     o.ReportExtraHouseholdField("HINCP", "HHInc")
     o.OutputPersonsFile = Args.Persons
     o.ReportExtraPersonsField("SEX", "gender") // Add extra field from Person Seed and change the name
-    o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
+    // o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
     o.ReportExtraPersonsField("ESR", "EmploymentStatus")
     
     // Optional IPU by-products
-    outputFolder = Args.[Output Folder] + "\\resident\\population_synthesis\\"
+    outputFolder = Args.[Output Folder] + "\\Population\\"
     o.IPUIncidenceOutputFile = outputFolder + "IPUIncidence.bin"
     o.ExportIPUWeights(outputFolder + "IPUWeights")
-    o.Tolerance = 0.01
+    o.Tolerance = Args.PopSynTolerance
     ret_value = o.Run()
 endMacro
 
@@ -407,71 +400,182 @@ Macro "Create Output HH Expressions"(vw_hhM, specs)
     Return(aggflds)
 endMacro
 
-/*
-Creates any additional fields needed by the AO choice model
+
+/* Dorm Synthesis
+    Synthesize HHs and Persons for University residents from University Group Quarters information
+    - HH TAZ and Univ TAZ known
+    - HH Size = 1 (Each person constitutes a HH)
+    - Income distribution (low or low-medium) based on input parameter
+    - Age distributions into one of the six age groups (19-24)
+    - Auto based on input table containing probability of owning a car by age compiled from available statistics
+    - Equal Gender Split
+    - Part time worker distribution based on age based probabilities
+    - WorK industry for part time worker either service or retail based on a fixed probability
 */
-
-Macro "Create AO Features" (Args)
-
-    hh_file = Args.Households
-
-    hh_vw = OpenTable("hh", "FFB", {hh_file})
-    a_fields =  {
-        {"Income1", "Integer", 10, ,,,, "HH is IncomeCategory 1"},
-        {"Income2", "Integer", 10, ,,,, "HH is IncomeCategory 2"},
-        {"Income3", "Integer", 10, ,,,, "HH is IncomeCategory 3"},
-        {"Income4", "Integer", 10, ,,,, "HH is IncomeCategory 4"}
-    }
-    RunMacro("Add Fields", {view: hh_vw, a_fields: a_fields})
-
-    v_inccat = GetDataVector(hh_vw + "|", "IncomeCategory", )
-    data.[Income1] = if v_inccat = 1 then 1 else 0
-    data.[Income2] = if v_inccat = 2 then 1 else 0
-    data.[Income3] = if v_inccat = 3 then 1 else 0
-    data.[Income4] = if v_inccat = 4 then 1 else 0
-    SetDataVectors(hh_vw + "|", data, )
-    CloseView(hh_vw)
-endmacro
-
-Macro "Calculate Auto Ownership" (Args, trip_types)
-
-    scen_dir = Args.[Scenario Folder]
-    ao_coeffs = Args.AOCoeffs
-    output_dir = Args.[Output Folder] + "/resident/population_synthesis"
-    hh_file = Args.Households
-
-    hh_vw = OpenTable("hh", "FFB", {hh_file})
-    a_fields =  {
-        {"Autos", "Integer", 10, ,,,, "HH Autos. Result of AO model."}
-    }
-    RunMacro("Add Fields", {view: hh_vw, a_fields: a_fields})
-    CloseView(hh_vw)
+Macro "Dorm Residents Synthesis"(Args)
+    // Open Existing HH and Pop file after HH Resident Synthesis
+    if !GetFileInfo(Args.Households) or !GetFileInfo(Args.Persons) then
+        Throw("Please ensuure that the resident synthesis is complete")
     
-    primary_spec = {Name: "hh", OField: "ZoneID"}
-    obj = CreateObject("PMEChoiceModel", {ModelName: "ao"})
-    obj.OutputModelFile = output_dir + "\\auto_ownership.mdl"
-    obj.AddTableSource({
-        SourceName: "hh",
-        File: output_dir + "\\Synthesized_HHs.bin",
-        IDField: "HouseholdID"
-    })
-    obj.AddTableSource({
-        SourceName: "se",
-        File: scen_dir + "\\output\\sedata\\scenario_se.bin",
-        IDField: "TAZ"
-    })
-    util = RunMacro("Import MC Spec", ao_coeffs)
-    obj.AddUtility({UtilityFunction: util})
-    obj.AddPrimarySpec(primary_spec)
-    obj.AddOutputSpec({ChoicesField: "Autos"})
-    obj.RandomSeed = 314159
-    obj.Evaluate()
+    abm = RunMacro("Get ABM Manager", Args)
+    abm.ClosePersonHHView()
 
-    // Convert coded field/string pairs to simple integers
-    hh_vw = OpenTable("hh", "FFB", {hh_file})
-    DetachTableTranslation(hh_vw)
-    v1 = GetDataVector(hh_vw + "|", "Autos", )
-    v2 = v1 - 1
-    SetDataVector(hh_vw + "|", "Autos", v2, )
-    CloseView(hh_vw)
-endmacro
+    // Add new fields to HH and Person Table
+    newFlds = {{Name: "UnivGQ", Type: "Short", Width: 2, Description: "1 if this is a university dorm HH (resident)"},
+               {Name: "Univ", Type: "String", Width: 10, Description: "University Name (Filled from dorm synthesis)"},
+               {Name: "Autos", Type: "Short", Description: "Number of autos in the HH"}}
+    abm.AddHHFields(newFlds)
+
+    newFlds = { {Name: "UnivGQStudent", Type: "Short", Width: 2, Description: "1 if this is a university student"},
+                {Name: "UnivTAZ", Type: "Long", Width: 12, Description: "TAZID of university that the student belongs to"},
+                {Name: "License", Type: "Short", Description: "License Status: 1 - Has driver license 2 - Does not have driver license"},
+                {Name: "WorkerCategory", Type: "Short", Description: "WorkerType: 1 - FullTime 2 - PartTime"},
+                {Name: "WorkDays", Type: "Short", Width: 10, Description: "Number of work days per week"},
+                {Name: "WorkAttendance", Type: "Short", Width: 2, Description: "Does person work on given day? Based on value of WorkDays"},
+                {Name: "AttendUniv", Type: "Short", Width: 2, Description: "Does person (non-dorm resident) attend university?|1: Yes|2: No.|Filled for Age >= 19"}}
+    abm.AddPersonFields(newFlds)
+
+    // ***** TAZ Data
+    // Get relevant data from TAZ
+    objT = CreateObject("Table", Args.Demographics)
+    nUniv = objT.SelectByQuery({SetName: "Selection", Query: "UnivGQ = 1 and GroupQuarterPopulation > 0"})
+    if nUniv = 0 then
+        Throw("Check university group quarter data in TAZ Demograhics file")
+    vecs = objT.GetDataVectors({FieldNames: {"TAZ", "GroupQuarterPopulation", "UnivGQ", "University", "UnivTAZ"}})
+    objT = null
+
+    // ***** Process
+    // Add records
+    vHHID = abm.[HH.HouseholdID]
+    maxHHID = vHHID.Max()
+    vPersonID = abm.[Person.PersonID]
+    maxPersonID = vPersonID.Max()
+    
+    vecsOutHH = null
+    vecsOutPersons = null
+    vUnivResidents = vecs.GroupQuarterPopulation
+    
+    pbar = CreateObject("G30 Progress Bar", "Processing University Zones...", true, vUnivResidents.length)
+    for i = 1 to vUnivResidents.length do
+        nUniv = r2i(vUnivResidents[i])
+        vecsDist = RunMacro("Get Univ Distributions", Args, nUniv)
+        
+        vHHID = Vector(nUniv, "Long", {{"Sequence", maxHHID + 1, 1}})
+        vPersonID = Vector(nUniv, "Long", {{"Sequence", maxPersonID + 1, 1}})
+        vOne = Vector(nUniv, "Short", {{"Constant", 1}})
+        vUnivTAZ = Vector(nUniv, "Long", {{"Constant", vecs.UnivTAZ[i]}})
+        vUniv = Vector(nUniv, "String", {{"Constant", vecs.University[i]}})
+
+        // Add records, select and set HH vectors
+        // vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+        vecsOutHH = {ZoneID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+                     IncomeCategory: vecsDist.IncomeCategory, HHKids: vOne, HHSeniors: vOne,
+                     UnivGQ: vOne, Univ: vUniv}
+        AddRecords(abm.HHView,,,{"Empty Records": nUniv})
+        abm.CreateHHSet({Filter: 'HouseholdID = null', Activate: 1})
+        abm.SetHHVectors(vecsOutHH)
+
+        // Add records, select and set Person vectors
+        vecsOutPersons = {HouseholdID: vHHID, PersonID: vPersonID, Gender: vecsDist.Gender, Age: s2i(vecsDist.Age),
+                          UnivGQStudent: vOne, UnivTAZ: vUnivTAZ, WorkerCategory: vecsDist.WorkerCategory,
+                          WorkDays: vecsDist.WorkDays, WorkAttendance: vecsDist.WorkAttendance,
+                          License: vecsDist.License, 
+                        // TODO: add this back
+                        //   IndustryCategory: vecsDist.IndustryCategory,
+                        //   WorkIndustry: vecsDist.WorkIndustry,
+                          AttendUniv: vOne}
+        AddRecords(abm.PersonView,,,{"Empty Records": nUniv})
+        abm.CreatePersonSet({Filter: 'PersonID = null', Activate: 1})
+        abm.SetPersonVectors(vecsOutPersons)
+        
+        // Reset Max IDs
+        maxHHID = vHHID[nUniv]
+        maxPersonID = vPersonID[nUniv]
+        if pbar.Step() then
+            Return()
+    end
+    pbar.Destroy()
+    abm.ActivateHHSet()
+    abm.ActivatePersonSet()
+    Return(true)
+endMacro
+
+
+// Macro that generates vectors for Age, Gender, IncomeCategory, WorkerStatus and Vehicle
+// The number of records are passed to the macro
+// The distributions are based on input probability numbers/tables
+Macro "Get Univ Distributions"(Args, nUniv)
+    vecsDist = null
+    
+    // Gender
+    SetRandomSeed(42*nUniv + 1)
+    fPct = Args.FemaleStudentsPct
+    mPct = 100 - fPct
+    params = null
+    params.population = {1, 2}
+    params.weight = {mPct, fPct}
+    vecsDist.Gender = RandSamples(nUniv, "Discrete", params)
+
+    // Income
+    SetRandomSeed(42*nUniv + 2)
+    IncCat1Pct = Args.IncCategory1Pct
+    IncCat2Pct = 100 - IncCat1Pct
+    params.weight = {IncCat1Pct, IncCat2Pct}
+    vecsDist.IncomeCategory = RandSamples(nUniv, "Discrete", params)
+
+    // ***** Age Related Distributions
+    ageChars = Args.StudentCharacteristics
+    arrAge = ageChars.Age
+    arrAgePct = ageChars.Percentage
+    if Sum(arrAgePct) <> 100 then
+        Throw("Incorrect Age Percentages in 'StudentCharacteristics' table for dorm population synthesis. They do not sum up to 100.0")
+
+    // Age
+    params = null
+    params.population = arrAge
+    params.weight = arrAgePct
+    vecsDist.Age = RandSamples(nUniv, "Discrete", params)
+
+    // Vehicle Availability
+    vProbVeh = Vector(nUniv, "Double",)
+    vProbWrk = Vector(nUniv, "Double",)
+    // Get Prob Vector First
+    for i = 1 to arrAge.length do
+        age = arrAge[i]
+        probVeh = ageChars.[Vehicle Probability][i]
+        probWrk = ageChars.[Worker Probability][i]
+        vProbVeh = if vecsDist.Age = age then probVeh else vProbVeh
+        vProbWrk = if vecsDist.Age = age then probWrk else vProbWrk 
+    end
+
+    SetRandomSeed(42*nUniv + 3)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.Vehicles = if vRand <= vProbVeh then 1 else 0
+    vecsDist.License = if vRand <= vProbVeh then 1 else 2
+
+    // Worker Category (PartTime or NonWorker)
+    SetRandomSeed(42*nUniv + 4)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.WorkerCategory = if vRand <= vProbWrk then 2 else null
+    vecsDist.WorkDays = if vecsDist.WorkerCategory = 2 then 3 else null
+    
+    SetRandomSeed(42*nUniv + 5)
+    vRand = RandSamples(nUniv, "Uniform", )
+    vecsDist.WorkAttendance = if vecsDist.WorkerCategory = 2 and vRand <= 0.6 then 1
+                              else if vecsDist.WorkerCategory = 2 then 0
+                              else null
+
+    // Work Industry (One of Service or Retail)
+    SetRandomSeed(42*nUniv + 6)
+    SvcPct = Args.ServiceEmpPct
+    RetPct = 100 - SvcPct
+    params.weight = {SvcPct, RetPct}
+    params.population = {8, 5}
+    vecsDist.IndustryCategory = RandSamples(nUniv, "Discrete", params)   // Note only generating enough records for the workers
+    vecsDist.IndustryCategory = if vecsDist.WorkerCategory = 2 then vecsDist.IndustryCategory else 10
+    vecsDist.WorkIndustry = if vecsDist.IndustryCategory = 8 then 9 
+                            else if vecsDist.IndustryCategory = 10 then 12
+                            else vecsDist.IndustryCategory
+
+    Return(vecsDist)
+endMacro

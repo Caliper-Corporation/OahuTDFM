@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+SourceCode/ui
+OahuABM.scenarios
+*.DCC
+ui
+*.xml
+*.xsl

@@ -1,0 +1,267 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-07-25"
+editor_options: 
+  chunk_output_type: console
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(dplyr.summarise.inform = FALSE)
+options(scipen = 999)
+
+library(tidyverse)
+library(lubridate)
+```
+
+```{r, include=FALSE}
+vis <- read_csv("data/_private/vis_survey/input/Oahu_Visitor.csv") %>%
+  arrange(SAMPN, placeno)
+taz_equiv <- read_csv("data/_private/vis_survey/input/taz_equiv.csv")
+```
+
+```{r}
+translate_table <- function(tbl){
+  equiv_tbl <- read_csv("data/_private/vis_survey/input/equiv_table.csv")
+  
+  variables <- unique(equiv_tbl$VARIABLE)
+  col_names <- colnames(tbl)
+  for (variable in variables) {
+    if (!(variable %in% col_names)) next
+    
+    tmp <- equiv_tbl %>%
+      filter(VARIABLE == variable) %>%
+      select(CODE, EQUIV)
+
+    tbl <- tbl %>%
+      rename(temp = variable) %>%
+      left_join(tmp, by = c("temp" = "CODE")) %>%
+      mutate(temp = ifelse(is.na(EQUIV), temp, EQUIV)) %>%
+      select(-EQUIV) %>%
+      rename(!!variable := temp)
+  }
+  return(tbl)
+}
+```
+
+```{r}
+translate_vis <- translate_table(vis)
+```
+
+```{r}
+# fix the party variable, which has some zeros
+fix_party <- translate_vis %>%
+  mutate(trip_party = pmax(1, trip_party))
+
+# avg party size = 1.88
+# fix_party %>%
+#   summarize(avg_party = mean(trip_party))
+
+# Update survey from the old 764 zone system to the new 1000+ system
+update_tazs <- fix_party %>%
+  left_join(taz_equiv, by = "TAZ") %>%
+  mutate(TAZ = new_taz) %>%
+  select(-new_taz)
+```
+
+## Summaries
+
+### Business vs Personal Visitors
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PURPOSE) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(desc(percent))
+```
+
+### Party Size
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PURPOSE) %>%
+  summarize(party_size = weighted.mean(VIS_PARTY, Daily_Census_Weight))
+```
+
+
+### Lodging Type
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PLCTYPE) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(desc(percent))
+```
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(PLCTYPE, PURPOSE) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(id_cols = PLCTYPE, names_from = PURPOSE, values_from = percent) %>%
+  filter(PLCTYPE != "ship")
+```
+
+```{r}
+update_tazs %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  group_by(LastCallWeekDay) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(desc(percent))
+```
+
+### Trip Mode
+
+```{r}
+update_tazs %>%
+  group_by(mode) %>%
+  summarize(weight = sum(Daily_Census_Weight)) %>%
+  filter(!is.na(mode)) %>%
+  mutate(percent = round(weight / sum(weight) * 100, 1)) %>%
+  arrange(desc(percent))
+```
+
+```{r}
+# Create trip table
+trip_tbl <- update_tazs %>%
+  group_by(SAMPN) %>%
+  mutate(
+    weight = lead(Daily_Census_Weight),
+    trip_party = lead(trip_party),
+    trip_deptime = deptime,
+    trip_arrtime = lead(arrtime),
+    trip_mode = lead(mode),
+    trip_o_purp = tpurp,
+    trip_d_purp = lead(tpurp),
+    trip_o_taz = TAZ,
+    trip_d_taz = lead(TAZ),
+    trip_o_ptype = PTYPE,
+    trip_d_ptype = lead(PTYPE),
+    trip_pa_flag = ifelse(trip_d_purp == "home" & trip_o_purp != "home", 0, 1),
+    trip_p_taz = ifelse(trip_pa_flag == 1, trip_o_taz, trip_d_taz),
+    trip_a_taz = ifelse(trip_pa_flag == 1, trip_d_taz, trip_o_taz),
+    trip_iz_flag = ifelse(trip_o_taz == trip_d_taz, 1, 0),
+    trip_p_purp = ifelse(trip_pa_flag == 1, trip_o_purp, trip_d_purp),
+    trip_a_purp = ifelse(trip_pa_flag == 1, trip_d_purp, trip_o_purp)
+  ) %>%
+  select(SAMPN, weight, visitor_type = PURPOSE, starts_with("trip_")) %>%
+  rename_with(~stringr::str_remove(., "trip_")) %>%
+  filter(!is.na(party))
+
+determine_trip_purpose <- trip_tbl %>%
+  mutate(
+    trip_purp = case_when(
+      p_purp != "home" ~ "NHB",
+      a_purp == "home" ~ "H",
+      a_purp == "recreation" ~ "HBRec",
+      a_purp == "shop" ~ "HBShop",
+      a_purp == "business" ~ "HBW",
+      a_purp == "eat" ~ "HBEat",
+      TRUE ~ "HBO"
+    )
+  )
+```
+
+```{r, include=FALSE}
+auto_skim <- read_csv("data/input/skims/auto_skim_am.csv")
+bike_skim <- read_csv("data/input/skims/bike_skim.csv")
+walk_skim <- read_csv("data/input/skims/walk_skim.csv")
+bus_skim <- read_csv("data/input/skims/bus_skim.csv")
+```
+
+```{r}
+add_skims <- determine_trip_purpose %>%
+  left_join(auto_skim, by = c("p_taz", "a_taz")) %>%
+  left_join(bike_skim, by = c("p_taz", "a_taz")) %>%
+  left_join(walk_skim, by = c("p_taz", "a_taz")) %>%
+  left_join(bus_skim, by = c("p_taz", "a_taz"))
+```
+
+## Trip Rates
+
+```{r}
+trip_rates <- add_skims %>%
+  group_by(SAMPN, trip_purp) %>%
+  summarize(trips = n()) %>%
+  ungroup() %>%
+  tidyr::complete(SAMPN, trip_purp, fill = list("trips" = 0)) %>%
+  left_join(
+    add_skims %>%
+      group_by(SAMPN) %>%
+      summarize(visitor_type = first(visitor_type), weight = first(weight)),
+    by = "SAMPN"
+  ) %>%
+  mutate(visitor_type = ifelse(visitor_type == "both", "business", visitor_type)) %>%
+  group_by(visitor_type, trip_purp) %>%
+  summarize(rate = weighted.mean(trips, weight)) %>%
+  # remove H trips (not trips) and the (tiny) HBW rate for personal visitors
+  filter(trip_purp != "H", !(trip_purp == "HBW" & visitor_type == "personal")) %>%
+  mutate(
+    visitor_type = str_sub(visitor_type, 1, 1),
+    trip_purp = paste0("prod_", "v", visitor_type, trip_purp),
+    visitor_type = paste0("visitors_", visitor_type)
+  ) %>%
+  pivot_wider(names_from = trip_purp, values_from = rate, values_fill = 0) %>%
+  rename(Field = visitor_type) %>%
+  mutate(Description = NA)
+```
+
+## Time of Day
+
+```{r}
+add_tod <- add_skims %>%
+  mutate(
+    test = mdy_hms(deptime),
+    dep_hour = hour(test),
+    tod = case_when(
+      dep_hour >= 6 & dep_hour < 9 ~ "AM",
+      dep_hour >= 15 & dep_hour < 19 ~ "PM",
+      TRUE ~ "OP"
+    )
+  )
+
+tod_factors <- add_tod %>%
+  filter(trip_purp != "H") %>%
+  group_by(trip_purp, tod) %>%
+  summarize(trips = sum(weight)) %>%
+  mutate(factor = trips / sum(trips)) %>%
+  select(-trips)
+```
+
+
+# DBET Info
+
+Daily visitors on the island found here:
+https://dbedt.hawaii.gov/visitor/tourism-dashboard/
+
+May 2019: 109,584
+May 2020: 6,176
+May 2021: 80,921
+May 2023: 105,124
+
+The visitor model was calibrated to create 109,584 daily visitors on the island.
+This was done to ensure the validation to 2019 traffic counts would not be
+impacted by COVID-related reductions in visitor numbers.
+
+```{r, eval=FALSE}
+write_csv(add_tod, "data/_private/vis_survey/output/vis_trips.csv", na = "")
+write_csv(trip_rates, "data/_private/vis_survey/output/vis_generation.csv", na = "")
+write_csv(tod_factors, "data/_private/vis_survey/output/vis_tod_factors.csv", na = "")
+```
+

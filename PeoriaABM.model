@@ -1,0 +1,964 @@
+
+Macro "PeoriaABM" (Args)
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Population Synthesis"},{"Reports"},)
+    //
+    // Nodes
+    //
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    //
+    FlowChartNode(model,"Population Synthesis",,,)
+    FlowChartNode(model,"Preprocess and Build Networks",,,)
+    FlowChartNode(model,"Skims and Accessibilities",,,)
+    FlowChartNode(model,"ABM Core",,,)
+    FlowChartNode(model,"Auto Assignments",,,)
+    FlowChartNode(model,"Convergence",,,)
+    FlowChartNode(model,"Public Transit Assignments",,,)
+    FlowChartNode(model,"Reports",,,)
+    FlowChartNode(model,"Supplementary Models",,,)
+    //
+    // Links
+    //
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    //
+    FlowChartLink(model,"Population Synthesis","Preprocess and Build Networks",True,,)
+    FlowChartLink(model,"Preprocess and Build Networks","Skims and Accessibilities",True,,)
+    FlowChartLink(model,"Skims and Accessibilities","ABM Core",True,,)
+    FlowChartLink(model,"Auto Assignments","Convergence",True,,)
+    FlowChartLink(model,"Convergence","Skims and Accessibilities",2,,1)
+    FlowChartLink(model,"Convergence","Public Transit Assignments",True,,)
+    FlowChartLink(model,"Public Transit Assignments","Reports",True,,)
+    FlowChartLink(model,"ABM Core","Supplementary Models",True,,)
+    FlowChartLink(model,"Supplementary Models","Auto Assignments",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "Population Synthesis" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"PopulationSynthesis Oahu"}},
+        {"Picture", "bmp\\planpeoplehouse_v3.bmp"},
+        {"PicturePosition", "CenterRight"},
+        {"TextStyle", "Left"}
+    }
+Data:
+    InSections({"Population Synthesis|Inputs"})
+    OutSections({"Population Synthesis|Outputs"})
+EndMacro
+
+
+Macro "Preprocess and Build Networks" (Args,Result)
+    Attributes = {
+        {"Picture", "bmp\\plan_config_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayInputDatabase] })
+    In({ Args.[TransitRouteInputs] })
+    In({ Args.[TAZGeography] })
+    In({ Args.[Demographics] })
+    Out({ Args.[HighwayNetwork] })
+    Out({ Args.[HighwayDatabase] })
+    Out({ Args.[TransitRoutes] })
+    Out({ Args.[DemographicOutputs] })
+Body:
+    model = FlowChart({ "Preprocess Databases" },{ "Build Networks" },"Group steps")
+    //
+    // Nodes
+    FlowChartNode(model,"Preprocess Databases",,,)
+    FlowChartNode(model,"Build Networks",,,)
+    //
+    // Links
+    FlowChartLink(model,"Preprocess Databases","Build Networks",False,,)
+    Return(model)
+EndMacro
+
+
+Macro "Preprocess Databases" (Args,Result)
+    Attributes = {
+        {"Picture", "bmp\\plan_config_v3.bmp"},
+        {"MacroName", "Network Calculations"}
+    }
+Data:
+    In({ Args.[HighwayInputDatabase] })
+    In({ Args.[TransitRouteInputs] })
+    In({ Args.[TAZGeography] })
+    In({ Args.[Demographics] })
+    Out({ Args.[HighwayDatabase] })
+    Out({ Args.[TransitRoutes] })
+    Out({ Args.[DemographicOutputs] })
+EndMacro
+
+
+Macro "Build Networks" (Args,Result)
+    Attributes = {
+        {"MacroName", "BuildNetworks Oahu"},
+        {"Picture", "bmp\\plan_config_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+EndMacro
+
+
+Macro "Skims and Accessibilities" (Args,Result)
+    Attributes = {
+        {"Picture", "bmp\\planskim_v3.bmp"}
+    }
+Data:
+    InSections({"Accessibility|Mode Logsums|Mandatory",
+                "Accessibility|Destination Logsums|Auto",
+                    "Accessibility|Destination Logsums|Non Motorized",
+                    "Accessibility|Destination Logsums|Public Transport"})
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    OutSections({"Skims|Motorized",
+                 "Skims|NonMotorized",
+                 "Accessibility|Output"})
+Body:
+    model = FlowChart({ "Skim Matrices" },{ "Accessibilities" },"Group steps")
+    //
+    // Nodes
+    FlowChartNode(model,"Skim Matrices",,,)
+    FlowChartNode(model,"TAZ Accessibility",,,)
+    FlowChartNode(model,"Mandatory Accessibility",,,)
+    //
+    // Links
+    FlowChartLink(model,"Skim Matrices","TAZ Accessibility",False,,)
+    FlowChartLink(model,"TAZ Accessibility","Mandatory Accessibility",False,,)
+    Return(model)
+EndMacro
+
+
+Macro "Skim Matrices" (Args,Result)
+    Attributes = {
+        {"MacroName", "HighwayAndTransitSkim Oahu"},
+        {"Picture", "bmp\\planskim_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    OutSections({"Skims|Motorized",
+                 "Skims|NonMotorized"})
+EndMacro
+
+
+Macro "TAZ Accessibility" (Args,Result)
+    Attributes = {
+        {"MacroName", "CalculateAccessibilities"},
+        {"Picture", "bmp\\planpeoplehouse_v3.bmp"}
+    }
+Data:
+    In({ Args.[HighwayDatabase] })
+    In({ Args.[TransitRoutes] })
+    In({ Args.[HighwaySkimAM] })
+    In({ Args.[WalkSkim] })
+    In({ Args.[DemographicOutputs] })
+    Out({ Args.[AccessibilitiesOutputs] })
+EndMacro
+
+
+Macro "Mandatory Accessibility" (Args,Result)
+    Attributes = {
+        {"MacroName", "Mandatory Accessibility"},
+        {"Picture", "bmp\\planpeoplehouse_v3.bmp"}
+    }
+Data:
+    InSections({"Accessibility|Mode Logsums|Mandatory",
+                "Accessibility|Destination Logsums|Auto",
+                    "Accessibility|Destination Logsums|Non Motorized",
+                    "Accessibility|Destination Logsums|Public Transport"})
+    Out({ Args.[MandatoryModeAccessibility] })
+    Out({ Args.[MandatoryDestAccessibility] })
+EndMacro
+
+
+Macro "ABM Core" (Args,Result)
+    Attributes = {
+        {"Description", "Peoria ABM"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"ABM Preprocess"},{"SubTour Models"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"ABM Preprocess",,,)
+    FlowChartNode(model,"LongTermChoices",,,)
+    FlowChartModel(model,"Mandatory Models",,,)
+    FlowChartModel(model,"SubTour Models",,,)
+    FlowChartModel(model,"NonMandatory Models",,,)
+    FlowChartModel(model,"ABM Postprocess",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"ABM Preprocess","LongTermChoices",True,,)
+    FlowChartLink(model,"LongTermChoices","Mandatory Models",True,,)
+    FlowChartLink(model,"Mandatory Models","SubTour Models",True,,)
+    FlowChartLink(model,"SubTour Models","NonMandatory Models",True,,)
+    FlowChartLink(model,"NonMandatory Models","ABM Postprocess",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "ABM Preprocess" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"ABM Preprocess"}},
+        {"Picture", "bmp\\plan_config_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+EndMacro
+
+
+Macro "LongTermChoices" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Driver License",
+                        "Auto Ownership",
+                        "Worker Models",
+                        "Mandatory Participation",
+                        "Work Location",
+                        "Univ Location",
+                        "School Location",
+                        "Daycare Location"}},
+                    {"Picture", "bmp\\planwork_v3.bmp"},
+                    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"Long Term Choices|Auto Ownership",
+                "Long Term Choices|Driver License",
+                    "Long Term Choices|Mandatory Participation|Daycare Status",
+                    "Long Term Choices|Mandatory Participation|School Status",
+                    "Long Term Choices|Mandatory Participation|University Status",
+                    "Long Term Choices|Worker Models|Remote Work",
+                    "Long Term Choices|Worker Models|Work Attendance",
+                    "Long Term Choices|Worker Models|Worker Category"})
+    In({ Args.[WorkLocSize] })
+    In({ Args.[WorkLocUtility] })
+    In({ Args.[WorkSPFlag] })
+    In({ Args.[UnivLocUtility] })
+    In({ Args.[UnivSPFlag] })
+    In({ Args.[SchoolLocUtility] })
+    In({ Args.[SchoolSPFlag] })
+    In({ Args.[DaycareLocUtility] })
+EndMacro
+
+
+Macro "Mandatory Models" (Args,Result)
+    Attributes = {
+        {"Description", "Mandatory Models"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Mandatory Tours"},{"Mandatory Stops"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"Mandatory Tours",,,)
+    FlowChartModel(model,"Mandatory Stops",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"Mandatory Tours","Mandatory Stops",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "Mandatory Tours" (Args,Result)
+    Attributes = {
+        {"Description", "Peoria ABM"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantours_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Tour Frequency"},{"Mandatory Tour Diary"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"Tour Frequency",,,)
+    FlowChartModel(model,"Activity Duration",,,)
+    FlowChartModel(model,"Activity Start",,,)
+    FlowChartModel(model,"Tour Mode",,,)
+    FlowChartModel(model,"Mandatory Tour Diary",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"Tour Frequency","Activity Duration",True,,)
+    FlowChartLink(model,"Activity Duration","Activity Start",True,,)
+    FlowChartLink(model,"Activity Start","Tour Mode",True,,)
+    FlowChartLink(model,"Tour Mode","Mandatory Tour Diary",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "Tour Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Work Tours Frequency","Univ Tours Frequency"}},
+    {"Picture", "bmp\\plantours_v3.bmp"},
+    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Frequency|Work",
+                "MandatoryTours|Frequency|University"})
+EndMacro
+
+
+Macro "Activity Duration" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"FullTime Work Act Dur",
+                        "PartTime Work Act Dur",
+                        "University Act Dur",
+                        "School Act Dur"}},
+                    {"Picture", "bmp\\plantime_v3.bmp"},
+                    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Activity Duration|Full Time Workers",
+                "MandatoryTours|Activity Duration|Part Time Workers",
+                    "MandatoryTours|Activity Duration|University",
+                    "MandatoryTours|Activity Duration|School"})
+EndMacro
+
+
+Macro "Activity Start" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"FullTime Work Start",
+                        "PartTime Work Start",
+                        "University Start",
+                        "School Start"}},
+                    {"Picture", "bmp\\plantime_v3.bmp"},
+                    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Activity Start Time|Full Time Workers",
+                "MandatoryTours|Activity Start Time|Part Time Workers",
+                    "MandatoryTours|Activity Start Time|University",
+                    "MandatoryTours|Activity Start Time|School"})
+EndMacro
+
+
+Macro "Tour Mode" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Mandatory Mode Choice"}},
+        {"Picture", "bmp\\planmodesplit_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryTours|Tour Mode|Work|Modes",
+                "MandatoryTours|Tour Mode|Work|Utility",
+                    "MandatoryTours|Tour Mode|University|Modes",
+                    "MandatoryTours|Tour Mode|University|Utility",
+                    "MandatoryTours|Tour Mode|School|Modes",
+                    "MandatoryTours|Tour Mode|School|Utility"})
+EndMacro
+
+
+Macro "Mandatory Tour Diary" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Create Mandatory Tour File"}},
+        {"Picture", "bmp\\planreport_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    OutSections({"Tours and Trips#Tour Files"})
+EndMacro
+
+
+Macro "Mandatory Stops" (Args,Result)
+    Attributes = {
+        {"Description", "Peoria ABM"},
+        {"Height", 45},
+        {"Picture", "bmp\\planstop_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Stops Frequency"},{"Stops Scheduling"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"Stops Frequency",,,)
+    FlowChartModel(model,"Stops Destination",,,)
+    FlowChartModel(model,"Stops Duration",,,)
+    FlowChartModel(model,"Stops Scheduling",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"Stops Frequency","Stops Destination",True,,)
+    FlowChartLink(model,"Stops Destination","Stops Duration",True,,)
+    FlowChartLink(model,"Stops Duration","Stops Scheduling",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "Stops Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Mandatory Stops Frequency"}},
+        {"Picture", "bmp\\plantours_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryStops|Frequency|Work Tours",
+                "MandatoryStops|Frequency|Univ Tours"})
+EndMacro
+
+
+Macro "Stops Destination" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"MandatoryStops Destination"}},
+        {"Picture", "bmp\\planlocation_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryStops|Destination|Size Variable",
+                "MandatoryStops|Destination|Utility"})
+EndMacro
+
+
+Macro "Stops Duration" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"MandatoryStops Duration"}},
+        {"Picture", "bmp\\plantime_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"MandatoryStops|Duration|Work Tours",
+                "MandatoryStops|Duration|Univ Tours"})
+EndMacro
+
+
+Macro "Stops Scheduling" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"MandatoryStops Scheduling"}},
+        {"Picture", "bmp\\plantime_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+EndMacro
+
+
+Macro "SubTour Models" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"SubTour Setup",
+                        "SubTour Frequency",
+                        "SubTour Destination",
+                        "SubTour Duration",
+                        "SubTour StartTime",
+                        "SubTour Mode",
+                        "SubTour PostProcess"}},
+                    {"Picture", "bmp\\planiteration_v3.bmp"},
+                    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"SubTours|Frequency",
+                "SubTours|Destination",
+                "SubTours|Duration",
+                "SubTours|Start Time",
+                    "SubTours|Mode"})
+EndMacro
+
+
+Macro "NonMandatory Models" (Args,Result)
+    Attributes = {
+        {"Description", "NonMandatory Models"},
+        {"Height", 45},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"TextStyle", "Left"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Setup and Pattern Choice"},{"Solo Tour Stops"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartModel(model,"Setup and Pattern Choice",,,)
+    FlowChartModel(model,"Joint Tours",,,)
+    FlowChartModel(model,"Joint Tour Stops",,,)
+    FlowChartModel(model,"Solo Tours",,,)
+    FlowChartModel(model,"Solo Tour Stops",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"Setup and Pattern Choice","Joint Tours",True,,)
+    FlowChartLink(model,"Joint Tours","Joint Tour Stops",True,,)
+    FlowChartLink(model,"Joint Tour Stops","Solo Tours",True,,)
+    FlowChartLink(model,"Solo Tours","Solo Tour Stops",True,,)
+
+    Return(model)
+EndMacro
+
+
+Macro "Joint Tours" (Args)
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"JointTours Setup"},{"JointTours Output"},)
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartNode(model,"JointTours Setup",,,)
+    FlowChartNode(model,"JointTours Frequency",,,)
+    FlowChartNode(model,"JointTours Destination",,,)
+    FlowChartNode(model,"JointTours Scheduling",,,)
+    FlowChartNode(model,"JointTours Output",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"JointTours Setup","JointTours Frequency",True,,)
+    FlowChartLink(model,"JointTours Frequency","JointTours Destination",True,,)
+    FlowChartLink(model,"JointTours Destination","JointTours Scheduling",True,,)
+    FlowChartLink(model,"JointTours Scheduling","JointTours Output",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "JointTours Setup" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointTours Setup"}},
+        {"Picture", "bmp\\plan_config_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+EndMacro
+
+
+Macro "JointTours Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointTours Frequency"}},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"JointTours|Frequency"})
+EndMacro
+
+
+Macro "JointTours Destination" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"JointTours Destination Other","JointTours Destination Shop"}},
+    {"Picture", "bmp\\planlocation_v3.bmp"},
+    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"JointTours|Destination|Other|Size Variable",
+                "JointTours|Destination|Other|Utility",
+                    "JointTours|Destination|Shop|Size Variable",
+                    "JointTours|Destination|Shop|Utility"})
+EndMacro
+
+
+Macro "JointTours Scheduling" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointTours Scheduling"}}
+    }
+Data:
+    InSections({"JointTours|Composition|Other",
+                "JointTours|Composition|Shop",
+                "JointTours|Participation|Other|Adults",
+                    "JointTours|Participation|Other|Kids",
+                    "JointTours|Participation|Shop|Adults",
+                    "JointTours|Participation|Shop|Kids",
+                    "JointTours|Duration|Other",
+                    "JointTours|Duration|Shop",
+                    "JointTours|StartTime|Other|Alternatives",
+                    "JointTours|StartTime|Other|Utility",
+                    "JointTours|StartTime|Shop|Alternatives",
+                    "JointTours|StartTime|Shop|Utility",
+                    "JointTours|Mode|Other",
+                    "JointTours|Mode|Shop"})
+EndMacro
+
+
+Macro "JointTours Output" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Write Joint Tour File"}}
+    }
+Data:
+    OutSections({"Tours and Trips#Tour Files"})
+EndMacro
+
+
+Macro "Joint Tour Stops" (Args,Result)
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"JointStops Setup"},{"JointStops Output"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartNode(model,"JointStops Setup",,,)
+    FlowChartNode(model,"JointStops Frequency",,,)
+    FlowChartNode(model,"JointStops Destination",,,)
+    FlowChartNode(model,"JointStops Duration",,,)
+    FlowChartNode(model,"JointStops Scheduling",,,)
+    FlowChartNode(model,"JointStops Output",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"JointStops Setup","JointStops Frequency",True,,)
+    FlowChartLink(model,"JointStops Frequency","JointStops Destination",True,,)
+    FlowChartLink(model,"JointStops Destination","JointStops Duration",True,,)
+    FlowChartLink(model,"JointStops Duration","JointStops Scheduling",True,,)
+    FlowChartLink(model,"JointStops Scheduling","JointStops Output",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "JointStops Setup" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointStops Setup"}},
+        {"Picture", "bmp\\plan_config_v3.bmp"}
+    }
+EndMacro
+
+
+Macro "JointStops Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointStops Frequency"}}
+    }
+Data:
+    InSections({"JointTourStops|Frequency|Other",
+                "JointTourStops|Frequency|Shop"})
+EndMacro
+
+
+Macro "JointStops Destination" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointStops Destination"}}
+    }
+Data:
+    InSections({"JointTourStops|Destination|Size Variable",
+                "JointTourStops|Destination|Utility"})
+EndMacro
+
+
+Macro "JointStops Duration" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointStops Duration"}}
+    }
+Data:
+    InSections({"JointTourStops|Duration|Other",
+                "JointTourStops|Duration|Shop"})
+EndMacro
+
+
+Macro "JointStops Scheduling" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"JointStops Scheduling"}}
+    }
+EndMacro
+
+
+Macro "JointStops Output" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Create Joint Trip File"}}
+    }
+Data:
+    OutSections({"Tours and Trips#Trip Files"})
+EndMacro
+
+
+Macro "Solo Tours" (Args)
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"SoloTours Setup"},{"SoloTours Output"},)
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartNode(model,"SoloTours Setup",,,)
+    FlowChartNode(model,"SoloTours Frequency",,,)
+    FlowChartNode(model,"SoloTours Destination",,,)
+    FlowChartNode(model,"SoloTours Scheduling",,,)
+    FlowChartNode(model,"SoloTours Output",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"SoloTours Setup","SoloTours Frequency",True,,)
+    FlowChartLink(model,"SoloTours Frequency","SoloTours Destination",True,,)
+    FlowChartLink(model,"SoloTours Destination","SoloTours Scheduling",True,,)
+    FlowChartLink(model,"SoloTours Scheduling","SoloTours Output",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "SoloTours Setup" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloTours Setup"}},
+        {"Picture", "bmp\\plan_config_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"SoloTours|Destination|Other|Mode Logsums",
+                "SoloTours|Destination|Other|Size Variable",
+                    "SoloTours|Destination|Other|LogsumUtility",
+                    "SoloTours|Destination|Shop|Mode Logsums",
+                    "SoloTours|Destination|Shop|Size Variable",
+                    "SoloTours|Destination|Shop|LogsumUtility"})
+EndMacro
+
+
+Macro "SoloTours Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloTours Frequency"}},
+        {"Picture", "bmp\\plantour_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"SoloTours|Frequency"})
+EndMacro
+
+
+Macro "SoloTours Destination" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"SoloTours Destination Other","SoloTours Destination Shop"}},
+    {"Picture", "bmp\\planlocation_v3.bmp"},
+    {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"SoloTours|Destination|Other|Size Variable",
+                "SoloTours|Destination|Other|Utility",
+                    "SoloTours|Destination|Shop|Size Variable",
+                    "SoloTours|Destination|Shop|Utility"})
+EndMacro
+
+
+Macro "SoloTours Scheduling" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloTours Scheduling"}}
+    }
+Data:
+    InSections({"SoloTours|Duration|Other",
+                "SoloTours|Duration|Shop",
+                "SoloTours|StartTime|Other|Alternatives",
+                    "SoloTours|StartTime|Other|Utility",
+                    "SoloTours|StartTime|Shop|Alternatives",
+                    "SoloTours|StartTime|Shop|Utility",
+                    "SoloTours|Mode|Other",
+                    "SoloTours|Mode|Shop"})
+EndMacro
+
+
+Macro "SoloTours Output" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Write Solo Tour File"}}
+    }
+Data:
+    OutSections({"Tours and Trips#Tour Files"})
+EndMacro
+
+
+Macro "Solo Tour Stops" (Args,Result)
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"SoloStops Setup"},{"SoloStops Output"},"Group steps")
+    
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    FlowChartNode(model,"SoloStops Setup",,,)
+    FlowChartNode(model,"SoloStops Frequency",,,)
+    FlowChartNode(model,"SoloStops Destination",,,)
+    FlowChartNode(model,"SoloStops Duration",,,)
+    FlowChartNode(model,"SoloStops Scheduling",,,)
+    FlowChartNode(model,"SoloStops Output",,,)
+    
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    FlowChartLink(model,"SoloStops Setup","SoloStops Frequency",True,,)
+    FlowChartLink(model,"SoloStops Frequency","SoloStops Destination",True,,)
+    FlowChartLink(model,"SoloStops Destination","SoloStops Duration",True,,)
+    FlowChartLink(model,"SoloStops Duration","SoloStops Scheduling",True,,)
+    FlowChartLink(model,"SoloStops Scheduling","SoloStops Output",True,,)
+    Return(model)
+EndMacro
+
+
+Macro "SoloStops Setup" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloStops Setup"}},
+        {"Picture", "bmp\\plan_config_v3.bmp"}
+    }
+EndMacro
+
+
+Macro "SoloStops Frequency" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloStops Frequency"}}
+    }
+Data:
+    InSections({"SoloTourStops|Frequency|Other",
+                "SoloTourStops|Frequency|Shop"})
+EndMacro
+
+
+Macro "SoloStops Destination" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloStops Destination"}}
+    }
+Data:
+    InSections({"SoloTourStops|Destination|Size Variable",
+                "SoloTourStops|Destination|Utility"})
+EndMacro
+
+
+Macro "SoloStops Duration" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloStops Duration"}}
+    }
+Data:
+    InSections({"SoloTourStops|Duration|Other",
+                "SoloTourStops|Duration|Shop"})
+EndMacro
+
+
+Macro "SoloStops Scheduling" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"SoloStops Scheduling"}}
+    }
+EndMacro
+
+
+Macro "SoloStops Output" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Create Solo Trip File"}}
+    }
+Data:
+    OutSections({"Tours and Trips#Trip Files"})
+EndMacro
+
+
+Macro "Setup and Pattern Choice" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Pattern Choice Model"}},
+        {"Picture", "bmp\\plansubarea_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+Data:
+    InSections({"PatternChoice"})
+EndMacro
+
+
+Macro "ABM Postprocess" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames",{"Create Mandatory Trip File","Generate ABM Trip File"}},
+    {"Picture", "bmp\\planreport_v3.bmp"},
+    {"PicturePosition", "CenterRight"}
+    }
+EndMacro
+
+
+Macro "Other Models" (Args, Result)
+    Attributes = {
+        {"MacroNames", {"Airport Model"}}
+    }
+EndMacro
+
+
+Macro "Auto Assignments" (Args, Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Create Assignment OD Matrices"}},
+        {"Picture", "bmp\\plansubarea_v3.bmp"},
+        {"PicturePosition", "CenterRight"}
+    }
+EndMacro
+
+
+Macro "Public Transit Assignments" (Args, Result)
+Body:
+    ShowMessage("Public Transit Assignments: Not yet implemented")
+    Return(1)
+EndMacro
+
+
+Macro "Reports" (Args, Result)
+Body:
+    ShowMessage("Reports: Not yet implemented")
+    Return(1)
+EndMacro
+
+
+/*
+Macro "Report.Population Synthesis" (Args,Result)
+    Attributes = {
+        {"MacroName", "ReportPopSynth"}
+    }
+EndMacro
+*/
+Macro "Convergence" (Args, Result)
+    Attributes = {
+        {"Height", 100},
+        {"Picture", "bmp\\planiteration_v3.bmp"},
+        {"PicturePosition", "Center"},
+        {"Shape", "Decision"},
+        {"Text", " "},
+        {"Width", 100},
+        {"FillColor",{192,96,0}},
+        {"FillColor2",{192,96,0}}
+    }
+Body:
+    if Args.Iteration = null then Args.Iteration = 1
+    if Args.MaxIterations = null then Args.MaxIterations = 1
+    if Args.Iteration < Args.MaxIterations then
+        retValue = 2
+    else
+        retValue = 1
+    
+    Args.Iteration = Args.Iteration + 1
+    Return(1)
+    Return(retValue)
+EndMacro
+
+
+Macro "Visitor Model" (Args,Result)
+    Attributes = {
+        {"Class", {"GISDK"}},
+        {"MacroNames", {"Visitor Model"}}
+    }
+EndMacro
+
+
+Macro "Supplementary Models" (Args,Result)
+    Attributes = {
+        {"Description", "Stage 1"}
+    }
+Body:
+    // model = FlowChart( { StartNodes } , { EndNodes } , Description)
+    model = FlowChart({"Visitor Model"},{"Other Models"},"Group steps")
+    //
+    // Nodes
+    //
+    // FlowChartNode(model,NodeName,MacroName,UI,Description)
+    //
+    FlowChartNode(model,"Other Models",,,)
+    FlowChartNode(model,"Visitor Model",,,)
+    //
+    // Links
+    //
+    // FlowChartLink(model , FromNode , ToNode , Condition , Description , IsFeedbackLoop)
+    //
+    FlowChartLink(model,"Visitor Model","Other Models",True,,)
+    Return(model)
+EndMacro
+

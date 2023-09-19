@@ -1688,17 +1688,18 @@ Macro "Count Difference Map" (macro_opts)
 EndMacro
 
 /*
-Uses the mode table to get the transit modes in the model. Exclude "nt"
-(non-transit) as a mode.
+Uses the mode table to get the network definition column names from the mode
+table (the columns with 1s or 2s in them). These are the primary modes used
+to name the transit networks.
 */
 
-Macro "Get Transit Modes" (mode_csv)
-    mode_vw = OpenTable("mode", "CSV", {mode_csv})
-    transit_modes = V2A(GetDataVector(mode_vw + "|", "abbr", ))
-    pos = transit_modes.position("nt")
-    transit_modes = ExcludeArrayElements(transit_modes, pos, 1)
-    CloseView(mode_vw)
-    return(transit_modes)
+Macro "Get Transit Net Def Col Names" (mode_csv)
+    tbl = CreateObject("Table", mode_csv)
+    col_names = tbl.GetFieldNames()
+    pos1 = col_names.position("net_defs")
+    pos2 = col_names.position("description")
+    result = SubArray(col_names, pos1 + 1, pos2 - pos1 - 1)
+    return(result)
 endmacro
 
 /*
@@ -2314,11 +2315,12 @@ endmacro
 
 
 Macro "Create Intra Cluster Matrix"(Args)
-  se = Args.SE
-  se_vw = OpenTable("SE", "FFB", {se})
-  vTAZ = GetDataVector(se_vw + "|", "TAZ",)
+  se_file = Args.DemographicOutputs
+  se = CreateObject("Table", se_file)
+  vTAZ = se.TAZ
   nTAZ = vTAZ.length
-  CloseView(se_vw)
+  v_cluster = SortVector(se.Cluster, {Unique: "true"})
+  v_cluster_vis = SortVector(se.VisCluster, {Unique: "true"})
 
   outMtx = Args.[Output Folder] + "/skims/IntraCluster.mtx"
   // Create empty matrix
@@ -2326,38 +2328,30 @@ Macro "Create Intra Cluster Matrix"(Args)
   obj.SetMatrixOptions({Compressed: 1, DataType: "Short", FileName: outMtx, MatrixLabel: "IntraCluster"})
   opts.RowIds = v2a(vTAZ) 
   opts.ColIds = v2a(vTAZ)
-  opts.MatrixNames = {"IC", "IZ"}
+  opts.MatrixNames = {"IC", "IC_vis"}
   opts.RowIndexName = "All Zones"
   opts.ColIndexName = "All Zones"
   mat = obj.CreateFromArrays(opts)
   obj = null
   
-  // Intialize IC and IZ cores
+  // Intialize IC cores
   mtx = CreateObject("Matrix", mat)
   mc = mtx.GetCore("IC")
   mc := 0
-  
-  mc = mtx.GetCore("IZ")
+  mc = mtx.GetCore("IC_vis")
   mc := 0
-  v = Vector(nTAZ, "Short", {{"Constant", 1}})
-  SetMatrixVector(mc, v, {{"Diagonal"}})
-  
-  // Cluster definitions from dc spec for the 2 level model
-  cluster_data = Args.[Input Folder] + "/resident/dc/w_hb_w_all_cluster.csv"
-  theta_vw = OpenTable("thetas", "CSV", {cluster_data})
-  {v_cluster_ids, v_cluster_names} = GetDataVectors(theta_vw + "|", {"Cluster", "ClusterName"},)
-  CloseView(theta_vw)
 
-  for i = 1 to v_cluster_ids.length do
-      cluster_id = v_cluster_ids[i]
-      cluster_name = v_cluster_names[i]
+  // for residents
+  for i = 1 to v_cluster.length do
+      cluster_id = v_cluster[i]
+      cluster_name = "c" + String(cluster_id)
 
       mtx.AddIndex({
           Matrix: mtx.GetMatrixHandle(),
           IndexName: cluster_name,
           Filter: "Cluster = " + String(cluster_id),
           Dimension: "Both",
-          TableName: se,
+          TableName: se_file,
           OriginalID: "TAZ",
           NewID: "TAZ"
       })
@@ -2365,6 +2359,27 @@ Macro "Create Intra Cluster Matrix"(Args)
       mtx.SetRowIndex(cluster_name)
       mtx.SetColIndex(cluster_name)
       mc = mtx.GetCore("IC")
+      mc := 1
+  end
+
+  // for visitors
+  for i = 1 to v_cluster_vis.length do
+      cluster_id = v_cluster_vis[i]
+      cluster_name = "vis_c" + String(cluster_id)
+
+      mtx.AddIndex({
+          Matrix: mtx.GetMatrixHandle(),
+          IndexName: cluster_name,
+          Filter: "VisCluster = " + String(cluster_id),
+          Dimension: "Both",
+          TableName: se_file,
+          OriginalID: "TAZ",
+          NewID: "TAZ"
+      })
+      
+      mtx.SetRowIndex(cluster_name)
+      mtx.SetColIndex(cluster_name)
+      mc = mtx.GetCore("IC_vis")
       mc := 1
   end
   mc = null
@@ -2398,7 +2413,7 @@ periods have finished. This macro returns the periods that are not converged.
 */
 
 Macro "Get Unconverged Periods" (Args)
-  periods = Args.periods
+  periods = Args.TimePeriods
   converged_periods = Args.converged_periods
 
   if converged_periods = null then return(periods)

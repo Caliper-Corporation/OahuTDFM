@@ -1,0 +1,3124 @@
+	Section = "Parameters|Files and Folders"
+	
+        Args.[Base Folder] = {
+            "Type":"Folder",
+            "Value":"%Model Folder%"
+        }
+        Args.[Data Folder] = {
+            "Type":"Folder",
+            "Value":"%Model Folder%\\Data"
+        }
+        Args.[Master Folder] = {
+            "Type":"Folder",
+            "Value":"%Base Folder%\\Master"
+        }
+        Args.ScenarioSubFolder = {
+            "Type":"hidden",
+            "Value":"BaseYear"
+        }
+        Args.[Scenario Folder] = {
+            "Type":"Folder",
+            "Value":"%Base Folder%\\Scenarios\\base_2022"
+        }
+        Args.[Common Folder] = {
+            "Type":"Folder",
+            "Caption":"Common Folder",
+            "Value":"%Data Folder%\\CommonFiles"
+        }
+        Args.[Input Folder] = {
+            "Type":"Folder",
+            "Value":"%Scenario Folder%\\Input"
+        }
+        Args.[Output Folder] = {
+            "Type":"Folder",
+            "Value":"%Scenario Folder%\\Output"
+        }
+        Args.OutputSkims = {
+            "Type":"Folder",
+            "Value":"%Output Folder%\\Skims"
+        }
+        Args.Exit = {
+            "Type":"boolean",
+            "Description":"A step can set it to True and the model will stop running.",
+            "Value":null
+        }
+        Args.ExitMessage = {
+            "Type":"string",
+            "Description":"Diagnostic error message.",
+            "Value":"OK"
+        }
+        Args.[Disable Macros] = {
+            "Type":"array",
+            "Value":null
+        }
+        Args.FlowMapStyles = {
+            "Type":"hidden",
+            "Value":"%Common Folder%\\FlowMapStyle.stg"
+        }
+	
+	Section = "Parameters|Feedback"
+	
+        Args.Iteration = {
+            "Type":"int",
+            "Description":"Iteration number. Use it to run this model multiple times.",
+            "Value":1
+        }
+        Args.MaxIterations = {
+            "Type":"int",
+            "Description":"Maximum number of iterations that this model can run.",
+            "Value":1
+        }
+        Args.RunInIterations = {
+            "Type":"array",
+            "Description":"Option array listing step names and what iteration they run in each scenario",
+            "Value":null
+        }
+	
+	Section = "Parameters|Periods"
+	
+        Args.TimePeriods = {
+            "Type":"hidden",
+            "Value": {"AM","PM","OP"}
+        }
+        Args.[ABM Manager] = {
+            "Type":"hidden",
+            "Description":"CC ABM Manager Object",
+            "Value":null
+        }
+
+    Section = "Parameters|ABM"
+
+        Args.WorkCarpoolOccupancy = {
+            "Type":"double",
+            "Caption":"Occupancy factor for work carpool trips",
+            "Value":2
+        }
+        Args.NMCarpoolOccupancy = {
+            "Type":"double",
+            "Caption":"Occupancy factor for non-mandatory carpool trips",
+            "Value":2.25
+        }
+        Args.MandTimeUseMatrix = {
+            "Type":"hidden",
+            "Caption":"TimeUseMatrix after mandatory tours",
+            "Description":"MandTimeUseMatrix",
+            "Value":"%Output Folder%\\Intermediate\\MandTimeUse.mtx"
+        }
+        Args.JointTimeUseMatrix = {
+            "Type":"hidden",
+            "Caption":"TimeUseMatrix after mandatory and joint discretionary tours",
+            "Description":"JointTimeUseMatrix",
+            "Value":"%Output Folder%\\Intermediate\\JointTimeUse.mtx"
+        }
+        Args.SoloTimeUseMatrix = {
+            "Type":"hidden",
+            "Caption":"Time Use Matrix after mandaotry, joiny and Solo Tours",
+            "Description":"SoloTimeUseMatrix",
+            "Value":"%Output Folder%\\Intermediate\\SoloTimeUseMatrix.mtx"
+        }
+        Args.JointStartAvails = {
+            "Type":"hidden",
+            "Caption":"Start-Time Model's Availability Table",
+            "Description":"StartAvails",
+            "Value":"%Output Folder%\\Intermediate\\JointTourStartTimeAvails.bin"
+        }
+        Args.SoloStartAvails = {
+            "Type":"hidden",
+            "Caption":"Solo Start-Time Model's Availability Table",
+            "Description":"SoloStartAvails",
+            "Value":"%Output Folder%\\Intermediate\\SoloTourStartTimeAvails.bin"
+        }
+
+	Section = "Population Synthesis|Inputs"
+	
+        Args.SizeCurves = {
+            "Type":"File",
+            "Caption":"Size curves",
+            "Value":"%Input Folder%\\Population\\disagg_model\\size_curves.csv"
+        }
+        Args.IncomeCurves = {
+            "Type":"File",
+            "Caption":"Income curves",
+            "Value":"%Input Folder%\\Population\\disagg_model\\income_curves.csv"
+        }
+        Args.WorkerCurves = {
+            "Type":"File",
+            "Caption":"Worker curves",
+            "Value":"%Input Folder%\\Population\\disagg_model\\worker_curves.csv"
+        }
+        Args.RegionalMedianIncome = {
+            "Type":"int",
+            "Caption":"Regional Med Income",
+            "Description":"Median income 2021 ACS Honolulu County",
+            "Value":92600
+        }
+        Args.PUMS_Households = {
+            "Type":"File",
+            "Caption":"PUMS Household seed",
+            "Value":"%Input Folder%\\Population\\Seed\\HHSeed_PUMS.bin"
+        }
+        Args.PUMS_Persons = {
+            "Type":"File",
+            "Caption":"PUMS Person seed",
+            "Value":"%Input Folder%\\Population\\Seed\\PersonSeed_PUMS.bin"
+        }
+        Args.PUMS_WorkIndustryCodes = {
+            "Type":"File",
+            "Caption":"PUMS Person Work Industry Codes",
+            "Value":"%Input Folder%\\Population\\Seed\\PUMS_WorkIndustry.bin"
+        }
+        Args.PopSynIterations = {
+            "Type":"int",
+            "Caption":"Synthesis Iterations",
+            "Description":"Population Synthesis Iterations",
+            "Value":200
+        }
+        Args.IPUIterations = {
+            "Type":"int",
+            "Caption":"IPU Iterations",
+            "Value":30
+        }
+        Args.PopSynTolerance = {
+            "Type":"double",
+            "Caption":"Tolerance",
+            "Description":"Convergence Threshold",
+            "Value":0.001
+        }
+	
+	Section = "Population Synthesis|Dorm Synthesis"
+	
+        Args.FemaleStudentsPct = {
+            "Type":"double",
+            "Caption":"Percentage of female students",
+            "Description":"FemaleStudentPct",
+            "Style":"PctSlider",
+            "Value":50
+        }
+        Args.IncCategory1Pct = {
+            "Type":"double",
+            "Caption":"Percentage of students with income less than 25K",
+            "Description":"IncCategory1Pct",
+            "Style":"PctSlider",
+            "Value":90
+        }
+        Args.StudentCharacteristics = {
+            "Type":"array",
+            "Caption":"Student Charactersitics",
+            "Description":"StudentCharacteristics",
+            "Style":"StudentDist",
+            "Value":{
+                {"19",20,0.1,0.25},
+                {"20",20,0.1,0.3},
+                {"21",20,0.2,0.43},
+                {"22",20,0.2,0.43},
+                {"23",10,0.3,0.5},
+                {"24",10,0.3,0.5}}
+        }
+        Args.ServiceEmpPct = {
+            "Type":"double",
+            "Caption":"Pct of student workers in service industry as opposed to retail",
+            "Description":"ServiceEmpPct",
+            "Style":"PctSlider",
+            "Value":70
+        }
+	
+	Section = "Population Synthesis|Outputs"
+
+        Args.SEDMarginals = {
+            "Type":"File",
+            "Caption":"Output marginals from disaggregate curves",
+            "Value":"%Output Folder%\\Population\\SEDMarginals.bin"
+        }
+        Args.HHSeed = {
+            "Type":"File",
+            "Caption":"Processed household seed",
+            "Value":"%Output Folder%\\Population\\Intermediate\\HHSeed.bin"
+        }
+        Args.PersonSeed = {
+            "Type":"File",
+            "Caption":"Processed person seed",
+            "Value":"%Output Folder%\\Population\\Intermediate\\PersonSeed.bin"
+        }
+        Args.BGMarginals = {
+            "Type":"File",
+            "Caption":"Processed marginal file",
+            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Marginals.bin"
+        }
+        Args.BlockMarginals = {
+            "Type":"File",
+            "Caption":"Processed nested marginal file",
+            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Nested_Marginals.bin"
+        }
+        Args.Households = {
+            "Type":"File",
+            "Caption":"Synthetic household file",
+            "Description":"Households",
+            "Value":"%Output Folder%\\Population\\Households.bin"
+        }
+        Args.Persons = {
+            "Type":"File",
+            "Caption":"Synthetic person file",
+            "Description":"Persons",
+            "Value":"%Output Folder%\\Population\\Persons.bin"
+        }
+        Args.SQLDB = {
+            "Type":"hidden",
+            "Caption":"SQL DB for reporting",
+            "Value":"%Output Folder%\\Population\\PopSQL.db"
+        }
+        Args.BGTabulations = {
+            "Type":"File",
+            "Caption":"Output block group tabulations",
+            "Value":"%Output Folder%\\Population\\PopSyn_BGTabulations.bin"
+        }
+        Args.[Synthesized Tabulations] = {
+            "Type":"File",
+            "Caption":"Population synthesis summary tabulations",
+            "Value":"%Output Folder%\\Population\\Tabulations.bin"
+        }
+	
+	Section = "GEO Master Data"
+	
+        Args.[Master Links] = {
+            "Type":"File",
+            "Description":"Master highway database",
+            "Value":"%Master Folder%\\networks\\master_links.dbd"
+        }
+        Args.HighwayInputDatabase = {
+            "Type":"File",
+            "Description":"Input highway database",
+            "Value":"%Input Folder%\\networks\\scenario_links.dbd"
+        }
+        Args.[Master Routes] = {
+            "Type":"File",
+            "Description":"Master transit routes",
+            "Value":"%Master Folder%\\networks\\master_routes.rts"
+        }
+        Args.TransitRouteInputs = {
+            "Type":"File",
+            "Description":"Input transit routes",
+            "Value":"%Input Folder%\\networks\\scenario_routes.rts"
+        }
+        Args.[Master TAZs] = {
+            "Type":"File",
+            "Description":"Master TAZ Geography",
+            "Value":"%Master Folder%\\tazs\\master_tazs.dbd"
+        }
+        Args.TAZGeography = {
+            "Type":"File",
+            "Description":"Input TAZ Geography",
+            "Value":"%Input Folder%\\tazs\\scenario_tazs.dbd"
+        }
+        Args.[Master SE] = {
+            "Type":"File",
+            "Description":"Master SED Demographics",
+            "Value":"%Master Folder%\\sedata\\base_2020.bin"
+        }
+        Args.Demographics = {
+            "Type":"File",
+            "Description":"Input SED Demographics",
+            "Value":"%Input Folder%\\sedata\\scenario_se.bin"
+        }
+        Args.SpeedCapacityLookup = {
+            "Type":"File",
+            "Description":"Speed and Capacity Lookup by Facility and Area Type Table",
+            "Value":"%Input Folder%\\networks\\speed_and_capacity.csv"
+        }
+        Args.AreaTypes = { "Type":"array" , "Value":{{"Rural",0,0},
+                                                     {"Suburban",1000,0.5},
+                                                     {"Urban",10000,0.5},
+                                                     {"Downtown",25000,0.25}}, "Caption":"Area Type Densities Definitions", "Style":"AreaType" }
+        Args.TransitModeTable = {
+            "Type":"File",
+            "Description":"Transit Mode Table",
+            "Value":"%Input Folder%\\networks\\transit_mode_table.csv"
+        }
+        Args.AccessModes = {
+            "Type":"hidden",
+            "Value":{"w", "pnr", "knr"}
+        }
+
+        Args.TransitModeTransferTable = {
+            "Type":"File",
+            "Description":"Transit Mode Transfer Table",
+            "Value":"%Common Folder%\\ModeTransferTable.bin"
+        }
+	
+	Section = "GEO Scenario"
+	
+        Args.HighwayDatabase = {
+            "Type":"File",
+            "Description":"Output highway database",
+            "Value":"%Output Folder%\\networks\\scenario_links.dbd"
+        }
+        Args.TurnPenalties = {
+            "Type":"File",
+            "Description":"Turn Penalties Database",
+            "Value":"%Input Folder%\\networks\\PeoriaStreets_TurnPenalties.bin"
+        }
+        Args.TransitRoutes = {
+            "Type":"File",
+            "Description":"Output transit routes",
+            "Value":"%Output Folder%\\networks\\scenario_routes.rts"
+        }
+        Args.DemographicOutputs = {
+            "Type":"File",
+            "Description":"Output SED Demographics",
+            "Value":"%Output Folder%\\sedata\\scenario_se.bin"
+        }
+        Args.WalkSpeed = {
+            "Type":"double",
+            "Caption":"Walk speed (mi/h)",
+            "Description":"Walk speed in mi/h.",
+            "Value":2.5
+        }
+        Args.BikeSpeed = {
+            "Type":"double",
+            "Caption":"Walk speed (mi/h)",
+            "Description":"Bike speed in mi/h.",
+            "Value":12
+        }
+	
+	Section = "Skims|Motorized"
+	
+        Args.HighwayNetwork = {
+            "Type":"File",
+            "Description":"Output highway network graph",
+            "Value":"%Output Folder%\\Skims\\highwaynet.net"
+        }
+        Args.HighwaySkimAM = {
+            "Type":"File",
+            "Description":"AM Highway Skim Matrix",
+            "Value":"%Output Folder%\\Skims\\HighwaySkimAM.mtx"
+        }
+        Args.HighwaySkimPM = {
+            "Type":"File",
+            "Description":"PM Highway Skim Matrix",
+            "Value":"%Output Folder%\\Skims\\HighwaySkimPM.mtx"
+        }
+        Args.HighwaySkimOP = {
+            "Type":"File",
+            "Description":"OP Highway Skim Matrix",
+            "Value":"%Output Folder%\\Skims\\HighwaySkimOP.mtx"
+        }
+	
+	Section = "Skims|NonMotorized"
+	
+        Args.WalkSkim = {
+            "Type":"File",
+            "Description":"Walk Skim Matrix",
+            "Value":"%Output Folder%\\Skims\\WalkSkim.mtx"
+        }
+        Args.BikeSkim = {
+            "Type":"File",
+            "Description":"Bike Skim Matrix",
+            "Value":"%Output Folder%\\Skims\\BikeSkim.mtx"
+        }
+        Args.IZMatrix = {
+            "Type":"File",
+            "Caption":"IntraZonal matrix",
+            "Description":"IZMatrix",
+            "Value":"%Output Folder%\\Skims\\IntraZonal.mtx"
+        }
+	
+	Section = "Accessibility|Mode Logsums|Mandatory"
+	
+        Args.VOT = {
+            "Type":"double",
+            "Caption":"Average Value of Time (VOT) in $/hr",
+            "Description":"VOT",
+            "Value":18
+        }
+        Args.AOC = {
+            "Type":"double",
+            "Caption":"Auto Operation Cost (AOC) in $/mile",
+            "Description":"AOC",
+            "Value":0.2088
+        }
+        Args.MandatoryAggMCModes = {
+            "Type":"array",
+            "Caption":"Aggregate mandatory mode choice structure",
+            "Description":"MandatoryAggMCModes",
+            "Style":"Nesting Structure S",
+            "Value":{
+                {"Root","Motorized, NonMotorized, Other",null},
+                {"Motorized","DriveAlone, Carpool, Bus",0.63747},
+                {"NonMotorized","Walk, Bike",0.138794}}
+        }
+        Args.MandatoryAggMCAvail = {
+            "Type":"array",
+            "Caption":"Aggregate mandatory mode availability",
+            "Description":"MandatoryAggMCAvail",
+            "Style":"AvailabilityS",
+            "Value":{
+                {"Walk","AutoSkim.Distance <= 2"},
+                {"Bike","AutoSkim.Distance <= 10"},
+                {"Bus","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+        }
+        Args.MandatoryAggMCUtility = {
+            "Type":"array",
+            "Caption":"Aggregate mandatory mode choice utility",
+            "Description":"MandatoryAggMCUtility",
+            "Style":"ModeUtilityLS",
+            "Value":{
+                {"ASC","Constant",4.24115,3.47314,3.95687,3.59434,1.52073,null},
+                {"AM Skim Time","AutoSkim.Time",-0.007815,-0.007815,null,null,null,null},
+                {"AM Skim Distance","AutoSkim.Distance",null,null,-1.14549,-0.866468,null,null},
+                {"AM Transit IVTT","PTSkim.[In-Vehicle Time]",null,null,null,null,-0.007815,null},
+                {"AM Transit Fare/VOT","PTSkim.Fare/<VOT>",null,null,null,null,-0.4689,null},
+                {"Auto Operating Cost Term: Distance*AOC/VOT","AutoSkim.Distance*<AOC>/<VOT>",-0.4689,-0.4689,null,null,null,null},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,null,null,null,0.006111,null},
+                {"log(TotalEmploymentDensity)","log(1 + TAZ4Ds.TotalEmploymentDensity.D)",null,null,0.081396,0.081396,null,null},
+                {"Job Mix Diversity","nz(TAZ4Ds.JobMixDiversity.D)",0.122341,0.122341,null,null,null,null},
+                {"log(Transit Accessibility to Jobs)","log(1 + TAZ4Ds.TransitAccessibilityToJobsAM.D)",null,null,null,null,0.064876,null}}
+        }
+	
+	Section = "Accessibility|Destination Logsums|Auto"
+	
+        Args.DC_Auto_SizeVar = {
+            "Type":"array",
+            "Caption":"Aggregate destination choice model accessible by auto: Size Variable",
+            "Description":"DCAutoAccessSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"TotalEmployment",1},
+                {"Emp_HealthCare",0.302},
+                {"Emp_Services",0.302},
+                {"Emp_FinanceRealEstate",1.791},
+                {"Emp_Wholesale",0.177},
+                {"Emp_Retail",0.177},
+                {"Emp_TransportConstruction",0.177},
+                {"Emp_Education",0.778}}
+        }
+        Args.DC_Auto_Utility = {
+            "Type":"array",
+            "Caption":"Aggregate destination choice model accessible by auto: Utility",
+            "Description":"DCAutoAccessUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"Mode Accessibility Auto","ModeAccessibility.Auto",3.749},
+                {"Dist > 20 miles","AutoSkim.Distance > 20",-1.12},
+                {"Intrazonal","Intrazonal.IZ",2.973},
+                {"Excess time over 45 min","(AutoSkim.Time > 45) * (AutoSkim.Time - 45)",-0.3021}}
+        }
+	
+	Section = "Accessibility|Destination Logsums|Non Motorized"
+	
+        Args.DC_NM_SizeVar = {
+            "Type":"array",
+            "Caption":"Aggregate destination choice model accessible by non motorized modes: Size Variable",
+            "Description":"DCNonMotAccessSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"TotalEmployment",1},
+                {"Emp_Education",2.205}}
+        }
+        Args.DC_NM_Utility = {
+            "Type":"array",
+            "Caption":"Aggregate destination choice model accessible by non motorized modes: Utility",
+            "Description":"DCNonMotAccessUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"NonM Mode Accessibility","ModeAccessibility.NM",1.017},
+                {"Dist > 5 miles","AutoSkim.Distance > 5",-2.383},
+                {"Intrazonal","Intrazonal.IZ",2.947},
+                {"WalkIndex","TAZ4Ds.WalkIndex.D",0.4168}}
+        }
+	
+	Section = "Accessibility|Destination Logsums|Public Transport"
+	
+        Args.DC_PT_SizeVar = {
+            "Type":"array",
+            "Caption":"Aggregate destination choice model accessible by public transport: Size Variable",
+            "Description":"DCTransitAccessSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"TotalEmployment",1}}
+        }
+        Args.DC_PT_Utility = {
+            "Type":"array",
+            "Caption":"Aggregate destination choice model accessible by public transport: Utility",
+            "Description":"DCTransitAccessUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"Mode Accessibility Public Transport","ModeAccessibility.PT",0.6232}}
+        }
+	
+	Section = "Accessibility|Output"
+	
+        Args.AccessibilitiesOutputs = {
+            "Type":"File",
+            "Caption":"TAZ 4D measures",
+            "Description":"AccessibilitiesOutputs",
+            "Value":"%Output Folder%\\access\\TAZAccessibilities.bin"
+        }
+        Args.MandatoryModeAccessibility = {
+            "Type":"File",
+            "Caption":"Mandatory Mode Accessibility",
+            "Description":"MandatoryModeAccessibility",
+            "Value":"%Output Folder%\\access\\MandatoryModeAccessibility.mtx"
+        }
+        Args.NonMandJointModeAccessOther = {
+            "Type":"File",
+            "Caption":"NonMandatory Joint 'Other' Mode Accessibility",
+            "Description":"NonMandJointModeAccessOther",
+            "Value":"%Output Folder%\\access\\NM_Joint_Other_ModeAccess.mtx"
+        }
+        Args.NonMandSoloModeAccessOther = {
+            "Type":"File",
+            "Caption":"NonMandatory Solo 'Other' Mode Accessibility",
+            "Description":"NonMandSoloModeAccessOther",
+            "Value":"%Output Folder%\\access\\NM_Solo_Other_ModeAccess.mtx"
+        }
+        Args.NonMandSoloModeAccessShop = {
+            "Type":"File",
+            "Caption":"NonMandatory Solo 'Shop' Mode Accessibility",
+            "Description":"NonMandSoloModeAccessShop",
+            "Value":"%Output Folder%\\access\\NM_Solo_Shop_ModeAccess.mtx"
+        }
+        Args.MandatoryDestAccessibility = {
+            "Type":"File",
+            "Caption":"Mandatory Destination Accessibility",
+            "Description":"MandatoryDestAccessibility",
+            "Value":"%Output Folder%\\access\\MandatoryDestAccessibility.bin"
+        }
+        Args.NonMandatoryDestAccessibility = {
+            "Type":"File",
+            "Caption":"NonMandatory Destination Accessibility",
+            "Description":"NonMandatoryDestAccessibility",
+            "Value":"%Output Folder%\\access\\NonMandatoryDestAccessibility.bin"
+        }
+	
+	Section = "Long Term Choices|Driver License"
+	
+        Args.DriverLicenseUtility = {
+            "Type":"array",
+            "Caption":"Driver License Utility: Applies to Age >= 16",
+            "Style":"DriverLicenseUtility",
+            "Value":{
+                {"ASC","Constant",1.491,1,0},
+                {"Worker","PersonHH.IndustryCategory < 10",0.7829,1,0},
+                {"Age {25-64}","PersonHH.Age >= 25 and PersonHH.Age < 65",1.1508,1,0},
+                {"Low Income HH","PersonHH.Inc_Category <= 2",0.7168,0,1}}
+        }
+	
+	Section = "Long Term Choices|Auto Ownership"
+	
+        Args.AutoOwnershipUtility = {
+            "Type":"array",
+            "Caption":"Auto Ownership Utility",
+            "Style":"AutoOwnershipUtility",
+            "Value":{
+                {"ASC_NoAuto","Constant",-3.9929,1,0,0,0,0},
+                {"ASC_OneAuto","Constant",-0.0305,0,1,0,0,0},
+                {"ASC_TwoAutos","Constant",1.4639,0,0,1,0,0},
+                {"ASC_ThreeAutos","Constant",0.6886,0,0,0,1,0},
+                {"One Licensed Adult","HH.NLicensed = 1",2.5696,0,1,0,0,0},
+                {"Two Licensed Adults","HH.NLicensed = 2",0.3127,0,0,1,0,0},
+                {"Three Licensed Adults","HH.NLicensed = 3",1.1493,0,0,0,1,0},
+                {"Four+ Licensed Adults","HH.NLicensed >= 4",2.2761,0,0,0,0,1},
+                {"Two Adults","HH.Adults = 2",0.4207,0,0,1,0,0},
+                {"HH has only one worker","HH.Workers = 1",0.3344,0,1,0,0,0},
+                {"HH has no kids","HH.Kids = 0",0.6075,1,0,0,0,0},
+                {"Kids per licensed adults","if HH.NLicensed > 0 then HH.Kids/HH.NLicensed else 0",0.6075,1,0,0,0,0},
+                {"HH with 5 or more persons","HH.HHSize >= 5",0.504,0,0,0,1,1},
+                {"HH with high income","HH.Inc_Category >= 5",0.5124,0,0,0,1,1},
+                {"Low income HH with only seniors","HH.Inc_Category <= 2 and (HH.Seniors = HH.HHSize)",0.4344,1,0,0,0,0},
+                {"Connectivity Index > 0.5","TAZ4Ds.ConnectivityIndex.O > 0.5",0.4182,1,0,0,0,0},
+                {"Walk Index > 0.8","TAZ4Ds.WalkIndex.O > 0.8",0.2188,1,0,0,0,0},
+                {"HH Density < 1000","TAZ4Ds.HouseholdDensity.O > 0.5",-0.5902,1,0,0,0,0},
+                {"Jobs-Housing diversity > 0.5","TAZ4Ds.JobsHousingDiversity.O > 0.5",0.2448,1,0,0,0,0},
+                {"Transit Access to Jobs > 1000","TAZ4Ds.TransitAccessibilityToJobsAM.O > 0.5",0.9947,1,0,0,0,0},
+                {"Transit Access to Retail > 1000","TAZ4Ds.TransitAccessibilityToRetailAM.O > 0.5",0.123,1,0,0,0,0},
+                {"Non Motorized DC Accessibility (Low Income HH)","(HH.Inc_Category <= 2)*(DCAccessibility.DestAccessibilityNM.O)",0.1057,1,0,0,0,0},
+                {"Transit DC Accessibility (Low Income HH)","(HH.Inc_Category <= 2)*(DCAccessibility.DestAccessibilityPT.O)",0.0655,1,1,0,0,0}}
+        }
+	
+	Section = "Long Term Choices|Worker Models|Worker Category"
+	
+        Args.WorkerCategoryUtility = {
+            "Type":"array",
+            "Caption":"Worker Category Utility",
+            "Style":"WorkerCategoryUtility",
+            "Value":{
+                {"ASC","Constant",-0.9892,1,0},
+                {"HH With Kids","PersonHH.Kids > 0",0.1623,1,0},
+                {"HH with Pre Sch Kids","PersonHH.PreSchKids > 0",0.9504,1,0},
+                {"Female in HH with Kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.3425,1,0},
+                {"Female in HH with PreSchKids","PersonHH.Gender = 2 and PersonHH.PreSchKids > 0",-1.054,1,0},
+                {"HH with more than 4 kids","PersonHH.Kids >= 4",1.4,1,0},
+                {"Medium HH Income","PersonHH.IncomeLevel = 2",0.4841,1,0},
+                {"High HH Income","PersonHH.IncomeLevel = 3",0.589,1,0},
+                {"Is Senior","PersonHH.Age >= 65",-1.461,1,0},
+                {"Age > 25","PersonHH.Age > 25",1.194,1,0},
+                {"Age > 35","PersonHH.Age > 35",-0.4488,1,0},
+                {"Age > 45","PersonHH.Age > 45",-0.2651,1,0},
+                {"Male Age > 30","PersonHH.Age > 30 and PersonHH.Gender = 1",0.5878,1,0},
+                {"Has License","PersonHH.License = 1",0.2567,1,0},
+                {"Low Avg Worker Income","PersonHH.AvgWrkIncCategory = 1",-0.4047,1,0},
+                {"HH with more than 2 adults","PersonHH.Adults >= 2",0.5192,1,0},
+                {"Female in HH with Low Avg Worker Income","(PersonHH.Gender = 2)*(PersonHH.AvgWrkIncCategory = 1)",-0.369,1,0},
+                {"Age < 30 in HH with Low Avg Worker Income","(PersonHH.Age < 30)*(PersonHH.AvgWrkIncCategory = 1)",-0.4013,1,0},
+                {"Worker by HHSize","PersonHH.Workers/PersonHH.HHSize",0.4742,1,0},
+                {"Transit Accessibility to jobs","TAZ4Ds.TransitAccessibilityToJobsAM.O/1000",-0.01693,1,0},
+                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.O/1000",0.03614,1,0},
+                {"Medium Income Per Worker","PersonHH.AvgWrkIncCategory = 2",1.067,1,0},
+                {"High Income Per Worker","PersonHH.AvgWrkIncCategory = 3",0.5296,1,0}}
+        }
+	
+	Section = "Long Term Choices|Worker Models|Work Attendance"
+	
+        Args.NumberWorkDaysSpec = {
+            "Type":"array",
+            "Caption":"Number Work Weekdays Spec",
+            "Description":"NumberWorkDaysSpec",
+            "Style":"WorkDays",
+            "Value":{
+                {1,0,4.47},
+                {2,0,10.85},
+                {3,1.61,13.11},
+                {4,6.57,13.98},
+                {5,91.82,57.59}}
+        }
+	
+	Section = "Long Term Choices|Worker Models|Remote Work"
+	
+        Args.WFHSpec = {
+            "Type":"array",
+            "Caption":"Remote work percentages by work industry post pandemic (Source: Bureau of Labor Statistics)",
+            "Description":"WFHSpec",
+            "Style":"WFH",
+            "Value":{
+                {1,"Agriculture and Mining",4.3},
+                {2,"Manufacturing",9.4},
+                {3,"Utilties, Construction, Transportation and Waste Mgmt",7.5},
+                {4,"Wholesale Trade",21.7},
+                {5,"Retail Trade",5.6},
+                {6,"Finance, Professional, Information and Real Estate",40.9},
+                {7,"Education, Health and Social Assistance Services",15},
+                {8,"Food, Entertainment, Arts and Other Services",3.1},
+                {9,"Public Administration",19.4}}
+        }
+	
+	Section = "Long Term Choices|Mandatory Participation|Daycare Status"
+	
+        Args.AttendDaycareUtility = {
+            "Type":"array",
+            "Caption":"Daycare Participation Utility",
+            "Style":"AttendUtility",
+            "Value":{
+                {"ASC","Constant",1.6535,0,1},
+                {"Age 4","PersonHH.Age = 4",0.638171,1,0},
+                {"Age <= 2","PersonHH.Age <= 2",0.721677,0,1},
+                {"Low Income HH","PersonHH.IncomeLevel = 1",0.258549,0,1},
+                {"HH with 3+ kids","PersonHH.Kids >= 3",-0.596698,1,0}}
+        }
+	
+	Section = "Long Term Choices|Mandatory Participation|School Status"
+	
+        Args.SchoolStatusProb = {
+            "Type":"double",
+            "Description":"Probability that a child Aged [5-18] attends school.",
+            "Value":0.885
+        }
+	
+	Section = "Long Term Choices|Mandatory Participation|University Status"
+	
+        Args.AttendUnivUtility = {
+            "Type":"array",
+            "Caption":"University Participation Utility",
+            "Style":"AttendUtility",
+            "Value":{
+                {"ASC","Constant",1.3914,0,1},
+                {"Age under 40","PersonHH.Age <= 40",2.0496,1,0},
+                {"Low Income","PersonHH.IncomeLevel = 1",0.260326,1,0},
+                {"HH With Kids","PersonHH.Kids > 0",0.1887,0,1},
+                {"Person in Labor Force","PersonHH.IndustryCategory < 10",0.667544,0,1}}
+        }
+	
+	Section = "Long Term Choices|Location Models|Work"
+	
+        Args.WorkLocSize = {
+            "Type":"array",
+            "Caption":"Size Variable and Attractions Fields",
+            "Style":"SizeVar",
+            "Value":{
+                {1,"Agriculture","Emp_Agriculture"},
+                {2,"Manufacturing and Mining","Emp_Manufacturing"},
+                {3,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction"},
+                {4,"Wholesale","Emp_Wholesale"},
+                {5,"Retail","Emp_Retail"},
+                {6,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate"},
+                {7,"Education","Emp_Education"},
+                {8,"Health Care","Emp_HealthCare"},
+                {9,"Service","Emp_Services"},
+                {10,"Public Administration","Emp_Public"}}
+        }
+        Args.WorkLocUtility = {
+            "Type":"array",
+            "Caption":"Work Location Utility: IndCode ranges from '1' to '10'",
+            "Style":"DestUtilityWithFilter",
+            "Value":{
+                {"Highway Time","AutoSkim.Time",null,-0.02154},
+                {"Excess highway time over 30 min","(AutoSkim.Time - 30)","AutoSkim.Time > 30",0.001368},
+                {"Excess highway time over 60 min","(AutoSkim.Time - 60)","AutoSkim.Time > 60",0.1072},
+                {"Distance > 10 miles","AutoSkim.Distance > 10",null,-0.2658},
+                {"Intrazonal destination","Intrazonal.IZ",null,2.99},
+                {"Number local destinations","TAZ4Ds.NumLocalIntersections.D/1000",null,0.8145},
+                {"Non Motorized mode logsums (Dist > 2 mi)","ModeAccessibility.NM","AutoSkim.Distance > 2",0.07368},
+                {"Shadow Prices","WorkDCShadowPrices.Industry<IndCode>.D",null,1},
+                {"Work zone within 20 min for univ dorm resident","AutoSkim.Time > 20","PersonHH.UnivGQStudent = 1",-99}}
+        }
+        Args.WorkDCShadowPrices = {
+            "Type":"File",
+            "Caption":"Shadow prices for work location choice",
+            "Description":"WorkDCShadowPrices",
+            "Value":"%Output Folder%\\Intermediate\\WorkDCShadowPrices.bin"
+        }
+        Args.WorkSPFlag = {
+            "Type":"Boolean",
+            "Caption":"Recompute shadow prices for work destination choice",
+            "Description":"WorkSPFlag",
+            "Value":1
+        }
+	
+	Section = "Long Term Choices|Location Models|University"
+	
+        Args.UnivLocUtility = {
+            "Type":"array",
+            "Caption":"University Location Utility",
+            "Style":"DestUtility",
+            "Value":{
+                {"Highway Time","AutoSkim.Time",-0.058127},
+                {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1}}
+        }
+        Args.UnivDCShadowPrices = {
+            "Type":"File",
+            "Caption":"Shadow prices for univ location choice",
+            "Description":"UnivDCShadowPrices",
+            "Value":"%Output Folder%\\Intermediate\\UnivDCShadowPrices.bin"
+        }
+        Args.UnivSPFlag = {
+            "Type":"Boolean",
+            "Caption":"Recompute shadow prices for university destination choice",
+            "Description":"UnivSPFlag",
+            "Value":1
+        }
+	
+	Section = "Long Term Choices|Location Models|School"
+	
+        Args.SchoolLocUtility = {
+            "Type":"array",
+            "Caption":"School Location Utility: Type is one of 'Elementary', 'Middle' or 'HighSchool'",
+            "Style":"DestUtility",
+            "Value":{
+                {"Highway Time","AutoSkim.Time",-0.172015},
+                {"Intrazonal","Intrazonal.IZ = 1",0.461716},
+                {"Distance between 1 and 2 miles","AutoSkim.Distance > 1 and AutoSkim.Distance <= 2",-0.643064},
+                {"Distance between 2 and 5 miles","AutoSkim.Distance > 2 and AutoSkim.Distance <= 5",-0.807949},
+                {"Distance between 5 and 20 miles","AutoSkim.Distance > 5 and AutoSkim.Distance <= 20",-0.964687},
+                {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
+        }
+        Args.SchoolDCShadowPrices = {
+            "Type":"File",
+            "Caption":"Shadow prices for school location choice",
+            "Description":"SchoolDCShadowPrices",
+            "Value":"%Output Folder%\\Intermediate\\SchoolDCShadowPrices.bin"
+        }
+        Args.SchoolSPFlag = {
+            "Type":"Boolean",
+            "Caption":"Recompute shadow prices for school destination choice",
+            "Description":"SchoolSPFlag",
+            "Value":1
+        }
+	
+	Section = "Long Term Choices|Location Models|Daycare"
+	
+        Args.DaycareLocUtility = {
+            "Type":"array",
+            "Caption":"Daycare Location Utility: Choices restricted to zones within 4 miles of Home TAZ",
+            "Style":"DestUtility",
+            "Value":{
+                {"Highway Time","AutoSkim.Time",-0.172015},
+                {"Intrazonal","Intrazonal.IZ = 1",0.461716},
+                {"Distance between 1 and 2 miles","AutoSkim.Distance > 1 and AutoSkim.Distance <= 2",-0.643064},
+                {"Distance between 2 and 4 miles","AutoSkim.Distance > 2 and AutoSkim.Distance <= 4",-0.807949}}
+        }
+	
+	Section = "MandatoryTours|Frequency|Work"
+	
+        Args.WorkMandatoryFreqUtility = {
+            "Type":"array",
+            "Caption":"Work Tour Frequency for Workers",
+            "Style":"MandTourFreqUtility",
+            "Value":{
+                {"ASC","Constant",6.28618,1,0},
+                {"ASC","Constant",2.51841,0,1},
+                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.24756,0,1},
+                {"Age 60 Plus","PersonHH.Age >= 60",0.379312,1,0},
+                {"Female","PersonHH.Gender = 2",0.283341,1,0},
+                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.289247,1,0},
+                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.436642,0,1},
+                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.666641,0,1},
+                {"Also attending school","PersonHH.AttendSchool = 1",-99,0,1},
+                {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99,0,1},
+                {"Also attending univ","PersonHH.AttendUniv = 1",-99,0,1}}
+        }
+	
+	Section = "MandatoryTours|Frequency|University"
+	
+        Args.UnivMandatoryFreqUtility = {
+            "Type":"array",
+            "Caption":"University Tour Frequency for University Students",
+            "Style":"MandTourFreqUtility",
+            "Value":{
+                {"ASC","Constant",6.28618,1,0},
+                {"ASC","Constant",2.51841,0,1},
+                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.24756,0,1},
+                {"Age 60 Plus","PersonHH.Age >= 60",0.379312,1,0},
+                {"Female","PersonHH.Gender = 2",0.283341,1,0},
+                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.289247,1,0},
+                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.436642,0,1},
+                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.666641,0,1},
+                {"Also attending work","PersonHH.WorkAttendance = 1",-99,0,1},
+                {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99,0,1}}
+        }
+	
+	Section = "MandatoryTours|Activity Duration|Full Time Workers"
+	
+        Args.FTWorkDurAlts = {
+            "Type":"array",
+            "Caption":"Full Time Worker: Work Duration Alternatives (Hours)",
+            "Style":"AlternativesList",
+            "Value":{
+                {"0 - 1 h",null,2.70805},
+                {"1 - 2 h","1 - 3 hrs",3.5899},
+                {"2 - 3 h","1 - 3 hrs",3.42956},
+                {"3 - 4 h","3 - 4 hrs",3.88863},
+                {"4 - 5 h","4 - 5 hrs",4.03946},
+                {"5 - 6 h","5 - 7 hrs",3.84296},
+                {"6 - 7 h","5 - 7 hrs",3.91599},
+                {"7 - 8 h","7 - 8 hrs",4.90481},
+                {"8 - 9 h","8 - 11 hrs",6.25419},
+                {"9 - 10 h","8 - 11 hrs",5.64987},
+                {"10 - 11 h","8 - 11 hrs",5.36219},
+                {"11 - 12 h","11 - 13 hrs",4.6396},
+                {"12 - 13 h","11 - 13 hrs",3.68941},
+                {"13 - 14 h","13 - 19 hrs",3.17805},
+                {"14 - 15 h","13 - 19 hrs",2.70805},
+                {"15 - 16 h","13 - 19 hrs",2.60269}}
+        }
+        Args.FTWorkDurUtility = {
+            "Type":"array",
+            "Caption":"Full Time Workers: Work Duration Utility",
+            "Style":"FTWorkDurUtility",
+            "Value":{
+                {"Medium-High Income","PersonHH.IncomeLevel <> 1",null,0.270599,0.270599,0.270599,null,null,null,null},
+                {"Low Income with 2+ kids","PersonHH.IncomeLevel = 1 and PersonHH.Kids > 1",null,null,null,null,-0.410538,-0.410538,null,null},
+                {"Kids per Worker","if PersonHH.Workers > 0 then PersonHH.Kids/PersonHH.Workers else 0",null,null,null,null,null,0.214923,0.214923,null},
+                {"Two Work Tours","PersonHH.NumberWorkTours = 2",null,null,2.37279,2.37279,-99,-99,-99,-99},
+                {"Also attend university","PersonHH.AttendUniv = 1",null,null,null,null,null,-99,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Duration|Part Time Workers"
+	
+        Args.PTWorkDurAlts = {
+            "Type":"array",
+            "Caption":"Part Time Worker: Work Duration Alternatives (Hours)",
+            "Style":"AlternativesList",
+            "Value":{
+                {"1 - 2 h","1 - 4 hrs",1.32403},
+                {"2 - 3 h","1 - 4 hrs",1.70702},
+                {"3 - 4 h","1 - 4 hrs",1.50635},
+                {"4 - 5 h","4 - 12 hrs",2.23359},
+                {"5 - 6 h","4 - 12 hrs",1.79175},
+                {"6 - 7 h","4 - 12 hrs",1.67397},
+                {"7 - 8 h","4 - 12 hrs",2.03688},
+                {"8 - 9 h","4 - 12 hrs",2.12026},
+                {"9 - 10 h","4 - 12 hrs",1.46633},
+                {"10 - 11 h","4 - 12 hrs",1.20397},
+                {"11 - 12 h","4 - 12 hrs",null}}
+        }
+        Args.PTWorkDurUtility = {
+            "Type":"array",
+            "Caption":"Part Time Workers: Work Duration Utility",
+            "Style":"PTWorkDurUtility",
+            "Value":{
+                {"Two Work Tours","PersonHH.NumberWorkTours = 2",1.62605,-99},
+                {"Also attend university or school","PersonHH.AttendUniv = 1 or PersonHH.AttendSchool = 1",null,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Duration|University"
+	
+        Args.UnivDurAlts = {
+            "Type":"array",
+            "Caption":"University Duration Alternatives (Hours)",
+            "Style":"AlternativesList",
+            "Value":{
+                {"0 - 1 h",null,2.70805},
+                {"1 - 2 h","1 - 3 hrs",3.5899},
+                {"2 - 3 h","1 - 3 hrs",3.42956},
+                {"3 - 4 h","3 - 4 hrs",3.88863},
+                {"4 - 5 h","4 - 5 hrs",4.03946},
+                {"5 - 6 h","5 - 7 hrs",3.84296},
+                {"6 - 7 h","5 - 7 hrs",3.91599},
+                {"7 - 8 h","7 - 8 hrs",4.90481},
+                {"8 - 9 h","8 - 11 hrs",5.64987},
+                {"9 - 10 h","8 - 11 hrs",6.25419},
+                {"10 - 11 h","8 - 11 hrs",5.36219},
+                {"11 - 12 h","11 - 13 hrs",4.6396}}
+        }
+        Args.UnivDurUtility = {
+            "Type":"array",
+            "Caption":"University Duration Utility",
+            "Style":"FTWorkDurUtility",
+            "Value":{
+                {"Medium-High Income","PersonHH.IncomeLevel <> 1",null,0.270599,0.270599,0.270599,null,null,null,null},
+                {"Low Income with 2+ kids","PersonHH.IncomeLevel = 1 and PersonHH.Kids > 1",null,null,null,null,-0.410538,-0.410538,null,null},
+                {"Kids per Worker","if PersonHH.Workers > 0 then PersonHH.Kids/PersonHH.Workers else 0",null,null,null,null,null,0.214923,0.214923,null},
+                {"Two Univ Tours","PersonHH.NumberUnivTours = 2",null,null,2.37279,2.37279,-99,-99,-99,-99},
+                {"Also attend work","PersonHH.WorkAttendance = 1",null,null,-99,-99,-99,-99,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Duration|School"
+	
+        Args.SchDurAlts = {
+            "Type":"array",
+            "Caption":"Students: School Duration Alternatives (Hours)",
+            "Style":"AlternativesList",
+            "Value":{
+                {"0 - 1 h",null,-2.70855},
+                {"1 - 2 h",null,-1.31617},
+                {"2 - 3 h","2 - 3 hrs",-1.63999},
+                {"3 - 4 h","3 - 4 hrs",-1.41526},
+                {"4 - 5 h","4 - 5 hrs",-0.622922},
+                {"5 - 6 h",null,-1.20265},
+                {"6 - 7 h","6 - 7 hrs",0.658146},
+                {"7 - 8 h","7 - 8 hrs",null},
+                {"8 - 9 h","8 - 9 hrs",null},
+                {"9 - 10 h","9 plus hrs",null}}
+        }
+        Args.SchDurUtility = {
+            "Type":"array",
+            "Caption":"School Duration Utility",
+            "Style":"SchDurUtility",
+            "Value":{
+                {"Age <= 6","PersonHH.Age <= 6",2.15826,2.15826,2.15826,null,null,null,null},
+                {"Age [5-11]","PersonHH.Age >= 5 and PersonHH.Age <= 11",null,null,null,1.17387,1.17387,null,null},
+                {"Age [11-14]","PersonHH.Age >= 11 and PersonHH.Age <= 14",null,null,null,1.80168,1.80168,1.80168,null},
+                {"Low or Medium Income","PersonHH.IncomeLevel <= 2",null,null,null,null,null,0.333674,null},
+                {"Medium or High Income","PersonHH.IncomeLevel >= 2",null,0.216992,null,null,0.216992,0.216992,null},
+                {"Two or More Workers","PersonHH.Workers >= 2",null,null,null,null,null,null,0.912643},
+                {"Also a Part Time Worker","PersonHH.WorkerCategory = 2",null,null,null,null,-99,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Start Time|Full Time Workers"
+	
+        Args.FTWorkStartAlts = {
+            "Type":"array",
+            "Caption":"Full Time Worker: Work Start Time Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"4 - 5","3 AM - 5 AM",1.60657},
+                {"5 - 6","5 AM - 6 AM",2.39043},
+                {"6 - 7","6 AM - 7 AM",3.53571},
+                {"7 - 8","7 AM - 8 AM",4.04334},
+                {"8 - 9","8 AM - 9 AM",4.05469},
+                {"9 - 10","9 AM - 10 AM",3.36749},
+                {"10 - 11","10 AM - 12 PM",2.27867},
+                {"11 - 12","10 AM - 12 PM",1.51653},
+                {"12 - 13","12 PM - 1 PM",1.71784},
+                {"13 - 14","1 PM - 3 PM",1.5177},
+                {"14 - 15","1 PM - 3 PM",0.883974},
+                {"15 - 16","3 PM - 5 PM",0.527989},
+                {"16 - 17","3 PM - 5 PM",0.592528},
+                {"17 - 18","5 PM - 9 PM",1.13087},
+                {"18 - 19","5 PM - 9 PM",null},
+                {"19 - 20","5 PM - 9 PM",null},
+                {"20 - 21","5 PM - 9 PM",-1.43408}}
+        }
+        Args.FTWorkStartUtility = {
+            "Type":"array",
+            "Caption":"Full Time Workers: Work Start Time Utility",
+            "Style":"FTWorkStartUtility",
+            "Value":{
+                {"Work Duration >= 12 hours","PersonHH.Work1_Duration/60 >= 12",1.11784,1.11784,1.11784,1.11784,null,null,null,-99,-99,-99,-99},
+                {"Work Duration 8 to 10 hours","PersonHH.Work1_Duration/60 >= 8 and PersonHH.Work1_Duration/60 < 10",null,null,null,0.435529,0.435529,0.435529,0.435529,null,-99,-99,-99},
+                {"Work Duration <= 5","PersonHH.Work1_Duration/60 <= 5",null,null,null,null,null,null,null,null,2.00123,2.00123,null},
+                {"Travel Time >= 1 hour","OPAutoSkim.Time >= 60",null,0.348387,0.348387,null,null,null,null,null,null,null,null},
+                {"Travel Time >= 1 hour","AMAutoSkim.Time >= 60",null,null,null,0.348387,null,null,null,null,null,null,null},
+                {"Travel Time 30 min to 1 hour","OPAutoSkim.Time >= 30 and OPAutoSkim.Time < 60",null,null,0.30864,null,null,null,null,null,null,null,null},
+                {"Travel Time 30 min to 1 hour","AMAutoSkim.Time >= 30 and AMAutoSkim.Time < 60",null,null,null,0.30864,0.30864,null,null,null,null,null,null},
+                {"Travel Time Less than 30 min","OPAutoSkim.Time < 30",null,null,null,null,null,null,0.216293,0.216293,0.216293,null,null},
+                {"Two Tours","PersonHH.NumberWorkTours = 2",null,null,null,null,null,null,-99,-99,-99,-99,-99},
+                {"Also attending university","PersonHH.AttendUniv = 1",null,null,null,null,null,null,-99,-99,-99,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Start Time|Part Time Workers"
+	
+        Args.PTWorkStartAlts = {
+            "Type":"array",
+            "Caption":"Part Time Workers: Work Start Time Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"4 - 5",null,-99},
+                {"5 - 6","5 AM - 10 AM",null},
+                {"6 - 7","5 AM - 10 AM",1.51795},
+                {"7 - 8","5 AM - 10 AM",2.61656},
+                {"8 - 9","5 AM - 10 AM",2.70357},
+                {"9 - 10","5 AM - 10 AM",2.58579},
+                {"10 - 11",null,1.96723},
+                {"11 - 12",null,1.96723},
+                {"12 - 13",null,1.52539},
+                {"13 - 14","1 PM - 5 PM",0.625341},
+                {"14 - 15","1 PM - 5 PM",null},
+                {"15 - 16","1 PM - 5 PM",0.507558},
+                {"16 - 17","1 PM - 5 PM",null},
+                {"17 - 18","5 PM - 7 PM",1.63075},
+                {"18 - 19","5 PM - 7 PM",0.714464}}
+        }
+        Args.PTWorkStartUtility = {
+            "Type":"array",
+            "Caption":"Part Time Workers: Work Start Time Utility",
+            "Style":"PTWorkStartUtility",
+            "Value":{
+                {"Work Duration 5 to 9 hours","PersonHH.Work1_Duration/60 > 5 and PersonHH.Work1_Duration/60 < 9",0.495673,null,null},
+                {"Work Duration <= 4 hours","PersonHH.Work1_Duration/60 <= 4",null,1.39672,null},
+                {"Two tours","PersonHH.NumberWorkTours = 2",null,-99,-99},
+                {"Also attending school","PersonHH.AttendSchool = 1",-99,null,null},
+                {"Also attending university","PersonHH.AttendUniv = 1",null,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Start Time|University"
+	
+        Args.UnivStartAlts = {
+            "Type":"array",
+            "Caption":"University Start Time Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"5 - 6","5 AM - 6 AM",2.39043},
+                {"6 - 7","6 AM - 7 AM",3.53571},
+                {"7 - 8","7 AM - 8 AM",4.04334},
+                {"8 - 9","8 AM - 9 AM",4.05469},
+                {"9 - 10","9 AM - 10 AM",3.36749},
+                {"10 - 11","10 AM - 12 PM",2.27867},
+                {"11 - 12","10 AM - 12 PM",1.51653},
+                {"12 - 13","12 PM - 1 PM",1.71784},
+                {"13 - 14","1 PM - 3 PM",1.5177},
+                {"14 - 15","1 PM - 3 PM",0.883974},
+                {"15 - 16","3 PM - 5 PM",0.527989},
+                {"16 - 17","3 PM - 5 PM",0.592528},
+                {"17 - 18","5 PM - 9 PM",1.13087},
+                {"18 - 19","5 PM - 9 PM",null},
+                {"19 - 20","5 PM - 9 PM",null},
+                {"20 - 21","5 PM - 9 PM",-1.43408},
+                {"21 - 22","5 PM - 9 PM",null}}
+        }
+        Args.UnivStartUtility = {
+            "Type":"array",
+            "Caption":"University Start Time Utility",
+            "Style":"FTWorkStartUtility",
+            "Value":{
+                {"Work Duration >= 12 hours","PersonHH.Univ1_Duration/60 >= 12",1.11784,1.11784,1.11784,1.11784,null,null,null,-99,-99,-99,-99},
+                {"Work Duration 8 to 10 hours","PersonHH.Univ1_Duration/60 >= 8 and PersonHH.Univ1_Duration/60 < 10",null,null,null,0.435529,0.435529,0.435529,0.435529,null,null,-99,-99},
+                {"Work Duration <= 5","PersonHH.Univ1_Duration/60 <= 5",null,null,null,null,null,null,null,null,2.00123,2.00123,null},
+                {"Travel Time >= 1 hour","OPAutoSkim.Time >= 60",null,0.348387,0.348387,null,null,null,null,null,null,null,null},
+                {"Travel Time >= 1 hour","AMAutoSkim.Time >= 60",null,null,null,0.348387,null,null,null,null,null,null,null},
+                {"Travel Time 30 min to 1 hour","OPAutoSkim.Time >= 30 and OPAutoSkim.Time < 60",null,null,0.30864,null,null,null,null,null,null,null,null},
+                {"Travel Time 30 min to 1 hour","AMAutoSkim.Time >= 30 and AMAutoSkim.Time < 60",null,null,null,0.30864,0.30864,null,null,null,null,null,null},
+                {"Travel Time Less than 30 min","OPAutoSkim.Time < 30",null,null,null,null,null,null,0.216293,0.216293,0.216293,null,null},
+                {"Two Tours","PersonHH.NumberUnivTours = 2",null,null,null,null,null,null,null,-99,-99,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Activity Start Time|School"
+	
+        Args.SchStartUtility = {
+            "Type":"array",
+            "Caption":"School Start Time",
+            "Style":"SchStartUtility",
+            "Value":{
+                {"ASC","Constant",null,3.57753,3.3872,3.06659},
+                {"School Duration >= 6 hrs","PersonHH.School_Duration/60 >= 6",null,3.2071,3.2071,null},
+                {"School Duration <= 3 hrs","PersonHH.School_Duration/60 <= 3",null,null,null,2.78249},
+                {"Also a part time worker","PersonHH.WorkerCategory = 2",null,null,-99,-99}}
+        }
+	
+	Section = "MandatoryTours|Tour Mode|Work|Modes"
+	
+        Args.WorkModes = {
+            "Type":"array",
+            "Caption":"Work Modes",
+            "Style":"Nesting Structure",
+            "Value":{
+                {"Root","Drive, NonMotorized, Transit, Other",null},
+                {"Drive","DriveAlone, Carpool",0.5},
+                {"NonMotorized","Walk, Bike",0.7},
+                {"Transit","PTWalk, PTDrive",0.66}}
+        }
+        Args.WorkModeAvailability = {
+            "Type":"array",
+            "Caption":"Work Mode Availability",
+            "Style":"Availability",
+            "Value":{
+                {"DriveAlone","PersonHH.VehicleAvail = 1"},
+                {"Carpool","PersonHH.AttendSchool <> 1"},
+                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Bike","BikeSkim.Distance <= 10"},
+                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 60 and PTWalkSkim.[Total Time] <= 90"},
+                {"PTDrive","PTDriveSkim.[In-Vehicle Time] <= 60 and PTDriveSkim.[Total Time] <= 90"},
+                {"Other","PersonHH.VehicleAvail = 0"}}
+        }
+	
+	Section = "MandatoryTours|Tour Mode|Work|Utility"
+	
+        Args.WorkModeUtility = {
+            "Type":"array",
+            "Caption":"Work Mode Utility",
+            "Style":"MandModeUtility",
+            "Value":{
+                {"ASC (DriveAlone)","Constant",4.7664,1,0,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",4.5,0,1,0,0,0,0,0},
+                {"ASC (Walk)","Constant",2.8717,0,0,1,0,0,0,0},
+                {"ASC (PTWalk)","Constant",-2.3937,0,0,0,0,1,0,0},
+                {"ASC (PTDrive)","Constant",-2.3937,0,0,0,0,0,1,0},
+                {"ASC (Other)","Constant",-1.9431,0,0,0,0,0,0,1},
+                {"Highway Time","AutoSkim.Time",-0.002052,1,1,0,0,0,0,1},
+                {"Transit IVTT (Walk)","PTWalkSkim.[In-Vehicle Time]",-0.002052,0,0,0,0,1,0,0},
+                {"Transit Init Wait plus Access","PTWalkSkim.[Initial Wait Time] + PTWalkSkim.[Access Walk Time]",-0.015498,0,0,0,0,1,0,0},
+                {"Transit Fare (Walk)","PTWalkSkim.Fare",-0.498423,0,0,0,0,1,0,0},
+                {"Transit IVTT (Drive)","PTDriveSkim.[In-Vehicle Time]",-0.002052,0,0,0,0,0,1,0},
+                {"Transit Init Wait plus Access","PTDriveSkim.[Initial Wait Time] + PTDriveSkim.[Access Drive Time]",-0.015498,0,0,0,0,0,1,0},
+                {"Transit Fare (Drive)","PTDriveSkim.Fare",-0.498423,0,0,0,0,0,1,0},
+                {"Distance Walk","WalkSkim.Distance",-0.172192,0,0,1,0,0,0,0},
+                {"Distance Bike","BikeSkim.Distance",-0.180012,0,0,0,1,0,0,0},
+                {"Kid","PersonHH.Age < 18",0.644639,0,1,0,0,0,0,0},
+                {"Driver License","PersonHH.License = 1",0.862251,0,1,0,0,0,0,0},
+                {"Senior","PersonHH.Age >= 65",0.110876,0,0,1,0,1,1,0},
+                {"Female","PersonHH.Gender = 2",0.219183,0,1,1,0,1,1,0},
+                {"Low Income HH","PersonHH.IncomeLevel = 1",0.037969,0,1,0,0,1,1,0},
+                {"Auto Sufficiency","PersonHH.Vehicles >= PersonHH.Workers",0.830344,1,0,0,0,0,0,0}}
+        }
+	
+	Section = "MandatoryTours|Tour Mode|University|Modes"
+	
+        Args.UnivModes = {
+            "Type":"array",
+            "Caption":"University Modes",
+            "Style":"Nesting Structure",
+            "Value":{
+                {"Root","Drive, NonMotorized, Transit, Other",null},
+                {"Drive","DriveAlone, Carpool",0.5},
+                {"NonMotorized","Walk, Bike",0.7},
+                {"Transit","PTWalk, PTDrive",0.66}}
+        }
+        Args.UnivModeAvailability = {
+            "Type":"array",
+            "Caption":"University Mode Availability",
+            "Style":"Availability",
+            "Value":{
+                {"DriveAlone","PersonHH.VehicleAvail = 1"},
+                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Bike","BikeSkim.Distance <= 10"},
+                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 90"},
+                {"PTDrive","PTDriveSkim.[In-Vehicle Time] <= 90"},
+                {"Other","PersonHH.VehicleAvail = 0"}}
+        }
+	
+	Section = "MandatoryTours|Tour Mode|University|Utility"
+	
+        Args.UnivModeUtility = {
+            "Type":"array",
+            "Caption":"University Mode Utility",
+            "Style":"MandModeUtility",
+            "Value":{
+                {"ASC (DriveAlone)","Constant",2.5699,1,0,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.6821,0,1,0,0,0,0,0},
+                {"ASC (Walk)","Constant",4.5298,0,0,1,0,0,0,0},
+                {"ASC (Bike)","Constant",3.2591,0,0,0,1,0,0,0},
+                {"ASC (PTWalk)","Constant",-2.1653,0,0,0,0,1,0,0},
+                {"ASC (PTDrive)","Constant",-2.1653,0,0,0,0,0,1,0},
+                {"ASC (Other)","Constant",-5.8752,0,0,0,0,0,0,1},
+                {"Intrazonal","Intrazonal.IZ",1.35606,0,0,1,1,0,0,0},
+                {"Distance Walk","WalkSkim.Distance",-0.717263,0,0,1,0,0,0,0},
+                {"Distance Bike","BikeSkim.Distance",-0.244596,0,0,0,1,0,0,0},
+                {"Female","PersonHH.Gender = 2",0.621224,1,1,0,0,0,0,0},
+                {"Age 20 Plus","PersonHH.Age >= 20",0.385404,1,0,0,0,0,0,0},
+                {"Low Income","PersonHH.IncomeLevel = 1",0.534083,0,0,1,1,1,1,0},
+                {"Auto Time","AutoSkim.Time",-0.002254,1,1,0,0,0,0,0},
+                {"PT IVTT (Walk)","PTWalkSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,1,0,0},
+                {"PT IVTT (Drive)","PTDriveSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,0,1,0}}
+        }
+	
+	Section = "MandatoryTours|Tour Mode|School|Modes"
+	
+        Args.SchoolModes = {
+            "Type":"array",
+            "Caption":"School Modes",
+            "Style":"Nesting Structure",
+            "Value":{
+                {"Root","Drive, NonMotorized, PTWalk, SchoolBus",null},
+                {"Drive","DriveAlone, Carpool",0.594793},
+                {"NonMotorized","Walk, Bike",0.27862}}
+        }
+        Args.SchModeFAvailability = {
+            "Type":"array",
+            "Caption":"School Mode Availability (Forward)",
+            "Style":"Availability",
+            "Value":{
+                {"DriveAlone","PersonHH.VehicleAvail = 1"},
+                {"Carpool","PersonHH.DropoffPersonID <> null"},
+                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Bike","BikeSkim.Distance <= 4"},
+                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 30"}}
+        }
+        Args.SchModeRAvailability = {
+            "Type":"array",
+            "Caption":"School Mode Availability (Return)",
+            "Style":"Availability",
+            "Value":{
+                {"DriveAlone","PersonHH.PersonID < 0"},
+                {"Carpool","PersonHH.PickupPersonID <> null"},
+                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Bike","PersonHH.PersonID < 0"},
+                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 30"}}
+        }
+	
+	Section = "MandatoryTours|Tour Mode|School|Utility"
+	
+        Args.SchModeFUtility = {
+            "Type":"array",
+            "Caption":"School Mode Utility (Forward)",
+            "Style":"SchModeUtility",
+            "Value":{
+                {"ASC (DriveAlone)","Constant",-3.5711,1,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.7729,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",9.744,0,0,1,0,0,0},
+                {"ASC (Bike)","Constant",2.5115,0,0,0,1,0,0},
+                {"ASC (PTWalk)","Constant",-4.3583,0,0,0,0,1,0},
+                {"ASC (SchoolBus)","Constant",-3.4847,0,0,0,0,0,1},
+                {"Walk Distance","WalkSkim.Distance",-0.438848,0,0,1,0,0,0},
+                {"Bike Distance","BikeSkim.Distance",-0.438848,0,0,0,1,0,0},
+                {"Elem Sch Age","PersonHH.Age <= 12",0.592624,0,0,0,0,0,1},
+                {"Middle Sch Age","PersonHH.Age = 13 or PersonHH.Age = 14",0.898527,0,0,0,0,0,1},
+                {"Age 17 or 18","PersonHH.Age = 17 or PersonHH.Age = 18",2.19926,1,0,0,0,0,0},
+                {"Auto Time","AutoSkim.Time",-0.007018,1,1,0,0,0,0},
+                {"Bus IVTT","PTWalkSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
+        }
+        Args.SchModeRUtility = {
+            "Type":"array",
+            "Caption":"School Mode Utility (Return)",
+            "Style":"SchModeUtility",
+            "Value":{
+                {"ASC (DriveAlone)","Constant",-3.5711,1,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.7729,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",9.744,0,0,1,0,0,0},
+                {"ASC (Bike)","Constant",2.5115,0,0,0,1,0,0},
+                {"ASC (PTWalk)","Constant",-4.3583,0,0,0,0,1,0},
+                {"ASC (SchoolBus)","Constant",-3.4847,0,0,0,0,0,1},
+                {"Walk Distance","WalkSkim.Distance",-0.438848,0,0,1,0,0,0},
+                {"Bike Distance","BikeSkim.Distance",-0.438848,0,0,0,1,0,0},
+                {"Elem Sch Age","PersonHH.Age <= 12",0.592624,0,0,0,0,0,1},
+                {"Middle Sch Age","PersonHH.Age = 13 or PersonHH.Age = 14",0.898527,0,0,0,0,0,1},
+                {"Age 17 or 18","PersonHH.Age = 17 or PersonHH.Age = 18",2.19926,1,0,0,0,0,0},
+                {"Auto Time","AutoSkim.Time",-0.007018,1,1,0,0,0,0},
+                {"Bus IVTT","PTWalkSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
+        }
+	
+	Section = "MandatoryStops|Frequency|Work Tours"
+	
+        Args.WorkStopsFreqUtility = {
+            "Type":"array",
+            "Caption":"Work Tours Mandatory Stops Frequency Utility: Alternatives based on stop on forward/return leg or not",
+            "Description":"WorkStopsFreqUtility",
+            "Style":"StopsFreqUtility",
+            "Value":{
+                {"ASC (0_0)","Constant",2.844,1,null,null,null},
+                {"ASC (1_0)","Constant",0.08475,null,1,null,null},
+                {"ASC (0_1)","Constant",1.199,null,null,1,null},
+                {"Age <= 17","TourData.Age <= 17",-0.9415,1,null,null,null},
+                {"Age <= 17","TourData.Age <= 17",-1.246,null,null,null,1},
+                {"Age {15-19}","TourData.Age >= 15 and TourData.Age <= 19",0.8908,1,null,null,null},
+                {"Kids in HH","TourData.Kids > 0",0.5528,1,null,null,null},
+                {"Three or more HH Vehicles","TourData.Vehicles > 2",0.2982,1,null,null,null},
+                {"High HH Income","TourData.IncomeLevel = 3",0.3824,null,1,null,null},
+                {"High HH Income","TourData.IncomeLevel = 3",0.6021,null,null,null,1},
+                {"Work Activity start: 7 and 9 AM","TourData.ActivityStartTime >= 420 and TourData.ActivityStartTime <= 540",0.3875,null,null,1,null},
+                {"Work Activity start: After 10 AM","TourData.ActivityStartTime >= 600",0.986,null,1,null,null},
+                {"Work Activity start: After 4 PM","TourData.ActivityStartTime >= 960",1.315,1,null,null,null},
+                {"Work Activity duration: Less than 5.5 hrs","TourData.ActivityDuration/60 <= 5.5",-0.5348,1,null,null,null},
+                {"Work Activity duration: 7.5 to 11.5 hrs","TourData.ActivityDuration/60 >= 7.5 and TourData.ActivityDuration/60 <= 11.5",0.2891,1,null,1,null},
+                {"Work TAZ same as Home TAZ","TourData.HTAZ = TourData.Destination",0.1642,1,null,null,null},
+                {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.4447,null,1,null,null},
+                {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.914,null,null,null,1},
+                {"Non Auto Work Mode","TourData.ForwardModeCode > 2 and TourData.ReturnModeCode > 2",0.5536,1,null,null,null},
+                {"PT Work Mode Forward","TourData.ForwardModeCode = 5 or TourData.ForwardModeCode = 6",-99,0,1,0,1},
+                {"PT Work Mode Return","TourData.ReturnModeCode = 5 or TourData.ReturnModeCode = 6",-99,0,0,1,1}}
+        }
+        Args.StopBeforeDropoffsProb = {
+            "Type":"double",
+            "Caption":"Probability that intermediate stop on forward leg is before school dropoffs",
+            "Value":0.25
+        }
+        Args.StopBeforePickupsProb = {
+            "Type":"double",
+            "Caption":"Probability that intermediate stop on return leg is before school pickups",
+            "Value":0.2
+        }
+	
+	Section = "MandatoryStops|Frequency|Univ Tours"
+	
+        Args.UnivStopsFreqUtility = {
+            "Type":"array",
+            "Caption":"Univ Tours Mandatory Stops Frequency Utility: Alternatives based on stop on forward/return leg or not",
+            "Description":"UnivStopsFreqUtility",
+            "Style":"StopsFreqUtility",
+            "Value":{
+                {"ASC (0_0)","Constant",2.844,1,null,null,null},
+                {"ASC (1_0)","Constant",0.08475,null,1,null,null},
+                {"ASC (0_1)","Constant",1.199,null,null,1,null},
+                {"Age <= 17","TourData.Age <= 17",-0.9415,1,null,null,null},
+                {"Age <= 17","TourData.Age <= 17",-1.246,null,null,null,1},
+                {"Age {15-19}","TourData.Age >= 15 and TourData.Age <= 19",0.8908,1,null,null,null},
+                {"Kids in HH","TourData.Kids > 0",0.5528,1,null,null,null},
+                {"Three or more HH Vehicles","TourData.Vehicles > 2",0.2982,1,null,null,null},
+                {"High HH Income","TourData.IncomeLevel = 3",0.3824,null,1,null,null},
+                {"High HH Income","TourData.IncomeLevel = 3",0.6021,null,null,null,1},
+                {"Work Activity start: 7 and 9 AM","TourData.ActivityStartTime >= 420 and TourData.ActivityStartTime <= 540",0.3875,null,null,1,null},
+                {"Work Activity start: After 10 AM","TourData.ActivityStartTime >= 600",0.986,null,1,null,null},
+                {"Work Activity start: After 4 PM","TourData.ActivityStartTime >= 960",1.315,1,null,null,null},
+                {"Work Activity duration: Less than 5.5 hrs","TourData.ActivityDuration/60 <= 5.5",-0.5348,1,null,null,null},
+                {"Work Activity duration: 7.5 to 11.5 hrs","TourData.ActivityDuration/60 >= 7.5 and TourData.ActivityDuration/60 <= 11.5",0.2891,1,null,1,null},
+                {"Work TAZ same as Home TAZ","TourData.HTAZ = TourData.Destination",0.1642,1,null,null,null},
+                {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.4447,null,1,null,null},
+                {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.914,null,null,null,1},
+                {"Non Auto Work Mode","TourData.ForwardModeCode > 2 and TourData.ReturnModeCode > 2",0.5536,1,null,null,null},
+                {"PT Work Mode Forward","TourData.ForwardModeCode = 5 or TourData.ForwardModeCode = 6",-99,0,1,0,1},
+                {"PT Work Mode Return","TourData.ReturnModeCode = 5 or TourData.ReturnModeCode = 6",-99,0,0,1,1}}
+        }
+	
+	Section = "MandatoryStops|Destination|Size Variable"
+	
+        Args.MandStopSizeVar = {
+            "Type":"array",
+            "Caption":"Size Variable for Mandatory Stops Destination on TAZData",
+            "Description":"StopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Emp_HealthCare",2.059},
+                {"Emp_Services",2.059},
+                {"Emp_FinanceRealEstate",3.206},
+                {"Emp_Education",1.798},
+                {"Emp_Wholesale",3.937},
+                {"Emp_Retail",3.937},
+                {"Emp_TransportConstruction",3.937},
+                {"IntersectionDensity",-0.8339},
+                {"TransitStopDensity",1.585},
+                {"TransitAccessibilityToRetailAM",-1.189},
+                {"RetailAndServiceEmploymentDensity",-0.9506}}
+        }
+	
+	Section = "MandatoryStops|Destination|Utility"
+	
+        Args.MandStopDestUtility = {
+            "Type":"array",
+            "Caption":"Mandatory Stops Destination Utility",
+            "Description":"StopDestinationUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"Delta TT (Additional TT due to stop)","DeltaTT.DeltaTT",-0.2412},
+                {"Excess Delta TT over 10 min","(DeltaTT.DeltaTT > 10)*(DeltaTT.DeltaTT - 10)",0.1538},
+                {"Excess Delta TT over 20 min","(DeltaTT.DeltaTT > 20)*(DeltaTT.DeltaTT - 20)",0.05928},
+                {"HH Density","TAZ4Ds.HouseholdDensity.D/1000",-0.06474},
+                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.D/1000",-0.06003},
+                {"Is HomeTAZ same as StopTAZ?","Intrazonal.IZ",1.626},
+                {"Is Delta Dist > 20","DeltaDist.DeltaDist > 20",-0.5581},
+                {"Is Delta Dist > 30","DeltaDist.DeltaDist > 30",-0.5861},
+                {"Is Delta Dist > 45","DeltaDist.DeltaDist > 45",-9},
+                {"Restriction if mode is walk","(DeltaDist.DeltaDist > 0.75)*(TourData.<Dir>ModeCode = 3)",-9},
+                {"Restriction if mode is bike","(DeltaDist.DeltaDist > 2)*(TourData.<Dir>ModeCode = 4)",-9}}
+        }
+	
+	Section = "MandatoryStops|Duration|Availability"
+	
+        Args.StopDurAvail = {
+            "Type":"array",
+            "Caption":"Mandatory Intermediate Stops Duration Availability",
+            "Description":"StopDurAvail",
+            "Style":"Availability",
+            "Value":{
+                {"60 - 75 m","TourData.ActivityDuration <= 405"},
+                {"75 - 90 m","TourData.ActivityDuration <= 390"},
+                {"90 - 105 m","TourData.ActivityDuration <= 375"},
+                {"105 - 120 m","TourData.ActivityDuration <= 360"},
+                {"120 - 180 m","TourData.ActivityDuration <= 300"}}
+        }
+	
+	Section = "MandatoryStops|Duration|Work Tours"
+	
+        Args.WorkStopDurUtility = {
+            "Type":"array",
+            "Caption":"Mandatory Stops Duration Utility",
+            "Description":"WorkStopDurUtility",
+            "Style":"StopsDurUtility",
+            "Value":{
+                {"Age <= 17","TourData.Age <= 17",-1.143,-1.143,-1.626,-1.626,-0.8684,-0.8684,-0.8684,-0.8684,null},
+                {"Is Senior?","TourData.Age >= 65",-0.2324,-0.2324,null,null,null,null,null,null,null},
+                {"High Income HH","TourData.IncomeLevel = 3",0.2103,null,null,null,null,null,null,null,null},
+                {"Make both forward and return stop","TourData.NForwardStops = 1 and TourData.NReturnStops = 1",0.953,0.4002,null,null,null,null,null,null,null},
+                {"Excess TT to stop <= 5 min","TourData.<dir>StopDeltaTT <= 5",1.475,0.9031,0.7114,null,null,null,null,null,null},
+                {"Excess TT to stop (5, 10) min","TourData.<dir>StopDeltaTT > 5 and TourData.<dir>StopDeltaTT <= 10",0.4645,null,null,null,null,-0.0142,-0.0142,-0.0142,null},
+                {"Excess TT to stop > 5 min","TourData.<dir>StopDeltaTT > 5",null,null,null,-1.283,null,null,null,null,null},
+                {"Acitvity Duration: <= 6.5 hrs","TourData.ActivityDuration/60 <= 6.5",null,null,null,null,-0.5856,-0.5856,null,-0.5856,null},
+                {"Activity duration: 7.5 to 11.5 hrs","TourData.ActivityDuration/60 >= 7.5 and TourData.ActivityDuration/60 <= 11.5",0.8947,0.7838,0.6032,0.6032,null,null,null,null,null},
+                {"ASC","Constant",-0.06613,0.1653,-0.03583,-0.2177,0.2083,-0.1517,-1.114,-0.8084,null}}
+        }
+	
+	Section = "MandatoryStops|Duration|Univ Tours"
+	
+        Args.UnivStopDurUtility = {
+            "Type":"array",
+            "Caption":"Mandatory Stops Duration Utility",
+            "Description":"UnivStopDurUtility",
+            "Style":"StopsDurUtility",
+            "Value":{
+                {"Is Senior?","TourData.Age >= 65",-0.2324,-0.2324,null,null,null,null,null,null,null},
+                {"High Income HH","TourData.IncomeLevel = 3",0.2103,null,null,null,null,null,null,null,null},
+                {"Make both forward and return stop","TourData.NForwardStops = 1 and TourData.NReturnStops = 1",0.953,0.4002,null,null,null,null,null,null,null},
+                {"Excess TT to stop <= 5 min","TourData.<dir>StopDeltaTT <= 5",1.475,0.9031,0.7114,null,null,null,null,null,null},
+                {"Excess TT to stop (5, 10) min","TourData.<dir>StopDeltaTT > 5 and TourData.<dir>StopDeltaTT <= 10",0.4645,null,null,null,null,-0.0142,-0.0142,-0.0142,null},
+                {"Excess TT to stop > 5 min","TourData.<dir>StopDeltaTT > 5",null,null,null,-1.283,null,null,null,null,null},
+                {"Activity Duration: <= 6.5 hrs","TourData.ActivityDuration/60 <= 6.5",null,null,null,null,-0.5856,-0.5856,null,-0.5856,null},
+                {"Activity Duration: 7.5 to 11.5 hrs","TourData.ActivityDuration/60 >= 7.5 and TourData.ActivityDuration/60 <= 11.5",0.8947,0.7838,0.6032,0.6032,null,null,null,null,null},
+                {"ASC","Constant",-0.06613,0.1653,-0.03583,-0.2177,0.2083,-0.1517,-1.114,-0.8084,null}}
+        }
+	
+	Section = "SubTours|Frequency"
+	
+        Args.SubTourChoiceUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ Subtour Choice",
+            "Description":"SubTourChoiceUtility",
+            "Style":"SubTourFreqUtility",
+            "Value":{
+                {"ASC","Constant",2.875,0,1},
+                {"Male","TourData.Gender = 1",-0.124,0,1},
+                {"Two Plus Workers","TourData.Workers >= 2",0.5779,0,1},
+                {"HH with Kids","TourData.Kids > 0",-0.3034,0,1},
+                {"Kids Per Non Working Adult","if TourData.Adults = TourData.Workers then 0 else TourData.Kids/(TourData.Adults - TourData.Workers)",0.805,0,1},
+                {"High Income HH","TourData.IncomeLevel = 3",-1.307,0,1},
+                {"Medium Income HH","TourData.IncomeLevel = 2",-1.124,0,1},
+                {"Vehicles Per Adult (Licensed)","if TourData.Adults = 0 then 0 else (TourData.Vehicles/TourData.Adults)*(TourData.License = 1)",-0.2015,0,1},
+                {"Is Main Work Tour Auto?","TourData.ForwardModeCode <= 2",0.2953,0,1},
+                {"Work less than 5 miles from Home","AutoSkim.Distance < 5",-0.5709,0,1},
+                {"Work less than 5 minutes from Home","AutoSkim.Time < 5",0.1474,0,1},
+                {"Work Start Time earlier than 10 AM","TourData.ActivityStartTime < 600",-0.3855,0,1},
+                {"Work Duration less than 10 hours","TourData.ActivityDuration < 600",1.713,0,1},
+                {"Same Work and Home TAZ","TourData.Origin = TourData.Destination",1.498,0,1}}
+        }
+        Args.SubTourChoiceAvail = {
+            "Type":"array",
+            "Caption":"Work Based Subtour Availability",
+            "Description":"SubTourChoiceAvail",
+            "Style":"Availability",
+            "Value":{
+                {"One Tour","TourData.ActivityDuration >= 90 and TourData.DestArrTime >= 420 and TourData.DestDepTime <= 1140"}}
+        }
+	
+	Section = "SubTours|Destination"
+	
+        Args.SubTourSizeVar = {
+            "Type":"array",
+            "Caption":"Size Variable for Destination choice for Work/Univ SubTours",
+            "Description":"SubTourSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Emp_HealthCare",2.818},
+                {"Emp_Services",2.818},
+                {"Emp_FinanceRealEstate",3.361},
+                {"Emp_Education",1.945},
+                {"Emp_Wholesale",3.589},
+                {"Emp_Retail",3.589},
+                {"Emp_Agriculture",0.1273},
+                {"Emp_Manufacturing",0.1273},
+                {"Emp_TransportConstruction",0.1273},
+                {"TotalEmploymentDensity",-6.9106},
+                {"TransitStopDensity",1.411}}
+        }
+        Args.SubTourDestUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Destination Utility",
+            "Description":"SubTourDestUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"OPTime from WorkTAZ to DestTAZ and back","2*AutoSkim.Time",-0.2387},
+                {"Excess OPTime (above) over 15 min","(2*AutoSkim.Time > 15)*(2*AutoSkim.Time - 15)",0.1537},
+                {"Excess OPTime (above) over 30 min","(2*AutoSkim.Time > 30)*(2*AutoSkim.Time - 30)",0.04135},
+                {"HH Density","TAZ4Ds.HouseholdDensity.D/1000",-0.0515},
+                {"Employment Density","TAZ4Ds.TotalEmploymentDensity.D/1000",-0.002837},
+                {"Is chosen TAZ same as mandatory destination?","Intrazonal.IZ",0.5973}}
+        }
+	
+	Section = "SubTours|Duration"
+	
+        Args.SubTourDurUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Duration Utility",
+            "Style":"SubTourDurUtility",
+            "Value":{
+                {"ASC","Constant",1.932,1.216,0.7729,-0.4421,null},
+                {"HH With Kids","TourData.Kids > 0",null,0.3176,null,null,null},
+                {"High Income HH","TourData.IncomeLevel = 3",null,null,0.5996,0.5996,null},
+                {"Auto Work Tour","TourData.ForwardModeCode <= 2",null,null,1.048,1.048,null},
+                {"HH Size 4+","TourData.HHSize >= 4",null,null,-1.227,-1.227,null},
+                {"Work To Stop Distance > 10 miles","AutoSkim.Distance > 10",null,null,2.7,2.7,null},
+                {"Work To Stop Distance < 5 miles","AutoSkim.Distance < 5",null,1.443,null,null,null},
+                {"Work To Stop Travel Time < 5 min","AutoSkim.Time < 5",1.61,null,null,null,null},
+                {"Work To Stop Travel Time > 10 minutes","AutoSkim.Time > 10",null,null,-1.732,-1.732,null}}
+        }
+        Args.SubTourDurAvail = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Duration Availability",
+            "Description":"SubTourDurAvailability",
+            "Style":"Availability",
+            "Value":{
+                {"30 - 60","TourData.ActivityDuration - 2*AutoSkim.Time > 60"},
+                {"60 - 90","TourData.ActivityDuration - 2*AutoSkim.Time > 90"},
+                {"90 - 120","TourData.ActivityDuration - 2*AutoSkim.Time > 120"},
+                {"120 - 150","TourData.ActivityDuration - 2*AutoSkim.Time > 150"}}
+        }
+	
+	Section = "SubTours|Start Time"
+	
+        Args.SubTourStartAlts = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Start Time Alternatives",
+            "Description":"SubTourStartAlts",
+            "Style":"AlternativesList",
+            "Value":{
+                {"7 - 8",null,4.0679},
+                {"8 - 9",null,-6.4256},
+                {"9 - 10","9 AM - 10 AM",4.9349},
+                {"10 - 11","10 AM - 11 AM",-3.3322},
+                {"11 - 12","11 AM - 12 PM",1.9677},
+                {"12 - 13","12 PM - 1 PM",4.195},
+                {"13 - 14","1 PM - 2 PM",-9.6924},
+                {"14 - 15","2 PM - 3 PM",4.502},
+                {"15 - 16","3 PM - 4 PM",1.1935},
+                {"16 - 17",null,-0.2452},
+                {"17 - 18",null,4.4404},
+                {"18 - 19",null,-9.6833}}
+        }
+        Args.SubTourStartUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Start Time Utility",
+            "Style":"SubTourStartUtility",
+            "Value":{
+                {"Low Income","TourData.IncomeLevel = 1",-1.097,-1.097,null,null,null,0.4355,0.4355},
+                {"Medium Income","TourData.IncomeLevel = 2",null,null,1.987,1.192,0.6766,null,null},
+                {"High Income","TourData.IncomeLevel = 3",null,null,1.54,1.672,0.9906,null,null},
+                {"HH With Kids","TourData.Kids > 0",null,null,null,null,null,0.4348,0.4348},
+                {"Work To Stop Distance > 10 miles","AutoSkim.Distance > 10",null,null,null,null,null,-1.262,-1.262},
+                {"SubTour Duration (0-30)","TourData.SubTourActDuration < 30",null,null,-0.6677,-0.06911,null,null,null},
+                {"SubTour Duration (30-60)","TourData.SubTourActDuration >= 30 and TourData.SubTourActDuration < 60",null,null,0.4087,1.513,null,null,null},
+                {"SubTour Duration 1 to 2 hr","TourData.SubTourActDuration >= 60 and TourData.SubTourActDuration < 120",null,null,null,null,-0.1391,null,null},
+                {"SubTour Duration 2 hr+","TourData.SubTourActDuration >= 120",1.695,1.695,null,null,null,null,null}}
+        }
+	
+	Section = "SubTours|Mode"
+	
+        Args.SubTourModeUtility = {
+            "Type":"array",
+            "Caption":"Work/Univ SubTour Mode Utility",
+            "Style":"SubTourModeUtility",
+            "Value":{
+                {"ASC Auto Driver","Constant",5.218,1,0,0,0,0},
+                {"ASC Auto Passenger","Constant",1.696,0,1,0,0,0},
+                {"ASC Walk","Constant",0.5358,0,0,1,0,0},
+                {"ASC Bike","Constant",0.5358,0,0,0,1,0},
+                {"WorkTAZ same as StopTAZ","TourData.Destination = TourData.SubTourTAZ",2.872,0,0,1,1,0},
+                {"Distance if greater than 0.5 mile","(WalkSkim.Distance > 0.5)*WalkSkim.Distance",-3.088,0,0,1,0,0},
+                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99,0,0,1,0,0},
+                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99,0,0,0,1,0}}
+        }
+	
+        Args.SubTourDAPct = {
+            "Type":"double",
+            "Caption":"Percentage of SubTour AutoDriver trips that are drive alone",
+            "Description":"SubTourDAPct",
+            "Style":"PctSlider",
+            "Value":80
+        }
+
+	Section = "PatternChoice"
+	
+        Args.SubPatternChoiceAvail = {
+            "Type":"array",
+            "Caption":"SubPatten Choice Availability",
+            "Description":"SubPatternChoiceAvail",
+            "Style":"Availability",
+            "Value":{
+                {"J","HH.HHSize >= 2"},
+                {"IJ","HH.HHSize >= 2"}}
+        }
+        Args.SubPatternChoiceUtil = {
+            "Type":"array",
+            "Caption":"Sub Discretionary Pattern Choice; N: No Tours, I: Individual Discretionary Tours, J: Joint Discretionary Tours",
+            "Description":"SubPatternChoiceUtil",
+            "Style":"PatternChoice",
+            "Value":{
+                {"ASC (No)","Constant",3.6038,1,0,0,0},
+                {"ASC (Ind)","Constant",1.93038,0,1,0,0},
+                {"Min AvgFreeTime 5 Hours","HH.HHAvgFreeTime - 10 >= 5",-0.97748,1,0,0,0},
+                {"HH with Adult Females","HH.AdultFemales > 0",0.572932,0,0,1,1},
+                {"HH with kids","HH.Kids > 0",0.58359,0,0,1,1},
+                {"HHs with 1 senior","HH.Seniors = 1",0.271159,0,1,0,0},
+                {"HHs with 2+ seniors","HH.Seniors >= 2",0.132797,0,0,1,1},
+                {"HH with only workers and no kids","HH.Workers = HH.Adults and HH.Kids = 0",0.197688,0,0,1,1},
+                {"HH with only non-workers and no kids","HH.Workers = 0 and HH.Kids = 0",-0.669341,1,1,0,0},
+                {"HH with workers, non-workers but no kids","HH.Workers > 0 and HH.Adults > HH.Workers and HH.Kids = 0",0.255859,0,1,0,0},
+                {"HH with workers, non-workers and kids","HH.Workers > 0 and HH.Adults > HH.Workers and HH.Kids > 0",0.385902,0,0,1,1},
+                {"HH with Auto Insufficiency","HH.Adults > HH.Vehicles",0.039318,0,0,1,1},
+                {"HH with High Income","HH.IncomeLevel = 3",0.136959,0,1,0,1},
+                {"Mix Retail Intersection Density","nz(TAZ4Ds.MixRetailIntersectionDensity.O)",0.304463,0,1,0,0},
+                {"Ln(Non Motorized Accessibility)","log(TAZ4Ds.NonMotorizedAccessibility.O)",0.017603,0,1,0,0},
+                {"Ln(Transit Stop Density)","log(TAZ4Ds.TransitStopDensity.O)",0.029678,0,0,1,1},
+                {"Ln(Transit Accessibility to retail during the PM period)","log(TAZ4Ds.TransitAccessibilityToRetailAM.O)",0.031251,0,0,1,1}}
+        }
+	
+	Section = "JointTours|Frequency"
+	
+        Args.JointTourFrequencyUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Frequency Utility",
+            "Style":"JointTourFreqUtility",
+            "Value":{
+                {"ASC (O1)","Constant",0.332561,1,0,0,0,0},
+                {"ASC (O2)","Constant",-1.69939,0,1,0,0,0},
+                {"ASC (O1S1)","Constant",-1.96897,0,0,0,1,0},
+                {"ASC (O2S1)","Constant",-2.43859,0,0,0,0,1},
+                {"Avg Free Time <= 3 hours","HH.HHAvgFreeTime_09to18 - 10 <= 3",-1.466,0,1,0,1,1},
+                {"Avg Free Time <= 8 hours","HH.HHAvgFreeTime_09to18 - 10 <= 8",0.5207,1,0,1,0,0,},
+                {"KidsPerNonWorkingAdult (O2)","HH.KidsPerNonWorkingAdult",0.5827,0,1,0,0,0},
+                {"KidsPerNonWorkingAdult (O2S1)","HH.KidsPerNonWorkingAdult",1.35,0,0,0,0,1},
+                {"No. of Adult Non-Workers (O1S1)","HH.Adults - HH.Workers",0.2332,0,0,0,1,0},
+                {"No. of Adult Non-Workers (O2S1)","HH.Adults - HH.Workers",-0.7192,0,0,0,0,1},
+                {"HHIncome Medium","HH.IncomeLevel = 2",0.601,0,1,0,1,1},
+                {"HHIncome High","HH.IncomeLevel = 3",0.3438,0,1,0,1,1},
+                {"No. of Kids","HH.Kids",0.2699,0,1,0,1,0},
+                {"No. of Kids (O2S1)","HH.Kids",-0.9818,0,0,0,0,1},
+                {"No. of Pre School Kids","HH.PreSchKids",0.565,0,1,0,1,1},
+                {"Destinations Logsum Other (O1 and O1S1)","DCLogsums.Accessibility_JointOther.O",0.4576,1,0,0,1,0},
+                {"Destinations Logsum Other (O2 and O2S1)","DCLogsums.Accessibility_JointOther.O",0.7186,0,1,0,0,1},
+                {"Destinations Logsum Shop","DCLogsums.Accessibility_JointShop.O",0.5008,0,0,1,1,1}}
+        }
+	
+	Section = "JointTours|Composition|Other"
+	
+        Args.JointTourCompositionOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Composition Utility (A: Adults, K: Kids)",
+            "Style":"JointTourCompOtherUtility",
+            "Value":{
+                {"ASC","Constant",0,1.50982,1.89751,3.6276,1.35479,0.379157},
+                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-0.7057,-0.1373,-0.6202,-1.186,0,0},
+                {"HH has Pre-School Kids","HH.PreSchKids > 0",0.2357,0,0,0,0,0},
+                {"No. of Pre-School Kids","HH.PreSchKids",0,-0.8166,0,0,-1.382,0},
+                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",0,0,0,0.6053,0,0},
+                {"Kids per Adult","HH.KidsPerAdult",2.061,1.344,1.255,1.21,0,0},
+                {"High Income","HH.Inc_Category >= 6",0.714,0,0,0,0,0},
+                {"Has Worker","HH.Workers > 0",-1.001,0,0,0,0,0},
+                {"Vehicles >= 2","HH.Vehicles >= 2",-0.5635,0,0,0,0,0},
+                {"Vehicles >= 3","HH.Vehicles >= 3",-0.85,0,0,0,0,0},
+                {"Available Time <= 2 hours","HH.HHAvgFreeTime_09to18 - 10 <= 2",-1.01,0,0,0,0,0},
+                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.015,0,0,0,0,0}}
+        }
+	
+	Section = "JointTours|Composition|Shop"
+	
+        Args.JointTourCompositionShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Composition Utility (A: Adults, K: Kids)",
+            "Style":"JointTourCompShopUtility",
+            "Value":{
+                {"ASC","Constant",0.332171,1.62094,2.43712,1.68963,0},
+                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-2.172,0,-0.5711,-0.4334,0},
+                {"HH has Pre-School Kids","HH.PreSchKids > 0",2.249,1.563,0,0,0},
+                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",-3.407,-4.403,0,-5.141,0},
+                {"Kids per Adult","HH.KidsPerAdult",-0.4707,-1.762,-1.762,-0.7732,0},
+                {"High Income","HH.Inc_Category >= 6",0.3247,0,0,0,0},
+                {"Vehicles >= 3","HH.Vehicles >= 3",-2.047,0,0,0,0},
+                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.377,0,0,0,0}}
+        }
+	
+	Section = "JointTours|Participation|Other|Adults"
+	
+        Args.ParticipationOtherAdultsUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Participation (Other) Utility",
+            "Style":"ParticipationUtility",
+            "Value":{
+                {"ASC","Constant",2.3006,1,0},
+                {"Female from HH with kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.2691,1,0},
+                {"Senior","PersonHH.Age >= 65",1.86,1,0},
+                {"Senior from HH with kids","PersonHH.Age >= 65 and PersonHH.Kids > 0",-3.528,1,0},
+                {"Worker and tour has kids","PersonHH.WorkerCategory <= 2 and PersonHH.Joint_Other<TourNo>_nKids > 0",-1.493,1,0},
+                {"Free time between 7 AM, 8 PM less than 2 hours","PersonHH.FreeTime_07to20 < 2",-1.023,1,0},
+                {"Free time between 7 AM, 8 PM less than 4 hours","PersonHH.FreeTime_07to20 < 4",-0.7384,1,0},
+                {"Free time between 7 AM, 8 PM less than 8 hours","PersonHH.FreeTime_07to20 < 8",-1.834,1,0}}
+        }
+	
+	Section = "JointTours|Participation|Other|Kids"
+	
+        Args.ParticipationOtherKidsUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Participation (Other) Utility",
+            "Style":"ParticipationUtility",
+            "Value":{
+                {"ASC","Constant",1.72226,1,0},
+                {"Age below 4 years","PersonHH.Age < 4",-0.5715,1,0},
+                {"Age below 11 years","PersonHH.Age < 11",0.3986,1,0},
+                {"Free time between 7 AM, 8 PM less than 4 hours","PersonHH.FreeTime_07to20 < 4",-0.2034,1,0},
+                {"Free time between 7 AM, 8 PM less than 8 hours","PersonHH.FreeTime_07to20 < 8",-1.863,1,0}}
+        }
+	
+	Section = "JointTours|Participation|Shop|Adults"
+	
+        Args.ParticipationShopAdultsUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Participation (Shop) Utility",
+            "Style":"ParticipationUtility",
+            "Value":{
+                {"ASC","Constant",2.95259,1,0},
+                {"Worker","PersonHH.WorkerCategory <= 2",-0.9395,1,0},
+                {"Female from HH with kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.917,1,0},
+                {"Senior from HH with kids","PersonHH.Age >= 65 and PersonHH.Kids > 0",-3.809,1,0},
+                {"Worker from HH with kids","PersonHH.WorkerCategory <= 2 and PersonHH.Kids > 0",3.976,1,0},
+                {"Worker and tour has kids","PersonHH.WorkerCategory <= 2 and PersonHH.Joint_Shop1_nKids > 0",-3.498,1,0},
+                {"Free time between 7 AM, 8 PM less than 6 hours","PersonHH.FreeTime_07to20 < 6",-1.523,1,0},
+                {"Free time between 7 AM, 8 PM less than 10 hours","PersonHH.FreeTime_07to20 < 10",-1.043,1,0}}
+        }
+	
+	Section = "JointTours|Participation|Shop|Kids"
+	
+        Args.ParticipationShopKidsUtility = {
+            "Type":"array",
+            "Caption":"Joint Tours Participation (Other) Utility",
+            "Style":"ParticipationUtility",
+            "Value":{
+                {"ASC","Constant",0.450316,1,0},
+                {"Age below 4 years","PersonHH.Age < 4",1.025,1,0},
+                {"Free time between 7 AM, 8 PM less than 4 hours","PersonHH.FreeTime_07to20 < 4",-5.078,1,0},
+                {"Free time between 7 AM, 8 PM less than 6 hours","PersonHH.FreeTime_07to20 < 6",1.482,1,0},
+                {"Free time between 7 AM, 8 PM less than 8 hours","PersonHH.FreeTime_07to20 < 8",-2.039,1,0}}
+        }
+	
+	Section = "JointTours|Destination|Other|Mode Logsums"
+	
+        Args.JointOtherAggMCUtility = {
+            "Type":"array",
+            "Caption":"Aggregate mode choice model for computing logsums: Joint Other Tour",
+            "Description":"JointOtherAggMCUtility",
+            "Style":"JointTourOtherModeLSUtility",
+            "Value":{
+                {"ASC (Auto)","Constant",2.058,1,0,0,0},
+                {"ASC (Walk)","Constant",0.6198,0,1,0,0},
+                {"ASC (Bike)","Constant",-0.9233,0,0,1,0},
+                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.2564,0,0,0,1},
+                {"IntraTAZ Tour","Intrazonal.IZ",2.344,0,1,0,0},
+                {"Walk Skim Length","WalkSkim.Distance",-0.6549,0,1,0,0},
+                {"Bike Skim Length","BikeSkim.Distance",-1.614,0,0,1,0}}
+        }
+	
+	Section = "JointTours|Destination|Other|Size Variable"
+	
+        Args.JointTourOtherSizeVar = {
+            "Type":"array",
+            "Caption":"Joint Tour Destination Other Size Variable",
+            "Description":"JointTourOtherSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Population",0},
+                {"TotalEmployment",0.5111},
+                {"Emp_HealthCare",2.48},
+                {"Emp_Services",2.48},
+                {"Emp_FinanceRealEstate",1.641},
+                {"IntersectionDensity",-1.124},
+                {"TransitStopDensity",0.4606},
+                {"NonMotorizedAccessibility",2.86}}
+        }
+	
+	Section = "JointTours|Destination|Other|Utility"
+	
+        Args.JointTourDestOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour Destination Other Utility",
+            "Description":"JointTourDestOtherUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"OP TT","AutoSkim.Time",-0.1484},
+                {"Excess OP time beyond 30 min","(AutoSkim.Time > 30) * (AutoSkim.Time - 30)",0.06233},
+                {"IsHHTAZ","Intrazonal.IZ",0.4038},
+                {"HH Density at Dest","TAZ4Ds.HouseholdDensity.D/1000",-0.2087},
+                {"Total Employment Density at Dest","TAZ4Ds.TotalEmploymentDensity.D/1000",-0.018},
+                {"NM Mode Logsums for short distance tours","ModeAccessibility.NM * (WalkSkim.Distance < 5)",0.5298},
+                {"Distance less than 2 miles","AutoSkim.Distance < 2",0.2082},
+                {"Auto Travel Distance more than 40 miles","AutoSkim.Distance > 40",-99.0}}
+        }
+	
+	Section = "JointTours|Destination|Shop|Size Variable"
+	
+        Args.JointTourShopSizeVar = {
+            "Type":"array",
+            "Caption":"Joint Tour Destination Shop Size Variable",
+            "Description":"JointTourShopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Population",0},
+                {"Emp_Wholesale",4.295},
+                {"Emp_Retail",6.662},
+                {"Emp_FinanceRealEstate",0.4287},
+                {"TransitStopDensity",4.206}}
+        }
+	
+	Section = "JointTours|Destination|Shop|Utility"
+	
+        Args.JointTourDestShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour Destination Shop Utility",
+            "Description":"JointTourDestShopUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"OP TT","AutoSkim.Time",-0.1541},
+                {"Excess OP time beyond 30 min","(AutoSkim.Time > 30) * (AutoSkim.Time - 30)",0.03483},
+                {"Distance less than 2 miles","AutoSkim.Distance < 2",0.6041},
+                {"Distance less than 5 miles","AutoSkim.Distance < 5",0.6418},
+                {"IsHHTAZ","Intrazonal.IZ",-0.8876},
+                {"Retail Employment Density at Dest","TAZ4Ds.RetailEmploymentDensity.D/1000",0.03813},
+                {"NonMotorized Accessibility at Dest","TAZ4Ds.NonMotorizedAccessibility.D",-0.000074},
+                {"Num Local Intersections at Dest","TAZ4Ds.NumLocalIntersections.D",0.001477},
+                {"Auto Travel Distance more than 40 miles","AutoSkim.Distance > 40",-99}}
+        }
+	
+	Section = "JointTours|Duration|Other"
+	
+        Args.JointTourDurOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour Duration Other Utility",
+            "Style":"JointTourDurOtherUtility",
+            "Value":{
+                {"ASC","Constant",3.92232,2.43186,1.9988,2.44905,1.38918,1.14608,1.61962,1.45414,0.0718,null,2.05826},
+                {"HH Income Low","HH.IncomeLevel = 1",0.7616,0.7616,null,null,null,null,null,null,null,null,null},
+                {"HH Income High","HH.IncomeLevel = 3",null,null,null,null,0.4183,0.4183,null,null,null,null,null},
+                {"Number Joint Tours","HH.NumberJointOtherTours + HH.NumberJointShopTours",0.2702,0.1317,0.3929,null,null,null,null,null,null,null,null},
+                {"Has Preschool Kids on Tour","HH.Joint_<purp>_HasPreSchKids",0.8858,0.8858,0.8858,0.8858,0.8858,0.8858,null,null,null,null,null},
+                {"Has Workers on Tour","HH.Joint_<purp>_HasWorkers",0.4754,null,null,null,null,null,-0.3098,-0.3098,null,null,null},
+                {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",0.04538,0.04538,null,null,null,null,null,null,null,null,null},
+                {"Number of Adults on Tour","HH.Joint_<purp>_nAdults",-1.267,null,null,null,null,null,-0.3347,-0.3347,null,null,-0.7252},
+                {"Number of Kids on Tour","HH.Joint_<purp>_nKids",null,null,-0.02339,-0.02339,null,null,null,null,null,null,0.6195},
+                {"Full Household on Tour","HH.Joint_<purp>_nAdults = HH.Adults and HH.Joint_<purp>_nKids = HH.Kids",-0.4503,-0.4503,null,null,null,null,null,null,null,null,1.04}}
+        }
+	
+	Section = "JointTours|Duration|Shop"
+	
+        Args.JointTourDurShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour Duration Shop Utility",
+            "Style":"JointTourDurShopUtility",
+            "Value":{
+                {"ASC","Constant",1.69014,1.03336,-0.554249,-0.722305,-0.141429,null},
+                {"HHIncome Low","HH.IncomeLevel = 1",-0.6096,-0.6096,null,null,null,null},
+                {"HHIncome High","HH.IncomeLevel = 3",null,null,null,null,-0.5131,-0.5131},
+                {"Number Joint Tours","HH.NumberJointOtherTours + HH.NumberJointShopTours",1.022,1.203,1.518,null,null,null},
+                {"Number Adults on Tour","HH.Joint_Shop1_nAdults",-0.07942,null,null,null,null,null},
+                {"Number Kids on Tour","HH.Joint_Shop1_nKids",-0.2202,-0.2202,null,null,null,null},
+                {"Full HH on Tour","HH.Joint_Shop1_nAdults = HH.Adults and HH.Joint_Shop1_nKids = HH.Kids",-0.9287,-0.9287,null,null,null,null},
+                {"Has Workers on Tour","HH.Joint_Shop1_HasWorkers = 1",1.067,null,null,null,null,null}}
+        }
+	
+	Section = "JointTours|StartTime|Other|Alternatives"
+        
+
+        Args.JointTourStartOtherAlts = {
+            "Type":"array",
+            "Caption":"Joint Tour StartTime Other Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"7 - 8","7 AM - 10 AM",-0.245756},
+                {"8 - 9","7 AM - 10 AM",1.82827},
+                {"9 - 10","7 AM - 10 AM",1.46486},
+                {"10 - 11","10 AM - 1 PM",1.5627},
+                {"11 - 12","10 AM - 1 PM",0.781015},
+                {"12 - 13","10 AM - 1 PM",0.707322},
+                {"13 - 14","1 PM - 4 PM",1.28452},
+                {"14 - 15","1 PM - 4 PM",1.54958},
+                {"15 - 16","1 PM - 4 PM",0.672983},
+                {"16 - 17","4 PM - 6 PM",0.643772},
+                {"17 - 18","4 PM - 6 PM",0},
+                {"18 - 19","6 PM - 9 PM",-0.860719},
+                {"19 - 20","6 PM - 9 PM",-4.16646},
+                {"20 - 21","6 PM - 9 PM",-6.97962}}
+        }
+	
+	Section = "JointTours|StartTime|Other|Utility"
+	
+        Args.JointTourStartOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour StartTime Other Utility",
+            "Style":"JointTourStartUtility",
+            "Value":{
+                {"Has Preschool Kids on Tour","JointToursHHData.Joint_<purp>_HasPreSchKids",1.181,0.4712,1.246,null,null},
+                {"Has Workers on Tour","JointToursHHData.Joint_<purp>_HasWorkers",-0.3682,null,null,0.4977,1.207},
+                {"Has Seniors on Tour","JointToursHHData.Joint_<purp>_HasSeniors",null,0.7664,null,null,null},
+                {"Has Kids on Tour","JointToursHHData.Joint_<purp>_nKids > 0",null,null,0.1315,0.8817,null},
+                {"Full Household on Tour","JointToursHHData.Joint_<purp>_nAdults = JointToursHHData.Adults and JointToursHHData.Joint_<purp>_nKids = JointToursHHData.Kids",0.7115,null,-0.09113,-0.1139,null},
+                {"NumPersons on Tour if not full HH on tour","(JointToursHHData.Joint_<purp>_nAdults < JointToursHHData.Adults or JointToursHHData.Joint_<purp>_nKids < JointToursHHData.Kids)*(JointToursHHData.Joint_<purp>_nAdults + JointToursHHData.Joint_<purp>_nKids)",0.5331,null,null,null,-0.34},
+                {"HH Income Mid","JointToursHHData.IncomeLevel = 2",null,null,null,null,0.4352},
+                {"HHIncome High","JointToursHHData.IncomeLevel = 3",null,null,null,null,0.6711},
+                {"ActivityDuration 0-30 min","JointToursHHData.Joint_<purp>_Duration <= 30",0.6687,null,null,null,null},
+                {"ActivityDuration 0-60 min","JointToursHHData.Joint_<purp>_Duration <= 60",-2.077,null,null,-0.8561,null},
+                {"ActivityDuration 60-120 min","JointToursHHData.Joint_<purp>_Duration > 60 and JointToursHHData.Joint_<purp>_Duration <= 120",-1.999,null,null,0.2452,null},
+                {"ActivityDuration 120-180 min","JointToursHHData.Joint_<purp>_Duration > 120 and JointToursHHData.Joint_<purp>_Duration <= 180",-1.456,null,null,-0.1323,null}}
+        }
+	
+	Section = "JointTours|StartTime|Shop|Alternatives"
+	
+        Args.JointTourStartShopAlts = {
+            "Type":"array",
+            "Caption":"Joint Tour StartTime Shop Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"7 - 8","7 AM - 10 AM",-4.416},
+                {"8 - 9","7 AM - 10 AM",-4.334},
+                {"9 - 10","7 AM - 10 AM",0.99583},
+                {"10 - 11","10 AM - 1 PM",1.45798},
+                {"11 - 12","10 AM - 1 PM",1.22213},
+                {"12 - 13","10 AM - 1 PM",0.782371},
+                {"13 - 14","1 PM - 4 PM",0.229135},
+                {"14 - 15","1 PM - 4 PM",-1.06162},
+                {"15 - 16","1 PM - 4 PM",-0.683904},
+                {"16 - 17","4 PM - 6 PM",0},
+                {"17 - 18","4 PM - 6 PM",-0.384688},
+                {"18 - 19","6 PM - 9 PM",-0.153644},
+                {"19 - 20","6 PM - 9 PM",-4.634},
+                {"20 - 21",null,-4.9243}}
+        }
+	
+	Section = "JointTours|StartTime|Shop|Utility"
+
+        Args.JointTourStartShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour StartTime Shop Utility",
+            "Style":"JointTourStartUtility",
+            "Value":{
+                {"Has Preschool Kids on Tour","JointToursHHData.Joint_<purp>_HasPreSchKids",2.965,null,2.563,null,null},
+                {"Has Workers on Tour","JointToursHHData.Joint_<purp>_HasWorkers",2.373,null,null,0.6987,2.696},
+                {"Has Seniors on Tour","JointToursHHData.Joint_<purp>_HasSeniors",3.446,1.714,0.518,null,null},
+                {"Has Kids on Tour","JointToursHHData.Joint_<purp>_nKids > 0",null,null,-2.286,-0.8767,null},
+                {"Full Household on Tour","JointToursHHData.Joint_<purp>_nAdults = JointToursHHData.Adults and JointToursHHData.Joint_<purp>_nKids = JointToursHHData.Kids",0.6508,null,2.05,0.5807,null},
+                {"NumPersons on Tour if not full HH on tour","(JointToursHHData.Joint_<purp>_nAdults < JointToursHHData.Adults or JointToursHHData.Joint_<purp>_nKids < JointToursHHData.Kids)*(JointToursHHData.Joint_<purp>_nAdults + JointToursHHData.Joint_<purp>_nKids)",0.3173,null,null,null,-0.1846},
+                {"HH Income Mid","JointToursHHData.IncomeLevel = 2",-3.098,-0.7563,-0.2801,null,null},
+                {"HHIncome High","JointToursHHData.IncomeLevel = 3",-2.823,-0.1778,-1.02,null,null},
+                {"ActivityDuration 0-30 min","JointToursHHData.Joint_<purp>_Duration <= 30",-0.7772,null,null,1.414,null},
+                {"ActivityDuration 30-60 min","JointToursHHData.Joint_<purp>_Duration > 30 and JointToursHHData.Joint_<purp>_Duration <= 60",-3.275,null,null,-0.02733,null},
+                {"ActivityDuration 60-120 min","JointToursHHData.Joint_<purp>_Duration > 60 and JointToursHHData.Joint_<purp>_Duration <= 120",-0.8404,null,null,null,null}}
+        }
+	
+	Section = "JointTours|Mode|Other"
+	
+        Args.JointTourModeOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour Mode Other Utility",
+            "Style":"JointTourOtherModeUtility",
+            "Value":{
+                {"ASC (Auto)","Constant",4.09962,1,0,0,0,0},
+                {"ASC (Walk)","Constant",3.49733,0,1,0,0,0},
+                {"ASC (PTWalk)","Constant",2.28673,0,0,0,1,0},
+                {"ASC (Other)","Constant",-1.69427,0,0,0,0,1},
+                {"IVTT PTWalk","PTSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0},
+                {"IntraTAZ Tour","HH.TAZID = HH.Joint_<purp>_Destination",2.774,0,1,0,0,0},
+                {"Auto Distance > 5 miles","AutoSkim.Distance > 5",2.148,1,0,0,0,0},
+                {"HH Income Mid","HH.IncomeLevel = 2",-0.8002,1,0,0,0,0},
+                {"HH Income High","HH.IncomeLevel = 3",-0.5611,1,0,0,0,0},
+                {"Number Kids on Tour","HH.Joint_<purp>_nKids",0.9362,1,0,0,0,0},
+                {"Has Workers on Tour","HH.Joint_<purp>_HasWorkers",1.532,1,0,0,0,0},
+                {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",1.976,1,0,0,0,0},
+                {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",-1.245,1,0,0,0,0}}
+        }
+        Args.JointTourModeOtherAvail = {
+            "Type":"array",
+            "Caption":"Joint Tour Mode Availability - Other",
+            "Style":"Availability",
+            "Value":{
+                {"Walk","WalkSkim.Distance <= 2"},
+                {"Bike","BikeSkim.Distance <= 5"},
+                {"PTWalk","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+        }
+	
+	Section = "JointTours|Mode|Shop"
+	
+        Args.JointTourModeShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Tour Mode Shop Utility",
+            "Style":"JointTourShopModeUtility",
+            "Value":{
+                {"ASC","Constant",-4.667,1,0},
+                {"Has Preschool Kids on Tour","HH.Joint_<purp>_HasPreSchKids",0.89,1,0},
+                {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",4.269,1,0},
+                {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",1.738,1,0},
+                {"Walk Distance","WalkSkim.Distance",-7.928,0,1},
+                {"Walk Distance > 2 miles","WalkSkim.Distance > 2",-99,0,1}}
+        }
+        Args.JointTourModeShopAvail = {
+            "Type":"array",
+            "Caption":"Joint Tour Mode Availability - Shop",
+            "Style":"Availability",
+            "Value":{
+                {"Walk","WalkSkim.Distance <= 2"}}
+        }
+	
+    Section = "JointTourStops|Frequency|Other"
+	
+        Args.JointStopFreqOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Intermediate Stop Frequency Other Utility",
+            "Style":"StopsFreqUtility",
+            "Value":{
+                {"ASC (0_0)","Constant",1.65066,1,0,0,0},
+                {"ASC (0_1)","Constant",0.25587,0,0,1,0},
+                {"ASC (1_1)","Constant",-0.137886,0,0,0,1},
+                {"Low Income HH","ToursData.IncomeLevel = 1",0.4248,1,0,0,0},
+                {"High Income HH","ToursData.IncomeLevel = 3",-0.287,1,0,0,0},
+                {"HHVehicles >= 3","ToursData.Vehicles >= 3",0.5681,1,0,0,0},
+                {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",-0.6867,1,0,0,0},
+                {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",0.1137,0,0,0,1},
+                {"Pre School Kids on Tour","ToursData.HasPreSchKids",0.4736,1,0,0,0},
+                {"Workers on Tour","ToursData.HasWorkers",-0.3241,1,0,0,0},
+                {"Two or more Adults on Tour","ToursData.nAdultsOnTour >= 2",0.7488,1,0,0,0},
+                {"Non Auto Tour","ToursData.IsAutoTour <> 1",0.7718,1,0,0,0},
+                {"Activity Start: Before 1600","ToursData.ActivityStartTime < 960",0.7437,0,0,1,0},
+                {"Activity Start: After 1600","ToursData.ActivityStartTime >= 960",1.003,1,0,0,0},
+                {"Activity Start: 1200 - 1600","ToursData.ActivityStartTime > 720 and ToursData.ActivityStartTime < 960",0.9404,0,1,0,0},
+                {"Home to Main Activity Distance >= 5","AutoSkim.Distance >= 5",0.6823,0,1,1,0},
+                {"Home to Main Activity Distance >= 5 (1_1)","AutoSkim.Distance >= 5",1.191,0,0,0,1},
+                {"Home to Main Activity Distance >= 10","AutoSkim.Distance >= 10",0.5862,0,0,0,1}}
+        }
+	
+	Section = "JointTourStops|Frequency|Shop"
+	
+        Args.JointStopFreqShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Intermediate Stop Frequency Shop Utility",
+            "Style":"StopsFreqUtility",
+            "Value":{
+                {"ASC (0_0)","Constant",1.53024,1,0,0,0},
+                {"ASC (0_1)","Constant",0.22072,0,0,1,0},
+                {"ASC (1_1)","Constant",-0.103221,0,0,0,1},
+                {"Low Income HH","ToursData.IncomeLevel = 1",0.4248,1,0,0,0},
+                {"High Income HH","ToursData.IncomeLevel = 3",-0.287,0,0,0,1},
+                {"HHVehicles >= 3","ToursData.Vehicles >= 3",0.5681,1,0,0,0},
+                {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",-0.6867,1,0,0,0},
+                {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",0.1137,0,0,0,1},
+                {"Pre School Kids on Tour","ToursData.HasPreSchKids",0.4736,1,0,0,0},
+                {"Workers on Tour","ToursData.HasWorkers",-0.3241,1,0,0,0},
+                {"Two or more Adults on Tour","ToursData.nAdultsOnTour >= 2",0.7488,1,0,0,0},
+                {"Non Auto Tour","ToursData.IsAutoTour <> 1",0.7718,1,0,0,0},
+                {"Activity Start: Before 1600","ToursData.ActivityStartTime < 960",0.7437,0,0,1,0},
+                {"Activity Start: After 1600","ToursData.ActivityStartTime >= 960",1.003,1,0,0,0},
+                {"Activity Start: 1200 - 1600","ToursData.ActivityStartTime > 720 and ToursData.ActivityStartTime < 960",0.9404,0,1,0,0},
+                {"Home to Main Activity Distance >= 5","AutoSkim.Distance >= 5",0.6823,0,1,1,0},
+                {"Home to Main Activity Distance >= 5 (1_1)","AutoSkim.Distance >= 5",1.191,0,0,0,1},
+                {"Home to Main Activity Distance >= 10","AutoSkim.Distance >= 10",0.5862,0,0,0,1}}
+        }
+	
+	Section = "JointTourStops|Destination|Size Variable"
+	
+        Args.JointStopSizeVar = {
+            "Type":"array",
+            "Caption":"Joint Stop Destination Size Variable",
+            "Description":"JointStopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Population",0},
+                {"Emp_HealthCare",2.195},
+                {"Emp_Services",2.195},
+                {"Emp_FinanceRealEstate",3.113},
+                {"Emp_Education",1.466},
+                {"Emp_Wholesale",4.031},
+                {"Emp_Retail",4.031},
+                {"Emp_TransportConstruction",4.031},
+                {"IntersectionDensity",-1.225},
+                {"TransitStopDensity",1.893},
+                {"TransitAccessibilityToRetailAM",-0.9923},
+                {"RetailAndServiceEmploymentDensity",-1.278}}
+        }
+	
+	Section = "JointTourStops|Destination|Utility"
+	
+        Args.JointStopDestinationUtility = {
+            "Type":"array",
+            "Caption":"Joint Stops Destination Utility",
+            "Description":"JointStopDestinationUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"Delta TT (Additional TT) for non-active tour","DeltaTT.DeltaTT*(1 - ToursData.ActiveTour)",-0.2143},
+                {"Delta TT if greater than 15 min for non-active tour","(DeltaTT.DeltaTT > 15)*(DeltaTT.DeltaTT - 15)*(1 - ToursData.ActiveTour)",0.1536},
+                {"Is Delta Dist > 20 miles for non active tour","(DeltaDist.DeltaDist > 20)*(1 - ToursData.ActiveTour)",-0.0226},
+                {"Is Delta Dist > 3 miles for active tour","(DeltaDist.DeltaDist > 3)*ToursData.ActiveTour",-1.722},
+                {"Is Delta Dist > 10 miles for active tour","(DeltaDist.DeltaDist > 10)*ToursData.ActiveTour",-6.563},
+                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.D/1000",-0.0707},
+                {"HH Density","TAZ4Ds.HouseholdDensity.D/1000",-0.1137},
+                {"Is StopTAZ same as HHTAZ","Intrazonal.IZ",1.597},
+                {"Is StopTAZ same as Main DestTAZ","StopSameAsDestMtx.StopSameAsDest",0.2303},
+                {"Is StopTAZ same as Main DestTAZ (Active Tour)","StopSameAsDestMtx.StopSameAsDest*ToursData.ActiveTour",2.801},
+                {"Delta TT greater than 45 min","DeltaTT.DeltaTT > 45",-99}}
+        }
+	
+	Section = "JointTourStops|Duration|Other"
+	
+        Args.JointStopDurOtherUtility = {
+            "Type":"array",
+            "Caption":"Joint Stop Duration Other Utility",
+            "Style":"NMStopsDurUtility",
+            "Value":{
+                {"ASC","Constant",0.560798,0.884337,0.552094,1.10441,0.347306,null},
+                {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",0.6986,null,null,null,null,null},
+                {"Pre School Kids on Tour","ToursData.HasPreSchKids",0.2015,null,null,null,null,null},
+                {"Seniors on Tour","ToursData.HasSeniors",-0.6228,-0.6228,null,null,null,null},
+                {"Kids on Tour","ToursData.nKidsOnTour > 0",null,null,null,-0.7434,null,null},
+                {"Both Forward and Return Stops","ToursData.ForwardStop = 1 and ToursData.ReturnStop = 1",0.9459,0.5928,null,null,null,null},
+                {"Activity Start: 1200 - 1500","(ToursData.ActivityStartTime > 720) and (ToursData.ActivityStartTime <= 900)",null,0.5478,null,null,null,null},
+                {"Activity Start before 1100","ToursData.ActivityStartTime <= 660",null,null,null,null,0.3564,null},
+                {"Activity Start After 1600","ToursData.ActivityStartTime >= 960",0.3457,null,null,null,null,null},
+                {"Activity Duration: <= 120 min","ToursData.ActivityDuration <= 120",2.254,1.759,1.5,null,null,null},
+                {"Activity Duration: >= 240 min","ToursData.ActivityDuration >= 240",null,null,null,-1.999,-1.999,null},
+                {"Excess TT to stop >= 10 min","ToursData.<dir>StopDeltaTT >= 10",null,null,0.7306,1.47,0.7378,null}}
+        }
+	
+	Section = "JointTourStops|Duration|Shop"
+	
+        Args.JointStopDurShopUtility = {
+            "Type":"array",
+            "Caption":"Joint Stop Duration Shop Utility",
+            "Style":"NMStopsDurUtility",
+            "Value":{
+                {"ASC","Constant",0.151498,0.577791,0.244257,0.891722,0.159529,null},
+                {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",0.6986,null,null,null,null,null},
+                {"Pre School Kids on Tour","ToursData.HasPreSchKids",0.2015,null,null,null,null,null},
+                {"Seniors on Tour","ToursData.HasSeniors",-0.6228,-0.6228,null,null,null,null},
+                {"Kids on Tour","ToursData.nKidsOnTour > 0",null,null,null,-0.7434,null,null},
+                {"Both Forward and Return Stops","ToursData.ForwardStop = 1 and ToursData.ReturnStop = 1",0.9459,0.5928,null,null,null,null},
+                {"Activity Start {1200 -1500}","(ToursData.ActivityStartTime > 720) and (ToursData.ActivityStartTime <= 900)",null,0.5478,null,null,null,null},
+                {"Activity Start before 1100","ToursData.ActivityStartTime <= 660",null,null,null,null,0.3564,null},
+                {"Activity Start After 1600","ToursData.ActivityStartTime >= 960",0.3457,null,null,null,null,null},
+                {"Activity Duration {0-120min}","ToursData.ActivityDuration <= 120",2.254,1.759,1.5,null,null,null},
+                {"Activity Duration >= 240 min","ToursData.ActivityDuration >= 240",null,null,null,-1.999,-1.999,null},
+                {"Excess TT to stop >= 10 min","ToursData.<dir>StopDeltaTT >= 10",null,null,0.7306,1.47,0.7378,null}}
+        }
+
+    Section = "SoloTours|Frequency"
+	
+        Args.SoloTourFrequencyUtility = {
+            "Type":"array",
+            "Caption":"Solo Tours Frequency Utility",
+            "Style":"SoloTourFreqUtility",
+            "Value":{
+                {"ASC","Constant",4.51113,2.38336,1.55486,3.22883,0,1.60777,0.014994,3.42754},
+                {"HHIncome High","PersonHH.IncomeLevel = 3",0.3765,0.438,0,0,0,0.4586,0.4586,0.4888},
+                {"HHIncome Mid","PersonHH.IncomeLevel = 2",0.4599,0.4191,0,0,0,0.6527,0.6527,0.5523},
+                {"HHIncome Low","PersonHH.IncomeLevel = 1",0,0,0,0.3232,0,0,0,0},
+                {"Worker2P","PersonHH.Workers >= 2",0,0,0,0,0,0,0,0.5348},
+                {"Kids per NonWorkingAdult","PersonHH.KidsPerNonWorkingAdult",0,0,0,0,0,-0.2783,-0.2783,0.2143},
+                {"HasKids","PersonHH.Kids > 0",0,0,0,-0.5592,0,0,0,0.0986},
+                {"IsSenior","PersonHH.Age >= 65",0,0.1228,0,0,0,0,0,0.6671},
+                {"IsWorker","PersonHH.WorkerCategory <= 2",0,0,-0.1995,0,0,-0.2045,-0.2045,0},
+                {"IsMale","PersonHH.Gender = 1",0,-0.4083,-0.4083,0,0,-0.3429,-0.3429,0},
+                {"HasLicense","PersonHH.License = 1",0,0,0,0,0,0,0,-1.103},
+                {"Male worker with license","(PersonHH.License = 1) and (PersonHH.WorkerCategory <= 2)",0,0,0,0,0,0,0,0.04589},
+                {"Senior with license","(PersonHH.License = 1) and (PersonHH.Age >= 65)",0,0,0,0,0,0,0,-0.8554},
+                {"Age [5-14]","PersonHH.Age >=5 and PersonHH.Age <= 14",0,0,0,0,0,0,0,0.9361},
+                {"Available Time >= 4 hrs","PersonHH.TimeAvailForSoloTours_09to18 >= 4",-0.4948,0,0,-0.4948,0,0,0,0},
+                {"Available Time >= 7 hrs","PersonHH.TimeAvailForSoloTours_09to18 >= 7",-0.3222,0,0,-0.3222,0,0,0,0},
+                {"Available Time <= 1 hrs","PersonHH.TimeAvailForSoloTours_09to18 <= 1",0,0,0,0,0,0,0,0.2854},
+                {"Available Time <= 5 hrs","PersonHH.TimeAvailForSoloTours_09to18 <= 5",0,0,0,0,0,0,0,2.238},
+                {"Available Time <= 2 hrs","PersonHH.TimeAvailForSoloTours_09to18 <= 2",0,0,0,0,0,0,0,0.69},
+                {"Destinations Logsum Other: With License","DCLogsums.Accessibility_SoloOther.O*(PersonHH.License = 1)",0.1622,0.1495,0.1495,0,0,0.1622,0.1495,0},
+                {"Destinations Logsum Shop: With license","DCLogsums.Accessibility_SoloShop.O*(PersonHH.License = 1)",0,0,0,0.1615,0.1615,0.1615,0.1615,0},
+                {"Destinations Logsum Other: No License","DCLogsums.Accessibility_SoloOther_NoLicense.O*(PersonHH.License <> 1)",0.1622,0.1495,0.1495,0,0,0.1622,0.1495,0},
+                {"Destinations Logsum Shop: No license","DCLogsums.Accessibility_SoloShop_NoLicense.O*(PersonHH.License <> 1)",0,0,0,0.1615,0.1615,0.1615,0.1615,0}}
+        }
+        Args.SoloTourFreqAvailability = {
+            "Type":"array",
+            "Caption":"Solo Tours Frequency Availability",
+            "Style":"Availability",
+            "Value":{
+                {"O3","PersonHH.TimeAvailForSoloTours_09to18 > 2"},
+                {"O2S1","PersonHH.TimeAvailForSoloTours_09to18 > 2"},
+                {"O2","PersonHH.TimeAvailForSoloTours_09to18 > 1"},
+                {"S2","PersonHH.TimeAvailForSoloTours_09to18 > 1"},
+                {"O1S1","PersonHH.TimeAvailForSoloTours_09to18 > 1"}}
+        }
+	
+	Section = "SoloTours|Destination|Other|Mode Logsums"
+	
+        Args.SoloOtherAggMCUtility = {
+            "Type":"array",
+            "Caption":"Aggregate mode choice model for computing logsums: Solo Other Tour",
+            "Description":"SoloOtherAggMCUtility",
+            "Style":"SoloTourModeLSUtility",
+            "Value":{
+                {"ASC (Driver)","Constant",6.095,1,0,0,0,0},
+                {"ASC (Passenger)","Constant",3.188,0,1,0,0,0},
+                {"ASC (Walk)","Constant",5.967,0,0,1,0,0},
+                {"ASC (Bike)","Constant",3.67,0,0,0,1,0},
+                {"Auto Time","AutoSkim.Time",-0.3,1,1,0,0,0},
+                {"Auto Distance > 5 miles","AutoSkim.Distance > 5",0.2309,1,0,0,0,0},
+                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.2766,0,0,0,0,1},
+                {"IntraTAZ Tour (Walk)","Intrazonal.IZ",1.733,0,0,1,0,0},
+                {"IntraTAZ Tour (Bike)","Intrazonal.IZ",0.5816,0,0,0,1,0},
+                {"Walk Skim Length","WalkSkim.Distance",-1.394,0,0,1,0,0},
+                {"Bike Skim Length","BikeSkim.Distance",-0.851,0,0,0,1,0},
+                {"Walk Distance if > 1 mile","WalkSkim.Distance*(WalkSkim.Distance > 1)",-0.4031,0,0,1,0,0}}
+        }
+	
+	Section = "SoloTours|Destination|Other|Size Variable"
+	
+        Args.SoloTourOtherSizeVar = {
+            "Type":"array",
+            "Caption":"Solo Tour Destination Other Size Variable",
+            "Description":"SoloTourOtherSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Population",0},
+                {"TotalEmployment",0.5207},
+                {"Emp_HealthCare",2.424},
+                {"Emp_Services",2.424},
+                {"Emp_FinanceRealEstate",2.783},
+                {"Emp_Wholesale",1.243},
+                {"Emp_Retail",1.243},
+                {"Emp_TransportConstruction",1.243},
+                {"IntersectionDensity",-0.3831},
+                {"TransitStopDensity",-0.7403},
+                {"NonMotorizedAccessibility",2.262}}
+        }
+	
+	Section = "SoloTours|Destination|Other|LogsumUtility"
+	
+        Args.SoloTourDestOtherLSUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Destination Other Utility for Logsum",
+            "Description":"SoloTourDestOtherLSUtility",
+            "Style":"DestUtilityWithSegment",
+            "Value":{
+                {"Auto TT","AutoSkim.Time",null,-0.1414},
+                {"Auto TT if greater than 15 min","(AutoSkim.Time > 15) * (AutoSkim.Time - 15)",null,0.03592},
+                {"Auto TT if greater than 30 min","(AutoSkim.Time > 30) * (AutoSkim.Time - 30)",null,0.03942},
+                {"IsHHTAZ","Intrazonal.IZ",null,1.596},
+                {"HH Density at Dest","TAZ4Ds.HouseholdDensity.D/1000",null,-0.1908},
+                {"Total Employment Density at Dest","TAZ4Ds.TotalEmploymentDensity.D/1000",null,-0.01557},
+                {"Dist < 1 mile","AutoSkim.Distance < 1",null,0.4661},
+                {"Dist < 2 miles","AutoSkim.Distance < 2",null,0.2551},
+                {"Dist < 3 miles","AutoSkim.Distance < 3",null,0.1218},
+                {"Dist > 20 miles","AutoSkim.Distance > 20",null,-0.4168},
+                {"Dist > 30 miles","AutoSkim.Distance > 30",null,-99},
+                {"Mode Logsums Non-Motorized","ModeAccessibility.NM * (WalkSkim.Distance < 2)","NoLicense",0.1182},
+                {"Mode Logsums Non-Drive Alone","ModeAccessibility.NoDA * (AutoSkim.Distance < 5)","NoLicense",0.1292}}
+        }
+
+    Section = "SoloTours|Destination|Other|Utility"
+	
+        Args.SoloTourDestOtherUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Destination Other Utility",
+            "Description":"SoloTourDestOtherUtility",
+            "Style":"DestUtilityWithFilter",
+            "Value":{
+                {"Auto TT","AutoSkim.Time",null,-0.1414},
+                {"Auto TT if greater than 15 min","(AutoSkim.Time > 15) * (AutoSkim.Time - 15)",null,0.03592},
+                {"Auto TT if greater than 30 min","(AutoSkim.Time > 30) * (AutoSkim.Time - 30)",null,0.03942},
+                {"IsHHTAZ","Intrazonal.IZ",null,1.596},
+                {"HH Density at Dest","TAZ4Ds.HouseholdDensity.D/1000",null,-0.1908},
+                {"Total Employment Density at Dest","TAZ4Ds.TotalEmploymentDensity.D/1000",null,-0.01557},
+                {"Dist < 1 mile","AutoSkim.Distance < 1",null,0.4661},
+                {"Dist < 2 miles","AutoSkim.Distance < 2",null,0.2551},
+                {"Dist < 3 miles","AutoSkim.Distance < 3",null,0.1218},
+                {"Dist > 20 miles","AutoSkim.Distance > 20",null,-0.4168},
+                {"Dist > 30 miles","AutoSkim.Distance > 30",null,-99},
+                {"Mode Logsums Non-Motorized","ModeAccessibility.NM * (WalkSkim.Distance < 2)","PersonHH.License <> 1",0.1182},
+                {"Mode Logsums Non-Drive Alone","ModeAccessibility.NoDA * (AutoSkim.Distance < 5)","PersonHH.License <> 1",0.1292}}
+        }
+	
+	Section = "SoloTours|Destination|Shop|Mode Logsums"
+	
+        Args.SoloShopAggMCUtility = {
+            "Type":"array",
+            "Caption":"Aggregate mode choice model for computing logsums: Solo Shop Tour",
+            "Description":"SoloShopAggMCUtility",
+            "Style":"SoloTourModeLSUtility",
+            "Value":{
+                {"ASC (Driver)","Constant",4.355,1,0,0,0,0},
+                {"ASC (Passenger)","Constant",0.9137,0,1,0,0,0},
+                {"ASC (Walk)","Constant",4.036,0,0,1,0,0},
+                {"ASC (Bike)","Constant",2.012,0,0,0,1,0},
+                {"Auto Time","AutoSkim.Time",-0.16178,1,1,0,0,0},
+                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.05554,0,0,0,0,1},
+                {"IntraTAZ Tour","Intrazonal.IZ",1.838,0,0,1,0,0},
+                {"Walk Length","WalkSkim.Distance",-1.867,0,0,1,0,0},
+                {"Bike Length","BikeSkim.Distance",-1.139,0,0,0,1,0}}
+        }
+	
+	Section = "SoloTours|Destination|Shop|Size Variable"
+	
+        Args.SoloTourShopSizeVar = {
+            "Type":"array",
+            "Caption":"Solo Tour Destination Shop Size Variable",
+            "Description":"SoloTourShopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Population",0},
+                {"TotalEmployment",0.6148},
+                {"Emp_Wholesale",6.855},
+                {"Emp_Retail",6.855},
+                {"Emp_TransportConstruction",6.855},
+                {"TransitStopDensity",3.817},
+                {"TransitAccessibilityToJobsAM",-2.944},
+                {"RetailAndServiceEmploymentDensity",-0.2275}}
+        }
+	
+	Section = "SoloTours|Destination|Shop|LogsumUtility"
+	
+        Args.SoloTourDestShopLSUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Destination Shop Utility",
+            "Description":"SoloTourDestShopLSUtility",
+            "Style":"DestUtilityWithSegment",
+            "Value":{
+                {"TT","AutoSkim.Time",null,-0.3098},
+                {"TT if greater than 10 min","(AutoSkim.Time > 10) * (AutoSkim.Time)",null,0.06535},
+                {"TT if greater than 37.5 min","(AutoSkim.Time > 37.5) * (AutoSkim.Time)",null,0.06634},
+                {"IsHHTAZ","Intrazonal.IZ",null,0.2612},
+                {"Retail Emp Density at Dest","TAZ4Ds.RetailEmploymentDensity.D/1000",null,0.01641},
+                {"NonMotorized Accessibility at Dest","TAZ4Ds.NonMotorizedAccessibility.D / 1000",null,-0.0941},
+                {"Transit Accessibility To Retail at Dest","TAZ4Ds.TransitAccessibilityToRetailAM.D / 1000",null,0.1947},
+                {"Num Local Intersections at Dest","TAZ4Ds.NumLocalIntersections.D",null,0.001945},
+                {"Dist < 1 mile","AutoSkim.Distance < 1",null,0.5012},
+                {"Dist < 2 miles","AutoSkim.Distance < 2",null,0.2942},
+                {"Dist > 20 miles","AutoSkim.Distance > 20",null,1.042},
+                {"Dist > 30 miles","AutoSkim.Distance > 30",null,-99},
+                {"Mode Logsums Non-Motorized","ModeAccessibility.NM * (WalkSkim.Distance < 2)","NoLicense",0.09974},
+                {"Mode Logsums Non-DriveAlone","ModeAccessibility.NoDA * (AutoSkim.Distance < 5)","NoLicense",0.2549}}
+        }
+
+    Section = "SoloTours|Destination|Shop|Utility"
+	
+        Args.SoloTourDestShopUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Destination Shop Utility",
+            "Description":"SoloTourDestShopUtility",
+            "Style":"DestUtilityWithFilter",
+            "Value":{
+                {"TT","AutoSkim.Time",null,-0.3098},
+                {"TT if greater than 10 min","(AutoSkim.Time > 10) * (AutoSkim.Time)",null,0.06535},
+                {"TT if greater than 37.5 min","(AutoSkim.Time > 37.5) * (AutoSkim.Time)",null,0.06634},
+                {"IsHHTAZ","Intrazonal.IZ",null,0.2612},
+                {"Retail Emp Density at Dest","TAZ4Ds.RetailEmploymentDensity.D/1000",null,0.01641},
+                {"NonMotorized Accessibility at Dest","TAZ4Ds.NonMotorizedAccessibility.D / 1000",null,-0.0941},
+                {"Transit Accessibility To Retail at Dest","TAZ4Ds.TransitAccessibilityToRetailAM.D / 1000",null,0.1947},
+                {"Num Local Intersections at Dest","TAZ4Ds.NumLocalIntersections.D",null,0.001945},
+                {"Dist < 1 mile","AutoSkim.Distance < 1",null,0.5012},
+                {"Dist < 2 miles","AutoSkim.Distance < 2",null,0.2942},
+                {"Dist > 20 miles","AutoSkim.Distance > 20",null,1.042},
+                {"Dist > 30 miles","AutoSkim.Distance > 30",null,-99},
+                {"Mode Logsums Non-Motorized","ModeAccessibility.NM * (WalkSkim.Distance < 2)","PersonHH.License <> 1",0.09974},
+                {"Mode Logsums Non-DriveAlone","ModeAccessibility.NoDA * (AutoSkim.Distance < 5)","PersonHH.License <> 1",0.2549}}
+        }
+	
+	Section = "SoloTours|Duration|Other"
+	
+        Args.SoloTourDurOtherUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Duration Other Utility",
+            "Style":"SoloTourDurOtherUtility",
+            "Value":{
+                {"ASC","Constant",-0.185891,-0.364127,0.243183,0.435179,0.290915,0,0.100557,-0.154123,-0.170049,-1.55534,1.57201},
+                {"HHIncome High","PersonHH.IncomeLevel = 3",null,null,null,null,null,null,null,null,0.452809,0.452809,null},
+                {"HHIncome Mid","PersonHH.IncomeLevel = 2",null,null,null,null,null,null,null,null,null,null,null},
+                {"HHIncome Low","PersonHH.IncomeLevel = 1",0.065788,0.065788,null,null,-0.273083,-0.273083,null,null,null,null,null},
+                {"IsKid","PersonHH.Age < 18",-0.254013,-0.254013,0.300916,0.300916,null,null,0.565491,0.565491,null,null,0.415769},
+                {"IsWorker","PersonHH.WorkerCategory <= 2",-0.16475,-0.16475,null,null,null,null,-0.699992,-0.699992,null,null,-0.755278},
+                {"IsSenior","PersonHH.Age >= 65",-0.108578,-0.108578,null,null,null,null,-0.070973,-0.070973,null,null,-1.22457},
+                {"Senior with license","(PersonHH.License = 1) and (PersonHH.Age >= 65)",-0.376123,null,null,null,null,null,null,null,null,null,null},
+                {"Worker with license","(PersonHH.License = 1) and (PersonHH.WorkerCategory <= 2)",0.286392,null,null,null,null,null,null,null,null,null,null},
+                {"Number of Solo Tours","PersonHH.NumberSoloOtherTours + PersonHH.NumberSoloShopTours",1.07063,0.948416,0.752867,0.4149,0.568747,0.256327,null,null,null,null,-0.526183},
+                {"Distance < 5 miles","AutoSkim.Distance < 5",1.16878,0.64165,1.03693,0.961311,0.378724,null,null,null,null,null,null},
+                {"Distance < 10 miles","AutoSkim.Distance < 10",0.73966,0.697205,null,null,null,null,null,null,null,null,null}}
+        }
+	
+	Section = "SoloTours|Duration|Shop"
+	
+        Args.SoloTourDurShopUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Duration Shop Utility",
+            "Style":"SoloTourDurShopUtility",
+            "Value":{
+                {"ASC","Constant",0.218159,0.622205,0.803368,0.804945,-0.225296,0},
+                {"HHIncome High","PersonHH.IncomeLevel = 3",null,null,-0.339508,-0.339508,null,null},
+                {"HHIncome Mid","PersonHH.IncomeLevel = 2",null,null,null,null,null,null},
+                {"HHIncome Low","PersonHH.IncomeLevel = 1",-0.348409,-0.348409,null,null,null,null},
+                {"IsKid","PersonHH.Age < 18",-1.36826,-1.36826,-1.18706,-1.18706,null,null},
+                {"IsWorker","PersonHH.WorkerCategory <= 2",1.22532,1.22532,null,null,null,null},
+                {"IsSenior","PersonHH.Age >= 65",0.800169,0.800169,null,null,null,null},
+                {"Senior with license","(PersonHH.License = 1) and (PersonHH.Age >= 65)",-0.61221,null,null,null,null,null},
+                {"Worker with license","(PersonHH.License = 1) and (PersonHH.WorkerCategory = null)",-0.392786,null,null,null,null,null},
+                {"Number of Solo Tours","PersonHH.NumberSoloOtherTours + PersonHH.NumberSoloShopTours",0.747218,0.569881,0.455844,null,null,null},
+                {"Distance < 5 miles","AutoSkim.Distance < 5",4.14189,3.45599,2.11544,2.52068,2.61156,null}}
+        }
+	
+	Section = "SoloTours|StartTime|Other|Alternatives"
+
+        Args.SoloTourStartOtherAlts = {
+            "Type":"array",
+            "Caption":"Solo Tour StartTime Other Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"5 - 6",null,-2.1891},
+                {"6 - 7",null,-1.23193},
+                {"7 - 8","7 AM - 10 AM",0.111839},
+                {"8 - 9","7 AM - 10 AM",0.598416},
+                {"9 - 10","7 AM - 10 AM",0.339116},
+                {"10 - 11","10 AM - 1 PM",0},
+                {"11 - 12","10 AM - 1 PM",0.220312},
+                {"12 - 13","10 AM - 1 PM",0.118323},
+                {"13 - 14","1 PM - 4 PM",0.233575},
+                {"14 - 15","1 PM - 4 PM",0.436743},
+                {"15 - 16","1 PM - 4 PM",0.15344},
+                {"16 - 17","4 PM - 6 PM",0.067499},
+                {"17 - 18","4 PM - 6 PM",0.218485},
+                {"18 - 19","6 PM - 9 PM",-0.285362},
+                {"19 - 20","6 PM - 9 PM",-1.04389},
+                {"20 - 21","6 PM - 9 PM",-2.11473},
+                {"21 - 22",null,-3.27461}}
+        }
+	
+	Section = "SoloTours|StartTime|Other|Utility"
+	
+        Args.SoloTourStartOtherUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour StartTime Other Utility",
+            "Style":"SoloTourStartUtility",
+            "Value":{
+                {"HHIncome_High","SoloToursPersonData.IncomeLevel = 3",null,null,-0.45106,-0.472971,null},
+                {"HHIncome_Low","SoloToursPersonData.IncomeLevel = 1",null,0.447573,null,null,null},
+                {"KidsPerNonWorkingAdult * nonWorker","(SoloToursPersonData.KidsPerNonWorkingAdult) * ( SoloToursPersonData.WorkerCategory = null)",0.185315,null,null,null,null},
+                {"IsKid","SoloToursPersonData.Age < 18",-0.851402,-0.964699,-0.262631,-0.344057,null},
+                {"IsSenior","SoloToursPersonData.Age >= 65",0.227607,0.436847,null,null,null},
+                {"IsWorker","SoloToursPersonData.WorkerCategory <= 2",null,null,null,0.191315,1.96497},
+                {"Worker with license","(SoloToursPersonData.License = 1) and (SoloToursPersonData.WorkerCategory <= 2)",null,null,null,null,-1.01036},
+                {"ActivityDuration 0-30 min","SoloToursPersonData.Solo_Other<tourno>_Duration > 0 and SoloToursPersonData.Solo_Other<tourno>_Duration < 30",null,null,0.184797,null,null},
+                {"ActivityDuration 0-60 min","SoloToursPersonData.Solo_Other<tourno>_Duration > 0 and SoloToursPersonData.Solo_Other<tourno>_Duration < 60",null,null,0.249246,null,-0.397892},
+                {"ActivityDuration > 3hr","SoloToursPersonData.Solo_Other<tourno>_Duration > 180",0.429176,null,null,null,null},
+                {"Distance > 15 miles","AutoSkim.Distance > 15",null,0.319964,null,null,null},
+                {"OD are in sameTAZ","SoloToursPersonData.TAZID = SoloToursPersonData.Solo_Other<tourno>_Destination",null,null,-0.380062,null,0.239628}}
+        }
+	
+	Section = "SoloTours|StartTime|Shop|Alternatives"
+	
+        Args.SoloTourStartShopAlts = {
+            "Type":"array",
+            "Caption":"Solo Tour StartTime Shop Alternatives",
+            "Style":"AlternativesList",
+            "Value":{
+                {"7 - 8","7 AM - 10 AM",-2.6854},
+                {"8 - 9","7 AM - 10 AM",1.13393},
+                {"9 - 10","7 AM - 10 AM",2.28269},
+                {"10 - 11","10 AM - 1 PM",2.50131},
+                {"11 - 12","10 AM - 1 PM",2.1455},
+                {"12 - 13","10 AM - 1 PM",1.65528},
+                {"13 - 14","1 PM - 4 PM",1.99904},
+                {"14 - 15","1 PM - 4 PM",2.11328},
+                {"15 - 16","1 PM - 4 PM",1.61555},
+                {"16 - 17","4 PM - 6 PM",1.41106},
+                {"17 - 18","4 PM - 6 PM",0},
+                {"18 - 19","6 PM - 9 PM",-0.208743},
+                {"19 - 20","6 PM - 9 PM",-0.577272},
+                {"20 - 21","6 PM - 9 PM",-4.04689}}
+        }
+	
+	Section = "SoloTours|StartTime|Shop|Utility"
+	
+        Args.SoloTourStartShopUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour StartTime Shop Utility",
+            "Style":"SoloTourStartUtility",
+            "Value":{
+                {"HHIncome_High","SoloToursPersonData.IncomeLevel = 3",null,null,0.365658,null,-0.580935},
+                {"HHIncome_Low","SoloToursPersonData.IncomeLevel = 1",null,0.79956,null,null,null},
+                {"KidsPerNonWorkingAdult * nonWorker","(SoloToursPersonData.KidsPerNonWorkingAdult) * ( SoloToursPersonData.WorkerCategory = null)",-0.32737,null,null,null,null},
+                {"IsKid","SoloToursPersonData.Age < 18",null,null,null,0.944391,null},
+                {"IsSenior","SoloToursPersonData.Age >= 65",0.344303,0.830918,0.877463,null,null},
+                {"IsWorker","(SoloToursPersonData.WorkerCategory <= 2)",null,null,null,1.05209,2.82579},
+                {"Worker with license","(SoloToursPersonData.License = 1) and (SoloToursPersonData.WorkerCategory <= 2)",null,null,null,null,-2.05712},
+                {"ActivityDuration 0-30 min","SoloToursPersonData.Solo_Shop<tourno>_Duration > 0 and SoloToursPersonData.Solo_Shop<tourno>_Duration < 30",null,null,-0.317145,null,null},
+                {"ActivityDuration 0-60 min","SoloToursPersonData.Solo_Shop<tourno>_Duration > 0 and SoloToursPersonData.Solo_Shop<tourno>_Duration < 60",null,null,0.324799,null,1.56023},
+                {"ActivityDuration > 1hr","SoloToursPersonData.Solo_Shop<tourno>_Duration > 60",-0.303405,null,null,null,null},
+                {"Distance > 10 miles","AutoSkim.Distance > 10",null,0.363358,null,null,null},
+                {"OD are in sameTAZ","SoloToursPersonData.TAZID = SoloToursPersonData.Solo_Shop<tourno>_Destination",null,null,null,0.840294,-1.58526}}
+        }
+	
+	Section = "SoloTours|Mode|Other"
+	
+        Args.SoloTourModeOtherUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Mode Other Utility",
+            "Style":"SoloTourModeUtility",
+            "Value":{
+                {"ASC (Driver)","Constant",1.55479,1,0,0,0,0,0},
+                {"ASC (Passenger)","Constant",-1.79882,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",2.66567,0,0,1,0,0,0},
+                {"ASC (PTWalk)","Constant",-2.59261,0,0,0,0,1,0},
+                {"ASC (Other)","Constant",-1.44258,0,0,0,0,0,1},
+                {"HHVehicles >= 2","PersonHH.Vehicles >= 2",0.495923,1,0,0,0,0,0},
+                {"HHVehicles >= 3 (Driver)","PersonHH.Vehicles >= 3",0.471255,1,0,0,0,0,0},
+                {"HHVehicles >= 3 (Pass)","PersonHH.Vehicles >= 3",0.640414,0,1,0,0,0,0},
+                {"HHIncome_Low","PersonHH.IncomeLevel = 1",0.135224,1,1,0,0,0,0},
+                {"HHIncome_Mid","PersonHH.IncomeLevel = 2",0.364645,1,1,0,0,0,0},
+                {"IsWorker (Driver)","PersonHH.WorkerCategory <= 2",-0.48905,1,0,0,0,0,0},
+                {"IsWorker (Pass)","PersonHH.WorkerCategory <= 2",0.525193,0,1,0,0,0,0},
+                {"IsSenior","PersonHH.Age >= 65",-0.68297,1,0,0,0,0,0},
+                {"IsMale","PersonHH.Gender = 1",-0.334062,1,0,0,0,0,0},
+                {"Male Adult","(PersonHH.Gender = 1) and (PersonHH.Age >= 18)",-0.497314,0,0,1,0,0,0},
+                {"IsKid (Carpool)","PersonHH.Age < 18",1.06777,0,1,0,0,0,0},
+                {"IsKid (Walk)","PersonHH.Age < 18",-0.322233,0,0,1,0,0,0},
+                {"Distance > 5 miles","AutoSkim.Distance > 5",0.366345,1,0,0,0,0,0},
+                {"Walk Distance","WalkSkim.Distance",-0.742875,0,0,1,0,0,0},
+                {"Bike Distance","BikeSkim.Distance",-0.291715,0,0,0,1,0,0},
+                {"Walk Distance if greater than 1mile","(WalkSkim.Distance > 1) * WalkSkim.Distance",-0.378788,0,0,1,0,0,0},
+                {"OD same TAZ (Walk)","PersonHH.TAZID = PersonHH.Solo_Other<tourno>_Destination",1.51714,0,0,1,0,0,0},
+                {"OD same TAZ (Bike)","PersonHH.TAZID = PersonHH.Solo_Other<tourno>_Destination",0.471861,0,0,0,1,0,0},
+                {"ActivityDuration (0-30) min","PersonHH.Solo_Other<tourno>_Duration > 0 and PersonHH.Solo_Other<tourno>_Duration < 30",0.215477,0,0,1,0,0,0},
+                {"ActivityDuration (0-60) min","PersonHH.Solo_Other<tourno>_Duration > 0 and PersonHH.Solo_Other<tourno>_Duration < 60",0.319788,0,0,1,0,0,0},
+                {"ActivityDuration (2- 3) hrs","(PersonHH.Solo_Other<tourno>_Duration > 120) and (PersonHH.Solo_Other<tourno>_Duration < 180)",1.34574,0,1,0,0,0,0},
+                {"ActivityDuration > 3 hrs","PersonHH.Solo_Other<tourno>_Duration > 180",1.05107,0,1,0,0,0,0},
+                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.008984,0,0,0,0,1,0}}
+        }
+        Args.SoloTourModeOtherAvail = {
+            "Type":"array",
+            "Caption":"Solo Tour Mode Availability - Other",
+            "Style":"Availability",
+            "Value":{
+                {"Walk","WalkSkim.Distance <= 2"},
+                {"Bike","BikeSkim.Distance <= 5"},
+                {"PTWalk","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+        }
+	
+	Section = "SoloTours|Mode|Shop"
+	
+        Args.SoloTourModeShopUtility = {
+            "Type":"array",
+            "Caption":"Solo Tour Mode Shop Utility",
+            "Style":"SoloTourModeUtility",
+            "Value":{
+                {"ASC (Driver)","Constant",1.00082,1,0,0,0,0,0},
+                {"ASC (Passenger)","Constant",-0.984994,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",1.50896,0,0,1,0,0,0},
+                {"ASC (PTWalk)","Constant",-2.00026,0,0,0,0,1,0},
+                {"ASC (Other)","Constant",-2.70515,0,0,0,0,0,1},
+                {"HHVehicles >= 2 (Driver)","PersonHH.Vehicles >= 2",1.14661,1,0,0,0,0,0},
+                {"HHVehicles >= 2 (Passenger)","PersonHH.Vehicles >= 2",-0.815669,0,1,0,0,0,0},
+                {"HHVehicles >= 3","PersonHH.Vehicles >= 3",1.43259,1,0,0,0,0,0},
+                {"HHIncome_Low","PersonHH.IncomeLevel = 1",-0.460074,1,1,0,0,0,0},
+                {"HHIncome_Mid","PersonHH.IncomeLevel = 2",-0.771423,1,1,0,0,0,0},
+                {"IsWorker","PersonHH.WorkerCategory <= 2",0.468095,1,0,0,0,0,0},
+                {"IsSenior","PersonHH.Age >= 65",0.745095,1,0,0,0,0,0},
+                {"IsMale","PersonHH.Gender = 1",-0.671598,1,0,0,0,0,0},
+                {"Male Adult","(PersonHH.Gender = 1) and (PersonHH.Age >= 18)",0.741362,0,0,1,0,0,0},
+                {"Distance > 5 miles","AutoSkim.Distance > 5",-0.536978,1,0,0,0,0,0},
+                {"Walk Distance","WalkSkim.Distance",-0.886954,0,0,1,0,0,0},
+                {"Bike Distance","BikeSkim.Distance",-0.729616,0,0,0,1,0,0},
+                {"Walk Distance if greater than 0.75 mile","(WalkSkim.Distance > 0.75) * WalkSkim.Distance",-0.385005,0,0,1,0,0,0},
+                {"OD same TAZ","PersonHH.TAZID = PersonHH.Solo_Shop<tourno>_Destination",1.5251,0,0,1,0,0,0},
+                {"ActivityDuration (0-30) min","PersonHH.Solo_Shop<tourno>_Duration > 0 and PersonHH.Solo_Shop<tourno>_Duration < 30",0.737733,0,0,1,0,0,0},
+                {"IVT Transit","PTSkim.[In-Vehicle Time]",-0.003704,0,0,0,0,1,0}}
+        }
+        Args.SoloTourModeShopAvail = {
+            "Type":"array",
+            "Caption":"Solo Tour Mode Availability - Shop",
+            "Style":"Availability",
+            "Value":{
+                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Bike","BikeSkim.Distance <= 5"},
+                {"PTWalk","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+        }
+	
+    Section = "SoloTourStops|Frequency|Other"
+	
+        Args.SoloStopFreqOtherUtility = {
+            "Type":"array",
+            "Caption":"Solo Intermediate Stop Frequency Other Utility",
+            "Style":"StopsFreqUtility",
+            "Value":{
+                {"ASC (0_0)","Constant",1.60194,1,0,0,0},
+                {"ASC (0_1)","Constant",0.220484,0,0,1,0},
+                {"ASC (1_0)","Constant",0.254561,0,0,1,0},
+                {"Kid","ToursData.Age < 18",1.136,1,0,0,0},
+                {"Age [0-4]","ToursData.Age <=4",-1.226,1,0,0,0},
+                {"Age [5-14]","ToursData.Age >=5 and ToursData.Age <= 14",-1.116,1,0,0,0},
+                {"Worker","ToursData.WorkerCategory <= 2",0.1633,1,0,0,0},
+                {"Kids in HH","ToursData.Kids > 0",0.1086,1,0,0,0},
+                {"HHVehicles >= 3","ToursData.Vehicles >= 3",0.2404,1,0,0,0},
+                {"Activity Start: After 1600","ToursData.ActivityStartTime >= 960",0.5371,1,0,0,0},
+                {"Activity Start: Before 1200","ToursData.ActivityStartTime <= 720",0.8271,0,0,1,0},
+                {"Activity Start [1200 -1600]","(ToursData.ActivityStartTime > 720) and (ToursData.ActivityStartTime < 960)",0.5388,0,1,0,0},
+                {"Activity Duration [0-60 min]","ToursData.ActivityDuration <= 60",0.5679,1,0,0,0},
+                {"Activity Duration > 120 min","ToursData.ActivityDuration > 120",0.1791,0,0,0,1},
+                {"Main Stop Distance >= 5 miles (One Stop)","AutoSkim.Distance >= 5",0.5074,0,1,1,0},
+                {"Main Stop Distance >= 5 miles (Two Stops)","AutoSkim.Distance >= 5",0.6966,0,0,0,1},
+                {"Main Stop Distance >= 10 miles","AutoSkim.Distance >= 10",0.3973,0,0,0,1},
+                {"Main TAZ same as Home TAZ","ToursData.TAZID = ToursData.Destination",0.118,1,0,0,0},
+                {"Non Auto Work Mode","ToursData.IsAutoTour <> 1",0.8245,1,0,0,0},
+                {"Number of Solo Discretionary Tours","ToursData.NumberSoloOtherTours + ToursData.NumberSoloShopTours",0.02917,1,0,0,0}}
+        }
+	
+	Section = "SoloTourStops|Frequency|Shop"
+	
+        Args.SoloStopFreqShopUtility = {
+            "Type":"array",
+            "Caption":"Solo Intermediate Stop Frequency Shop Utility",
+            "Style":"StopsFreqUtility",
+            "Value":{
+                {"ASC (0_0)","Constant",1.44691,1,0,0,0},
+                {"ASC (0_1)","Constant",0.10605,0,0,1,0},
+                {"ASC (1_0)","Constant",0.198089,0,0,1,0},
+                {"Kid","ToursData.Age < 18",1.136,1,0,0,0},
+                {"Age [0-4]","ToursData.Age <=4",-1.226,1,0,0,0},
+                {"Age [5-14]","ToursData.Age >=5 and ToursData.Age <= 14",-1.116,1,0,0,0},
+                {"Worker","ToursData.WorkerCategory <= 2",0.1633,1,0,0,0},
+                {"Kids in HH","ToursData.Kids > 0",0.1086,1,0,0,0},
+                {"HHVehicles >= 3","ToursData.Vehicles >= 3",0.2404,1,0,0,0},
+                {"Activity Start: After 1600","ToursData.ActivityStartTime >= 960",0.5371,1,0,0,0},
+                {"Activity Start: Before 1200","ToursData.ActivityStartTime <= 720",0.8271,0,0,1,0},
+                {"Activity Start [1200 -1600]","(ToursData.ActivityStartTime > 720) and (ToursData.ActivityStartTime < 960)",0.5388,0,1,0,0},
+                {"Activity Duration [0-60 min]","ToursData.ActivityDuration <= 60",0.5679,1,0,0,0},
+                {"Activity Duration > 120 min","ToursData.ActivityDuration > 120",0.1791,0,0,0,1},
+                {"Main Stop Distance >= 5 miles (One Stop)","AutoSkim.Distance >= 5",0.5074,0,1,1,0},
+                {"Main Stop Distance >= 5 miles (Two Stops)","AutoSkim.Distance >= 5",0.6966,0,0,0,1},
+                {"Main Stop Distance >= 10 miles","AutoSkim.Distance >= 10",0.3973,0,0,0,1},
+                {"Main TAZ same as Home TAZ","ToursData.TAZID = ToursData.Destination",0.118,1,0,0,0},
+                {"Non Auto Work Mode","ToursData.IsAutoTour <> 1",0.8245,1,0,0,0},
+                {"Number of Solo Discretionary Tours","ToursData.NumberSoloOtherTours + ToursData.NumberSoloShopTours",0.02917,1,0,0,0}}
+        }
+	
+	Section = "SoloTourStops|Destination|Size Variable"
+	
+        Args.SoloStopSizeVar = {
+            "Type":"array",
+            "Caption":"Solo Stop Destination Size Variable",
+            "Description":"SoloStopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Population",0},
+                {"Emp_HealthCare",1.6},
+                {"Emp_Services",1.6},
+                {"Emp_FinanceRealEstate",3.69},
+                {"Emp_Education",1.551},
+                {"Emp_Wholesale",3.787},
+                {"Emp_Retail",3.787},
+                {"Emp_TransportConstruction",3.787},
+                {"IntersectionDensity",-1.176},
+                {"TransitStopDensity",1.344},
+                {"TransitAccessibilityToRetailAM",-1.815},
+                {"RetailAndServiceEmploymentDensity",-2.016}}
+        }
+	
+	Section = "SoloTourStops|Destination|Utility"
+	
+        Args.SoloStopDestinationUtility = {
+            "Type":"array",
+            "Caption":"Solo Stops Destination Utility",
+            "Description":"SoloStopDestinationUtility",
+            "Style":"DestUtility",
+            "Value":{
+                {"Delta TT (Additional TT) for Non Active Tour","DeltaTT.DeltaTT*(1 - ToursData.ActiveTour)",-0.2114},
+                {"Excess Delta TT over 15 min (Non Active Tour)","(DeltaTT.DeltaTT > 15)*(DeltaTT.DeltaTT - 15)*(1 - ToursData.ActiveTour)",0.1493},
+                {"Excess Delta TT over 40 min (Non Active Tour)","(DeltaTT.DeltaTT > 40)*(DeltaTT.DeltaTT - 40)*(1 - ToursData.ActiveTour)",0.02839},
+                {"Is Delta Dist over 20 mi (Non Active Tour)","(DeltaDist.DeltaDist > 20)*(1 - ToursData.ActiveTour)",-0.3159},
+                {"Is Delta Dist over 30 mi (Non Active Tour)","(DeltaDist.DeltaDist > 30)*(1 - ToursData.ActiveTour)",-0.149},
+                {"Is Delta Dist over 3 mi (Active Tour)","(DeltaDist.DeltaDist > 3)*(ToursData.ActiveTour)",-1.781},
+                {"Is Delta Dist over 5 mi (Active Tour)","(DeltaDist.DeltaDist > 5)*(ToursData.ActiveTour)",-1.018},
+                {"Is Delta Dist over 10 mi (Active Tour)","(DeltaDist.DeltaDist > 10)*(ToursData.ActiveTour)",-3.671},
+                {"Is StopTAZ same as HHTAZ","Intrazonal.IZ",1.485},
+                {"Is StopTAZ same as Main DestTAZ","StopSameAsDestMtx.StopSameAsDest",1.194},
+                {"Is StopTAZ same as Main DestTAZ (Active Tour)","StopSameAsDestMtx.StopSameAsDest*ToursData.ActiveTour",1.129},
+                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.D/1000",-0.04526},
+                {"HH Density","TAZ4Ds.HouseholdDensity.D/1000",-0.09026},
+                {"Delta TT more than 1 hour (non active tour)","(DeltaTT.DeltaTT > 60)*(1 - ToursData.ActiveTour)",-99}}
+        }
+	
+	Section = "SoloTourStops|Duration|Other"
+	
+        Args.SoloStopDurOtherUtility = {
+            "Type":"array",
+            "Caption":"Solo Stop Duration Other Utility",
+            "Style":"NMStopsDurUtility",
+            "Value":{
+                {"ASC","Constant",-0.287443,0.217572,-0.189117,0.07855,-1.2543,null},
+                {"Kid","ToursData.Age < 18",-1.10998,-1.10998,-0.913353,-1.92405,null,null},
+                {"Worker","ToursData.WorkerCategory <= 2",0.206661,0.215176,null,null,null,null},
+                {"Senior","ToursData.Age >= 65",0.197594,0.197594,null,null,null,null},
+                {"HHIncome_High","ToursData.IncomeLevel = 3",0.569365,null,null,null,null,null},
+                {"Num of Int Stops is 2","ToursData.ForwardStop + ToursData.ReturnStop = 2",0.60163,0.489558,0.426177,null,null,null},
+                {"Activity Start [1300 - 1600]","(ToursData.ActivityStartTime >= 780) and (ToursData.ActivityStartTime < 960)",0.183838,null,null,null,null,null},
+                {"Activity Start [1200 - 1600]","(ToursData.ActivityStartTime > 720) and (ToursData.ActivityStartTime <= 900)",null,0.201996,0.268182,null,null,null},
+                {"Activity Start before 1200","ToursData.ActivityStartTime < 720",null,null,null,null,0.691418,null},
+                {"Activity Start After 1600","ToursData.ActivityStartTime >= 960",null,null,null,null,0.748622,null},
+                {"Activity Duration [0-90 min]","ToursData.ActivityDuration < 90",2.0625,1.80373,1.23492,null,null,null},
+                {"Activity Duration >= 120 min","ToursData.ActivityDuration >= 120",null,null,null,-0.371031,-0.60537,null},
+                {"Excess TT to stop < 5 min","ToursData.<dir>StopDeltaTT < 5",0.775691,null,null,null,null,null},
+                {"Excess TT to stop [5-10 min]","(ToursData.<dir>StopDeltaTT >= 5 ) and (ToursData.<dir>StopDeltaTT < 10)",0.770165,null,null,null,null,null},
+                {"Excess TT to stop >= 5 min","ToursData.<dir>StopDeltaTT >= 5",null,-0.393647,-0.409196,null,null,null},
+                {"Excess TT to stop >= 10 min","ToursData.<dir>StopDeltaTT >= 10",null,null,null,null,0.582641,null}}
+        }
+	
+	Section = "SoloTourStops|Duration|Shop"
+	
+        Args.SoloStopDurShopUtility = {
+            "Type":"array",
+            "Caption":"Solo Stop Duration Shop Utility",
+            "Style":"NMStopsDurUtility",
+            "Value":{
+                {"ASC","Constant",-0.696014,-0.168393,-0.47344,-0.022058,-1.34569,null},
+                {"Kid","ToursData.Age < 18",-1.10998,-1.10998,-0.913353,-1.92405,null,null},
+                {"Worker","ToursData.WorkerCategory <= 2",0.206661,0.215176,null,null,null,null},
+                {"Senior","ToursData.Age >= 65",0.197594,0.197594,null,null,null,null},
+                {"HHIncome_High","ToursData.IncomeLevel = 3",0.569365,null,null,null,null,null},
+                {"Num of Int Stops is 2","ToursData.ForwardStop + ToursData.ReturnStop = 2",0.60163,0.489558,0.426177,null,null,null},
+                {"Activity Start [1300 - 1600]","(ToursData.ActivityStartTime >= 780) and (ToursData.ActivityStartTime < 960)",0.183838,null,null,null,null,null},
+                {"Activity Start [1200 - 1600]","(ToursData.ActivityStartTime > 720) and (ToursData.ActivityStartTime <= 900)",null,0.201996,0.268182,null,null,null},
+                {"Activity Start before 1200","ToursData.ActivityStartTime < 720",null,null,null,null,0.691418,null},
+                {"Activity Start After 1600","ToursData.ActivityStartTime >= 960",null,null,null,null,0.748622,null},
+                {"Activity Duration [0-90 min]","ToursData.ActivityDuration < 90",2.0625,1.80373,1.23492,null,null,null},
+                {"Activity Duration >= 120 min","ToursData.ActivityDuration >= 120",null,null,null,-0.371031,-0.60537,null},
+                {"Excess TT to stop < 5 min","ToursData.<dir>StopDeltaTT < 5",0.775691,null,null,null,null,null},
+                {"Excess TT to stop [5-10 min]","(ToursData.<dir>StopDeltaTT >= 5 ) and (ToursData.<dir>StopDeltaTT < 10)",0.770165,null,null,null,null,null},
+                {"Excess TT to stop >= 5 min","ToursData.<dir>StopDeltaTT >= 5",null,-0.393647,-0.409196,null,null,null},
+                {"Excess TT to stop >= 10 min","ToursData.<dir>StopDeltaTT >= 10",null,null,null,null,0.582641,null}}
+        }
+
+    Section = "Tours and Trips#Tour Files"
+        Args.MandatoryTours = {
+            "Type":"File",
+            "Caption":"Mandatory Tours Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\Mandatory_Tours.bin"
+        }
+        Args.NonMandatoryJointTours = {
+            "Type":"File",
+            "Caption":"NonMandatory Joint Tours Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\NonMandatory_Joint_Tours.bin"
+        }
+        Args.NonMandatorySoloTours = {
+            "Type":"File",
+            "Caption":"NonMandatory Solo Tours Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\NonMandatory_Solo_Tours.bin"
+        }
+        
+    Section = "Tours and Trips#Trip Files"
+        Args.MandatoryTrips = {
+            "Type":"File",
+            "Caption":"Mandatory Trips Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\Mandatory_Trips.bin"
+        }
+        Args.NonMandatoryJointTrips = {
+            "Type":"File",
+            "Caption":"NonMandatory Joint Trips Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\NonMandatory_Joint_Trips.bin"
+        }
+        Args.NonMandatorySoloTrips = {
+            "Type":"File",
+            "Caption":"NonMandatory Solo Trips Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\NonMandatory_Solo_Trips.bin"
+        }
+        Args.ABM_Trips = {
+            "Type":"File",
+            "Caption":"Final ABM Trip Table",
+            "Value":"%Output Folder%\\ToursAndTrips\\ABM_Trips.bin"
+        }
+        
+    Section = "Tours and Trips#Matrices"
+        Args.PersonTripsMtx = {
+            "Type":"File",
+            "Caption":"Person Trips Matrix (Internal)",
+            "VisualizeMenu":
+            {"ChordMenu"},
+            "Value":"%Output Folder%\\OD\\PersonTrips.mtx"
+        }
+        Args.PeakHourPersonTrips = {
+            "Type":"File",
+            "Caption":"Peak Person Trips Matrix (Internal)",
+            "VisualizeMenu":
+            {"ChordMenu"},
+            "Value":"%Output Folder%\\OD\\PeakHourPersonTrips.mtx"
+        }
+        Args.AM_OD = {
+            "Type":"File",
+            "Caption":"AM Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\AM_OD.mtx"
+        }
+        Args.MD_OD = {
+            "Type":"File",
+            "Caption":"MD Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\MD_OD.mtx"
+        }
+        Args.PM_OD = {
+            "Type":"File",
+            "Caption":"PM Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\PM_OD.mtx"
+        }
+        Args.NT_OD = {
+            "Type":"File",
+            "Caption":"NT Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\NT_OD.mtx"
+        }
+
+
+	Section = "Visitor Model"
+	
+        Args.[Vis Hotel Occ Rate] = {
+            "Type":"double",
+            "Caption":"Occupancy rate",
+            "Value":.846
+        }
+        Args.[Vis Condo Occ Rate] = {
+            "Type":"double",
+            "Caption":"Occupancy rate",
+            "Value":.846
+        }
+        Args.[Vis HH Occ Rate] = {
+            "Type":"double",
+            "Caption":"Occupancy rate",
+            "Value":.022
+        }
+        Args.[Vis Hotel Business Ratio] = {
+            "Type":"double",
+            "Caption":"The ratio of visitors in hotels that are on island for business",
+            "Value":.088
+        }
+        Args.[Vis Condo Business Ratio] = {
+            "Type":"double",
+            "Caption":"The ratio of visitors in condos that are on island for business",
+            "Value":.063
+        }
+        Args.[Vis HH Business Ratio] = {
+            "Type":"double",
+            "Caption":"The ratio of visitors in households that are on island for business",
+            "Value":.012
+        }
+        Args.[Vis Personal Party Size] = {
+            "Type":"double",
+            "Caption":"Party size for personal visitors",
+            "Value":2.64
+        }
+        Args.[Vis Business Party Size] = {
+            "Type":"double",
+            "Caption":"Party size for business visitors",
+            "Value":1.74
+        }
+        Args.[Vis Party Calibration Factor] = {
+            "Type":"double",
+            "Caption":"Calibration factor to adjust total daily visitors on island",
+            "Value":1
+        }
+        Args.[Vis Trip Rates] = {
+            "Type":"File",
+            "Caption":"Visitor trip rates",
+            "Value":"%Input Folder%\\visitors\\vis_generation.csv"
+        }
+
+    Section = "Airport"
+
+    Args.[Airport Attraction Rates] = {
+            "Type":"File",
+            "Caption":"Airport Attraction Rates",
+            "Value":"%Input Folder%\\airport\\air_attr_rates.csv"
+        }
+
+    Args.[Airport Vis Ratio] = {
+            "Type":"double",
+            "Caption":"Ratio of visitor trips to total.",
+            "Value":0.481
+        }
+
+    Args.[Airport Vis Occupancy] = {
+            "Type":"double",
+            "Caption":"Average vehicle occupancy for visitor airport trips",
+            "Value":1.88
+        }
+
+    Args.[Airport Res Occupancy] = {
+            "Type":"double",
+            "Caption":"Average vehicle occupancy for resident airport trips",
+            "Value":2
+        }
+
+    Args.[Airport TOD Rates] = {
+            "Type":"File",
+            "Caption":"Airport Time of Day Factors",
+            "Value":"%Input Folder%\\airport\\air_tod.csv"
+        }
+	
+	Section = "AssignmentInputs"
+	
+        Args.AssignIterations = {
+            "Type":"int",
+            "Caption":"Assignment Iterations",
+            "Value":501
+        }
+        Args.AssignmentConvergence = {
+            "Type":"double",
+            "Caption":"Assignment Convergence",
+            "Value":0.0001
+        }
+        Args.AM_TOD = {
+            "Type":"double",
+            "Caption":"AM TOD Factor",
+            "Value":2.3
+        }
+        Args.OP_TOD = {
+            "Type":"double",
+            "Caption":"OP TOD Factor",
+            "Value":6
+        }
+        Args.PM_TOD = {
+            "Type":"double",
+            "Caption":"PM TOD Factor",
+            "Value":4.3
+        }
+        Args.External_AM_OD = {
+            "Type":"File",
+            "Caption":"AM External OD Matrix",
+            "Value":"%Input Folder%\\ExternalTrips\\External_AM.mtx"
+        }
+        Args.External_OP_OD = {
+            "Type":"File",
+            "Caption":"OP External OD Matrix",
+            "Value":"%Input Folder%\\ExternalTrips\\External_OP.mtx"
+        }
+        Args.External_PM_OD = {
+            "Type":"File",
+            "Caption":"PM External OD Matrix",
+            "Value":"%Input Folder%\\ExternalTrips\\External_PM.mtx"
+        }
+	
+	Section = "AssignmentOutputs"
+	
+        Args.AM_CarFlows = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"FlowMap"},
+            "Value":"%Output Folder%\\Assignment\\AM_CarFlows.bin"
+        }
+        Args.PM_CarFlows = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"FlowMap"},
+            "Value":"%Output Folder%\\Assignment\\PM_CarFlows.bin"
+        }
+        Args.OP_CarFlows = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"FlowMap"},
+            "Value":"%Output Folder%\\Assignment\\OP_CarFlows.bin"
+        }
+        Args.AM_IterLog = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"ConvChart"},
+            "Value":"%Output Folder%\\Assignment\\AM_IterationLog.bin"
+        }
+        Args.PM_IterLog = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"ConvChart"},
+            "Value":"%Output Folder%\\Assignment\\PM_IterationLog.bin"
+        }
+        Args.OP_IterLog = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"ConvChart"},
+            "Value":"%Output Folder%\\Assignment\\OP_IterationLog.bin"
+        }
+	
+	Section = "PT Assignment Outputs"
+	
+        Args.PT_Summaries = {
+            "Type":"File",
+            "Caption":"Public Transport Summaries",
+            "Value":"%Output Folder%\\PTAssignment\\PT_Summary.bin"
+        }
+        Args.AM_PT_Flows = {
+            "Type":"File",
+            "Caption":"AM Public Transport Flows",
+            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Flows.bin"
+        }
+        Args.PM_PT_Flows = {
+            "Type":"File",
+            "Caption":"PM Public Transport Flows",
+            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Flows.bin"
+        }
+        Args.OP_PT_Flows = {
+            "Type":"File",
+            "Caption":"OP Public Transport Flows",
+            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Flows.bin"
+        }
+        Args.AM_PT_WalkFlows = {
+            "Type":"File",
+            "Caption":"AM Public Transport Walk Flows",
+            "Value":"%Output Folder%\\PTAssignment\\AM_PT_WalkFlows.bin"
+        }
+        Args.PM_PT_WalkFlows = {
+            "Type":"File",
+            "Caption":"PM Public Transport Walk Flows",
+            "Value":"%Output Folder%\\PTAssignment\\PM_PT_WalkFlows.bin"
+        }
+        Args.OP_PT_WalkFlows = {
+            "Type":"File",
+            "Caption":"OP Public Transport Walk Flows",
+            "Value":"%Output Folder%\\PTAssignment\\OP_PT_WalkFlows.bin"
+        }
+        Args.AM_PT_OnOff_Counts = {
+            "Type":"File",
+            "Caption":"AM Public Transport Boarding Counts",
+            "VisualizeMenu":
+            {"PTOn","PTOff"},
+            "Value":"%Output Folder%\\PTAssignment\\AM_PT_OnOff_Counts.bin"
+        }
+        Args.PM_PT_OnOff_Counts = {
+            "Type":"File",
+            "Caption":"PM Public Transport Boarding Counts",
+            "VisualizeMenu":
+            {"PTOn","PTOff"},
+            "Value":"%Output Folder%\\PTAssignment\\PM_PT_OnOff_Counts.bin"
+        }
+        Args.OP_PT_OnOff_Counts = {
+            "Type":"File",
+            "Caption":"OP Public Transport Boarding Counts",
+            "VisualizeMenu":
+            {"PTOn","PTOff"},
+            "Value":"%Output Folder%\\PTAssignment\\OP_PT_OnOff_Counts.bin"
+        }
+        Args.AM_PT_Agg_LinkFlows = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"PTFlows"},
+            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Agg_LinkFlows.bin"
+        }
+        Args.PM_PT_Agg_LinkFlows = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"PTFlows"},
+            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Agg_LinkFlows.bin"
+        }
+        Args.OP_PT_Agg_LinkFlows = {
+            "Type":"File",
+            "VisualizeMenu":
+            {"PTFlows"},
+            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Agg_LinkFlows.bin"
+        }
