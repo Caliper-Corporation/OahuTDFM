@@ -293,7 +293,7 @@ endmacro
 
 Macro "transit skim" (Args)
     
-    periods = Args.TimePeriods
+    periods = {"AM", "PM", "OP"}
     access_modes = Args.AccessModes
     modeTable = Args.TransitModeTable
     rsFile = Args.TransitRoutes
