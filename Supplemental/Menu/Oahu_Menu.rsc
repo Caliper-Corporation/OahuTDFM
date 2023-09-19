@@ -104,10 +104,10 @@ EndClass
 
 // visualize menu items
 // Main toolbar menues
-MenuItem "TCRPC Menu Item" text: "TCRPC"
-    menu "TCRPC Menu"
+MenuItem "Oahu Menu Item" text: "Oahu TDFM"
+    menu "Oahu Menu"
  
-Menu "TCRPC Menu"
+Menu "Oahu Menu"
     init do
     enditem
  

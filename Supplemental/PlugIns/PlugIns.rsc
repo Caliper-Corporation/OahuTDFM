@@ -9,7 +9,7 @@ Macro "Model.Attributes" (Args,Result)
         {"Base Scenario Name", "Base"},
         {"ClearLogFiles", 1},
         {"CloseOpenFiles", 1},
-        {"CodeUI", "ui\\PeoriaCode_ui.dbd"},
+        {"CodeUI", "ui\\OahuCode_ui.dbd"},
         {"DebugMode", 1},
         {"ExpandStages", "Side by Side"},
         {"HideBanner", 0},
@@ -74,7 +74,7 @@ Body:
     o = CreateObject("CC.Directory", RunMacro("FlowChart.ResolveValue", uiFolder, Args))
     o.Create()
 
-    RunMacro("CompileGISDKCode", {Source: srcFolder + "PeoriaCode.lst", UIDB: uiFolder + "PeoriaCode_ui.dbd", Silent: 0, ErrorMessage: "Error compiling Peoria Source Code"})
+    RunMacro("CompileGISDKCode", {Source: srcFolder + "OahuCode.lst", UIDB: uiFolder + "OahuCode_ui.dbd", Silent: 0, ErrorMessage: "Error compiling Oahu Source Code"})
 
     if lower(GetMapUnits()) <> "miles" then
         MessageBox("Set the system units to miles before running the model", {Caption: "Warning", Icon: "Warning", Buttons: "yes"})
