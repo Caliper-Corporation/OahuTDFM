@@ -947,7 +947,7 @@ endmacro
 Macro "Create Transit Networks" (Args)
 
     rsFile = Args.TransitRoutes
-    Periods = Args.TimePeriods
+    Periods = {"AM", "PM", "OP"}
     AccessModes = Args.AccessModes
     skim_dir = Args.OutputSkims
 
