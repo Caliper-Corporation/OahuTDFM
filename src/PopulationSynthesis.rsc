@@ -5,7 +5,6 @@
 Macro "PopulationSynthesis Oahu" (Args)
     RunMacro("DisaggregateSED", Args)
     RunMacro("Synthesize Population", Args)
-    RunMacro("Generate Tabulations", Args)
     RunMacro("Dorm Residents Synthesis", Args)
     RunMacro("PopSynth Post Process", Args)
     return(1)
@@ -222,8 +221,8 @@ Macro "Synthesize Population"(Args)
     o.ReportExtraHouseholdField("HINCP", "HHInc")
     o.OutputPersonsFile = Args.Persons
     o.ReportExtraPersonsField("SEX", "gender") // Add extra field from Person Seed and change the name
-    // o.ReportExtraPersonsField("RAC1P", "race") // Add extra field from Person seed and change the name
     o.ReportExtraPersonsField("ESR", "EmploymentStatus")
+    o.ReportExtraPersonsField("INDP", "INDP")
     
     // Optional IPU by-products
     outputFolder = Args.[Output Folder] + "\\Population\\"
@@ -231,6 +230,130 @@ Macro "Synthesize Population"(Args)
     o.ExportIPUWeights(outputFolder + "IPUWeights")
     o.Tolerance = Args.PopSynTolerance
     ret_value = o.Run()
+
+    // Add person work industry and industry category fields
+    RunMacro("Append Work Industry", Args)
+
+    // Call macro for tabulations
+    opts = null
+    opts.HHFile = Args.Households
+    opts.PersonFile = Args.Persons
+    opts.OutputFile = Args.[Synthesized Tabulations]
+    opts.GroupBy = "ZoneID"
+    
+    opts.HHTabulations.HHSize = HHDimSize
+    opts.HHTabulations.IncomeCategory = HHDimInc
+    opts.HHTabulations.NumberWorkers = HHDimWrk
+    
+    opts.PersonTabulations.Age = PersonDim
+    RunMacro("Generate Tabulations", opts)
+endMacro
+
+
+Macro "Append Work Industry"(Args)
+    perObj = CreateObject("Table", Args.Persons)
+    newFlds = newFlds + {{FieldName: "WorkIndustry", Type: "integer", Width: 10},
+                         {FieldName: "IndustryCategory", Type: "integer", Width: 10}}
+    perObj.AddFields({Fields: newFlds})
+    
+    // Fill work industry and industry category codes in the person file
+    objL = CreateObject("Table", Args.PUMS_WorkIndustryCodes)
+    vwJ = JoinViews("PersonsLookup", GetFieldFullSpec(perObj.GetView(), "INDP"), GetFieldFullSpec(objL.GetView(), "INDP"),)
+    vecs = GetDataVectors(vwJ + "|", {"IndP_Code", "Category"},)
+    vecsSet = null
+    vecsSet.WorkIndustry = vecs[1]
+    vecsSet.IndustryCategory = vecs[2]
+    SetDataVectors(vwJ + "|", vecsSet,)
+    CloseView(vwJ)
+    
+    perObj = null
+    objL = null
+endmacro
+
+
+/*
+    Generic model to perform tabulations after synthesis
+    Uses the same input format as pop synth
+    Can ideally be integrated into the procedure in future TC versions
+*/
+Macro "Generate Tabulations"(opts)
+    dm = CreateObject("DataManager")
+    vwHH = dm.AddDataSource("HH", {FileName: opts.HHFile})
+    vwPer = dm.AddDataSource("Per", {FileName: opts.PersonFile})
+    vwPerHH = JoinViews("PersonHH", GetFieldFullSpec(vwPer, "HouseholdID"), GetFieldFullSpec(vwHH, "HouseholdID"), )
+    if opts.OutputFile = null or TypeOf(opts.OutputFile) <> "string" then
+        Throw("Please specify valid 'OutputFile' option for population synthesis output tabulations")
+
+    groupByFld = opts.GroupBy
+    
+    // HH Tabulations
+    specs = {View: vwHH, Tabulations: opts.HHTabulations}
+    exprsHH = RunMacro("Create Expressions for Tabulations", specs)
+
+    specs = {View: vwHH, ExpressionNames: exprsHH, GroupBy: groupByFld}
+    vwHHTab = RunMacro("Write Tabulations", specs)
+
+    // Person Tabulations
+    specs = {View: vwPerHH, Tabulations: opts.PersonTabulations}
+    exprsPer = RunMacro("Create Expressions for Tabulations", specs)
+
+    specs = {View: vwPerHH, ExpressionNames: exprsPer, GroupBy: groupByFld}
+    vwPerTab = RunMacro("Write Tabulations", specs)
+    
+    CloseView(vwPerHH)
+    dm = null
+
+    // Join HH and Person tabulations and export to final table
+    vwJ = JoinViews("HHPerTab", GetFieldFullSpec(vwHHTab, groupByFld), GetFieldFullSpec(vwPerTab, groupByFld),)
+    fldsToExport = {GetFieldFullSpec(vwHHTab, groupByFld)} + exprsHH + exprsPer
+    ExportView(vwJ + "|", "FFB", opts.OutputFile, fldsToExport,)
+    CloseView(vwJ)
+    CloseView(vwHHTab)
+    CloseView(vwPerTab)
+endMacro
+
+
+/*
+    Generate expressions that are aggragated to produce the synthesis tabulations
+*/
+Macro "Create Expressions for Tabulations"(specs)
+    vw = specs.View
+    exprNames = null
+    tabs = specs.Tabulations
+    for i = 1 to tabs.length do
+        outFld = tabs[i][1]
+        vals = tabs[i][2]
+        for val in vals do
+            fldName = val.Name
+            if fldName[1] = "[" then // Remove first and last bracket
+                fldName = SubString(fldName, 2, StringLength(fldName) - 2)
+            
+            exprName = fldName + "_Out"
+            range = val.Value
+            if TypeOf(range) = "array" then
+                expr = printf("if %s >= %lu and %s < %lu then 1 else 0", {outFld, range[1], outFld, range[2]})
+            else
+                expr = printf("if %s = %lu then 1 else 0", {outFld, range})
+
+            newExpr = CreateExpression(vw, exprName, expr,)
+            exprNames = exprNames + {newExpr}
+        end
+    end
+    Return(exprNames)
+endMacro
+
+
+/*
+    Aggregate expressions using the 'GroupBy' field to produce an In-Memory aggregation table
+*/
+Macro "Write Tabulations"(specs)
+    exprNames = specs.ExpressionNames
+    aggFlds = exprNames.Map(do (f) Return({f, "sum",}) end)
+    vw_agg = AggregateTable("Aggregations", specs.View + "|", "MEM", "Agg", specs.GroupBy, aggFlds, null)
+    for exprName in exprNames do
+        DestroyExpression(GetFieldFullSpec(specs.View, exprName))
+    end
+    Return(vw_agg)
 endMacro
 
 
@@ -239,165 +362,113 @@ endMacro
     * Adds HH summary fields to the synhtesied HH file
 */
 Macro "PopSynth Post Process"(Args)
+    abm = RunMacro("Get ABM Manager", Args)
+    hhFile = Args.Households
+    personFile = Args.Persons
 
-    // Generate tabulations from the synthesis output
-    RunMacro("Generate Tabulations", Args)
+    // Add fields to HH database
+    newFlds = { {Name: "Adults", Type: "Short", Description: "Number of adults in the household (Age >= 18)"},
+                {Name: "Kids", Type: "Short", Description: "Number of kids in the household (Age < 18)"},
+                {Name: "PreSchKids", Type: "Short", Description: "Number of pre-school kids in the household (Age < 5)"},
+                {Name: "Females", Type: "Short"},
+                {Name: "Males", Type: "Short"},
+                {Name: "AdultFemales", Type: "Short"},
+                {Name: "Workers", Type: "Short", Description: "Number of workers in the household (IndustryCategory < 10)"},
+                {Name: "KidsPerAdult", Type: "Real", Decimals: 2, Description: "Number of Kids in HH divided by number of adults"},
+                {Name: "KidsPerNonWorkingAdult", Type: "Real", Decimals: 2, Description: "Number of Kids in HH divided by number of non working adults"},
+                {Name: "Seniors", Type: "Short", Description: "Number of seniors in the household (Age >= 65)"},
+                {Name: "IncomeLevel", Type: "Short", Description: "HH Income level: 1 if HHIncome is below $50K, 2 if HHIncome is [50K, 100K), 3 if HHIncome is gte $100K"},
+                {Name: "AvgWrkIncCategory", Type: "Short", Description: "Avg Worker Income level: 1 if HHIncome/HHWorkers is below $50K, 2 if HHIncome/HHWorkers is [50K, 100K), 3 if HHIncome/HHWorkers is gte $100K"}
+               }
+    abm.AddHHFields(newFlds)
+    
+    // Aggregate person fields and fill in household table
+    aggOpts.Spec = {{Kids: "(Age < 18).Count", DefaultValue: 0},   // (Condition).Count
+                    {PreSchKids: "(Age < 5).Count", DefaultValue: 0},
+                    {Adults: "(Age >= 18).Count", DefaultValue: 0},
+                    {Seniors: "(Age >= 65).Count", DefaultValue: 0},
+                    {Males: "(Gender = 1).Count", DefaultValue: 0},
+                    {Females: "(Gender = 2).Count", DefaultValue: 0},
+                    {AdultFemales: "(Gender = 2 and Age >= 18).Count", DefaultValue: 0},
+                    {Workers: "(IndustryCategory < 10).Count", DefaultValue: 0}}
+    abm.AggregatePersonData(aggOpts)
 
-    objH = CreateObject("AddTables", {TableName: Args.Households})
-    vw_hh = objH.TableView
-    
-    objP = CreateObject("AddTables", {TableName: Args.Persons})
-    vw_per = objP.TableView
-    
-    // Create Balloon Help on synthesized tables
-    RunMacro("Set Balloon Help", vw_hh, vw_per)
-    BuildInternalIndex(GetFieldFullSpec(vw_hh, "HouseholdID"))
-    BuildInternalIndex(GetFieldFullSpec(vw_hh, "ZoneID"))
-    BuildInternalIndex(GetFieldFullSpec(vw_per, "PersonID"))
-    BuildInternalIndex(GetFieldFullSpec(vw_per, "HouseholdID"))
+    // Fill IncomeLevel and AvgWrkIncCategory fields
+    vecs = abm.GetHHVectors({"IncomeCategory", "Workers", "Kids", "Adults", "HHSize"})
+    vecsSet = null
+    vecsSet.IncomeLevel = if vecs.IncomeCategory = 1 then 1 
+                            else if vecs.IncomeCategory <= 3 then 2 
+                            else 3
+    vecsSet.AvgWrkIncCategory = if vecs.IncomeCategory = 1 then 1
+                                else if vecs.IncomeCategory <= 3 and vecs.Workers >= 2 then 1
+                                else if vecs.IncomeCategory <= 3 and vecs.Workers < 2 then 2
+                                else if vecs.IncomeCategory = 4 and vecs.Workers >= 3 then 1
+                                else if vecs.IncomeCategory = 4 and vecs.Workers = 2 then 2
+                                else if vecs.IncomeCategory = 4 and vecs.Workers < 2 then 3
+                                else null
+    vecsSet.KidsPerAdult = vecs.Kids/vecs.Adults
+    vNW  = vecs.HHSize - vecs.Kids - vecs.Workers
+    vecsSet.KidsPerNonWorkingAdult = if (vNW > 0) then vecs.Kids/vNW else 0
+    abm.SetHHVectors(vecsSet)
+
+    // Add pop syn metadata
+    abm.ClosePersonHHView()
+    opt = {HHView: abm.HHView, PersonView: abm.PersonView}
+    RunMacro("Add PopSyn Metadata", opt)
+
+    // Export data
+    abm.ExportHHView({File: hhFile})
+    abm.ExportPersonView({File: personFile})
 endMacro
 
 
-Macro "Set Balloon Help"(vw_hh, vw_per)
-    // HH Field Descriptions
-    desc = null
-    desc.ZoneID = "TRM TAZ ID"
-    desc.IncomeCategory = "Household Income Category:|1. Income [0, 35K)|2. Income [35K, 70K)|3. Income [70K, 150K)| 4. Income 150K+"
-    strct = GetTableStructure(vw_hh, {"Include Original" : "True"})
-    for i = 1 to strct.length do
-        fld_name = strct[i][1]
-        strct[i][8] = desc.(fld_name)
-    end
-    ModifyTable(vw_hh, strct)
+/*
+    Add metadata (balloon help) to certain fields in the Person and HH output databases
+*/
+Macro "Add PopSyn Metadata"(spec)
+    vwHH = spec.HHView
+    vwP = spec.PersonView
+
+    // Add HH metadata
+    items = {"Inc_Category": "HH Income|1. Income [0, 35K)|2. Income [35K, 70K)|3. Income [70K, 150K)| 4. Income 150K+"}
+    RunMacro("Add Balloon Help", vwHH, items)
+
+    // Add Person metadata
+    indCatStr = "Worker industry category|" + 
+                "1. Agriculture/Mining|2. Manufacturing|3. Utilities, Construction, Transportation, Waste Management|" +
+                "4. Wholesale Trade| 5. Retail Trade|" +   
+                "6. Information, Finance, Insurance, Professional, Scientific, Technical, Management, Real Estate|" +
+                "7. Education/Health/Social Services|8. Food/Other services|" +
+                "9. Public Administration and Military|10. Not in Labor Force or unemployed"
     
-    // Person Field descriptions
-    desc = null
-    desc.Gender = "Gender:|1. Male|2. Female"
-    desc.EmploymentStatus = "Employment status recode|1. Civilian employed, at work|2. Civilian employed, with a job but not at work|3. Unemployed|"
-    desc.EmploymentStatus = desc.EmploymentStatus + "4. Armed forces, at work|5. Armed forces, with a job but not at work|6. Not in labor force|Missing. N/A (less than 16 years old)"	
-    strct = GetTableStructure(vw_per, {"Include Original" : "True"})
-    for i = 1 to strct.length do
-        fld_name = strct[i][1]
-        strct[i][8] = desc.(fld_name)
-    end
-    ModifyTable(vw_per, strct)
+    indStr = "Tagged field with worker industry using NAICS classification codes|" + 
+             "1. Agriculture|2. Manufacturing and Mining|3. Utilities, Construction, Transportation, Waste Management|" +
+             "4. Wholesale Trade|5. Retail Trade|" +   
+             "6. Information, Finance, Insurance, Professional, Scientific, Technical, Management, Real Estate|" +
+             "7. Education|8. Health Care|9. Arts, Entertainment, Food and Other Services|" +
+             "10. Public Administration|11. Military|12. Not in Labor Force or unemployed"
+
+    items = {Gender: "1. Male|2. Female",
+             IndustryCategory: indCatStr,
+             WorkIndustry: indStr
+            }
+    RunMacro("Add Balloon Help", vwP, items)
+    dm = null
 endMacro
 
 
-Macro "Generate Tabulations"(Args)
-    
-    outFile = Args.[Synthesized Tabulations]
-
-    // Open HH File and create empty output fields for number of kids, seniors, adults and workers in the HH
-    objH = CreateObject("AddTables", {TableName: Args.Households})
-    vw_hh = objH.TableView
-    modify = CreateObject("CC.ModifyTableOperation", vw_hh)
-    modify.FindOrAddField("HHAdultsUnder65", "Long", 12,,)
-    modify.FindOrAddField("HHKids", "Long", 12,,)
-    modify.FindOrAddField("HHSeniors", "Long", 12,,)
-    modify.FindOrAddField("HHWorkers", "Long", 12,,)
-    modify.FindOrAddField("HHNWAdults", "Long", 12,,)
-    modify.Apply()
-    {hhFlds, hhSpecs} = GetFields(vw_hh,)
-
-    objP = CreateObject("AddTables", {TableName: Args.Persons})
-    vw_per = objP.TableView
-
-    // Export to In-memory View for faster processing
-    vw_hhM = ExportView(vw_hh + "|", "MEM", "HHMem",,{"Indexed Fields": {"HouseholdID"}})
-    vw_perM = ExportView(vw_per + "|", "MEM", "PersonMem",,{"Indexed Fields": {"HouseholdID"}})
-    objH = null
-    objP = null
-    
-    // Write number of adults, kids, seniors and workers in the synthesized HH table (by aggregation on the synthesized persons)
-    expr1 = CreateExpression(vw_perM, "Kid", "if Age < 18 then 1 else 0",)
-    expr2 = CreateExpression(vw_perM, "AdultUnder65", "if Age >= 18 and Age < 65 then 1 else 0",)
-    expr3 = CreateExpression(vw_perM, "Senior", "if Age >= 65 then 1 else 0",)
-    expr4 = CreateExpression(vw_perM, "Worker", "if EmploymentStatus = 1 or EmploymentStatus = 2 or EmploymentStatus = 4 or EmploymentStatus = 5 then 1 else 0",)
-    expr5 = CreateExpression(vw_perM, "NWAdults", "if Age >= 18 and Worker = 0 then 1 else 0",)
-
-    // Aggregate person table by 'HouseholdID' and sum the above expression fields
-    aggrSpec = {{"Kid", "sum",}, {"AdultUnder65", "sum",}, {"Senior", "sum",}, {"Worker", "sum",}, {"NWAdults", "sum",}}
-    vwA =  AggregateTable("MemAggr", vw_perM + "|", "MEM",, "HouseholdID", aggrSpec,)
-    {flds, specs} = GetFields(vwA,)
-    
-    // Join aggregation file to HH table and copy over values
-    vwJ = JoinViews("Aggr_HH", specs[1], GetFieldFullSpec(vw_hhM, "HouseholdID"),)
-    vecs = GetDataVectors(vwJ + "|", {"Kid", "AdultUnder65", "Senior", "Worker", "NWAdults"}, {OptArray: 1})
-    vecsSet.HHKids = vecs.Kid
-    vecsSet.HHAdultsUnder65 = vecs.AdultUnder65
-    vecsSet.HHSeniors = vecs.Senior
-    vecsSet.HHWorkers = vecs.Worker
-    vecsSet.HHNWAdults = vecs.NWAdults
-    SetDataVectors(vwJ +"|", vecsSet,)
-    CloseView(vwJ)
-    CloseView(vwA)
-
-    /* Preferred code to replace Lines 190-210, but is much slower. Takes 90 seconds as opposed to 14 seconds for the above snippet
-    o = CreateObject("TransCAD.ABM")
-    o.TargetFile({ViewName: vw_hhM, ID: "HouseholdID"})
-    o.SourceFile({ViewName: vw_perM, ID: "HouseholdID"})
-    o.FillTargetField({Filter: "Age < 18", FillField: "HHKids",    DefaultValue: 0})
-    o.FillTargetField({Filter: "Age >= 65", FillField: "HHSeniors", DefaultValue: 0})
-    o.FillTargetField({Filter: "Age >= 18 and Age < 65", FillField: "HHAdultsUnder65",  DefaultValue: 0})
-    o.FillTargetField({Filter: "EmploymentStatus = 1 or EmploymentStatus = 2 or EmploymentStatus = 4 or EmploymentStatus = 5", FillField: "HHWorkers",  DefaultValue: 0})
-    o = null*/
-    
-    // Create Expressions on output HH for tabulations
-    specs = null
-    specs = {{Fields: {"HH_siz1", "HH_siz2", "HH_siz3", "HH_siz4"}, MatchingField: "HHSize", Levels: {1,2,3,4}},
-             {Fields: {"HH_wrk0", "HH_wrk1", "HH_wrk2", "HH_wrk3"},     MatchingField: "NumberWorkers", Levels: {0,1,2,3}},
-             {Fields: {"HH_incl", "HH_incml", "HH_incmh", "HH_inch"},   MatchingField: "IncomeCategory", Levels: {1,2,3,4}}
-             }
-    aggflds = RunMacro("Create Output HH Expressions", vw_hhM, specs)
-    aggflds = aggflds + {{"HHSize", "sum",},
-                         {"HHAdultsUnder65", "sum",},
-                         {"HHKids", "sum",},
-                         {"HHSeniors", "sum",},
-                         {"HHWorkers", "sum",},
-                         {"HHNWAdults", "sum",}} // For HH_Pop and number of adults, kids, seniors and workers
-
-    // Aggregate HH Data
-    vw_agg1 = AggregateTable("HHTotals", vw_hhM + "|", "MEM", "Agg1", "ZoneID", aggflds, null)
-    ExportView(vw_agg1 + "|", "FFB", outFile,,)
-    CloseView(vw_agg1)
-
-    // Change field name in final tabulation file
-    obj = CreateObject("AddTables", {TableName: outFile})
-    vw = obj.TableView
-    modify = CreateObject("CC.ModifyTableOperation", vw)
-    modify.ChangeField("HHSize", {Name: "HH_Pop"})
-    modify.ChangeField("HHAdultsUnder65", {Name: "AdultsUnder65"})
-    modify.ChangeField("HHKids", {Name: "Kids"})
-    modify.ChangeField("HHSeniors", {Name: "Seniors"})
-    modify.ChangeField("HHWorkers", {Name: "Workers"})
-    modify.ChangeField("HHNWAdults", {Name: "NWAdults"})
-    modify.Apply()
-    obj = null
-
-    // Export the HH In-Memory table back
-    ExportView(vw_hhM + "|", "FFB", Args.Households, hhFlds,)
-    CloseView(vw_hhM)
-    CloseView(vw_perM)
-endMacro
-
-
-// Generates formula fields for tabulations
-Macro "Create Output HH Expressions"(vw_hhM, specs)
-    aggflds = null
-    for spec in specs do
-        flds = spec.Fields
-        keyFld = spec.MatchingField
-        bounds = spec.Levels
-        nClasses = flds.length
-        for i = 1 to nClasses - 1 do
-            CreateExpression(vw_hhM, flds[i], "if " + keyFld + " = " + String(bounds[i]) + " then 1 else 0",)
-            aggflds = aggflds + {{flds[i], "sum",}}
-        end
-        CreateExpression(vw_hhM, flds[nClasses], "if " + keyFld + " >= " + String(bounds[nClasses]) + " then 1 else 0",)
-        aggflds = aggflds + {{flds[nClasses], "sum",}}
+/*
+    Add balloon help given the view and an option array pair of field names and descriptions
+*/
+Macro "Add Balloon Help"(vw, items)
+    strct = GetTableStructure(vw, {"Include Original" : "True"})
+    names = strct.Map(do (f) Return(f[1]) end)
+    for item in items do
+        pos = names.position(item[1])
+        if pos > 0 then
+            strct[pos][8] = item[2]
     end
-    Return(aggflds)
+    ModifyTable(vw, strct)
 endMacro
 
 
@@ -467,10 +538,8 @@ Macro "Dorm Residents Synthesis"(Args)
         vUniv = Vector(nUniv, "String", {{"Constant", vecs.University[i]}})
 
         // Add records, select and set HH vectors
-        // vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
         vecsOutHH = {ZoneID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
-                     IncomeCategory: vecsDist.IncomeCategory, HHKids: vOne, HHSeniors: vOne,
-                     UnivGQ: vOne, Univ: vUniv}
+                     IncomeCategory: vecsDist.IncomeCategory, UnivGQ: vOne, Univ: vUniv}
         AddRecords(abm.HHView,,,{"Empty Records": nUniv})
         abm.CreateHHSet({Filter: 'HouseholdID = null', Activate: 1})
         abm.SetHHVectors(vecsOutHH)
@@ -480,9 +549,8 @@ Macro "Dorm Residents Synthesis"(Args)
                           UnivGQStudent: vOne, UnivTAZ: vUnivTAZ, WorkerCategory: vecsDist.WorkerCategory,
                           WorkDays: vecsDist.WorkDays, WorkAttendance: vecsDist.WorkAttendance,
                           License: vecsDist.License, 
-                        // TODO: add this back
-                        //   IndustryCategory: vecsDist.IndustryCategory,
-                        //   WorkIndustry: vecsDist.WorkIndustry,
+                          IndustryCategory: vecsDist.IndustryCategory,
+                          WorkIndustry: vecsDist.WorkIndustry,
                           AttendUniv: vOne}
         AddRecords(abm.PersonView,,,{"Empty Records": nUniv})
         abm.CreatePersonSet({Filter: 'PersonID = null', Activate: 1})
