@@ -239,7 +239,7 @@ Macro "Synthesize Population"(Args)
     opts.HHFile = Args.Households
     opts.PersonFile = Args.Persons
     opts.OutputFile = Args.[Synthesized Tabulations]
-    opts.GroupBy = "ZoneID"
+    opts.GroupBy = "TAZID"
     
     opts.HHTabulations.HHSize = HHDimSize
     opts.HHTabulations.IncomeCategory = HHDimInc
@@ -265,9 +265,12 @@ Macro "Append Work Industry"(Args)
     vecsSet.IndustryCategory = vecs[2]
     SetDataVectors(vwJ + "|", vecsSet,)
     CloseView(vwJ)
-    
     perObj = null
     objL = null
+
+    hhObj = CreateObject("Table", Args.Households)
+    hhObj.RenameField({FieldName: "ZoneID", NewName: "TAZID"})
+    hhObj = null
 endmacro
 
 
@@ -538,7 +541,7 @@ Macro "Dorm Residents Synthesis"(Args)
         vUniv = Vector(nUniv, "String", {{"Constant", vecs.University[i]}})
 
         // Add records, select and set HH vectors
-        vecsOutHH = {ZoneID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+        vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
                      IncomeCategory: vecsDist.IncomeCategory, UnivGQ: vOne, Univ: vUniv}
         AddRecords(abm.HHView,,,{"Empty Records": nUniv})
         abm.CreateHHSet({Filter: 'HouseholdID = null', Activate: 1})
