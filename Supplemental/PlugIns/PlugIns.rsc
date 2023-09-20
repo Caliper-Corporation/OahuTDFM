@@ -2,9 +2,9 @@
 Macro "Model.Attributes" (Args,Result)
     Attributes = {
         {"BackgroundColor",{255,255,255}},
-        {"BannerHeight", 90},
-        {"BannerPicture", "Supplemental\\bmp\\Peoria_logo.bmp"},
-        {"BannerWidth", 600},
+        {"BannerHeight", 129},
+        {"BannerPicture", "Supplemental\\bmp\\Oahu_logo.bmp"},
+        {"BannerWidth", 272},
         {"ResizePicture", 1},
         {"Base Scenario Name", "Base"},
         {"ClearLogFiles", 1},
