@@ -329,7 +329,7 @@
         Args.TurnPenalties = {
             "Type":"File",
             "Description":"Turn Penalties Database",
-            "Value":"%Input Folder%\\networks\\PeoriaStreets_TurnPenalties.bin"
+            "Value":"%Input Folder%\\networks\\OahuStreets_TurnPenalties.bin"
         }
         Args.TransitRoutes = {
             "Type":"File",
