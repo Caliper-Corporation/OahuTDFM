@@ -142,7 +142,7 @@ Macro "Remote Work"(Args)
     // Add fields for 'WorkFromHome' and 'TravelToWork'
     newFlds = {{Name: "WorkFromHome", Type: "Short", Width: 2, Description: "Does person work from home on given day? Only filled if 'WorkAttendance = 1'"},
                {Name: "TravelToWork", Type: "Short", Width: 2, Description: "Does person travel to work on given day? 1 if WorkAttendance = 1 and WorkFromHome = 0"}}
-    abm.DropPersonFields({"WorkFromHome", "TravelToWork"})
+    //abm.DropPersonFields({"WorkFromHome", "TravelToWork"})
     abm.AddPersonFields(newFlds)
 
     // Set values for the university GQ students who are also workers or for part time workers under 18.
@@ -414,8 +414,8 @@ endMacro
 // School Location Choice
 Macro "School Location"(Args)
     // Define school segments
-    filters = {"Age >= 5 and Age <= 11", "Age >= 12 and Age <= 14", "Age >= 15 and Age <= 18"}
-    categories = {"Elementary", "Middle", "HighSchool"}
+    filters = {"Age >= 5 and Age <= 18"}
+    categories = {"K12"}
 
     availExpressions = null
     availExpressions.Alternative = {"Destinations"}
