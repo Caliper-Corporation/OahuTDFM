@@ -226,28 +226,8 @@
 
         Args.SEDMarginals = {
             "Type":"File",
-            "Caption":"Output marginals from disaggregate curves",
+            "Caption":"Marginals from disaggregate curves",
             "Value":"%Output Folder%\\Population\\SEDMarginals.bin"
-        }
-        Args.HHSeed = {
-            "Type":"File",
-            "Caption":"Processed household seed",
-            "Value":"%Output Folder%\\Population\\Intermediate\\HHSeed.bin"
-        }
-        Args.PersonSeed = {
-            "Type":"File",
-            "Caption":"Processed person seed",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PersonSeed.bin"
-        }
-        Args.BGMarginals = {
-            "Type":"File",
-            "Caption":"Processed marginal file",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Marginals.bin"
-        }
-        Args.BlockMarginals = {
-            "Type":"File",
-            "Caption":"Processed nested marginal file",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Nested_Marginals.bin"
         }
         Args.Households = {
             "Type":"File",
@@ -265,11 +245,6 @@
             "Type":"hidden",
             "Caption":"SQL DB for reporting",
             "Value":"%Output Folder%\\Population\\PopSQL.db"
-        }
-        Args.BGTabulations = {
-            "Type":"File",
-            "Caption":"Output block group tabulations",
-            "Value":"%Output Folder%\\Population\\PopSyn_BGTabulations.bin"
         }
         Args.[Synthesized Tabulations] = {
             "Type":"File",
@@ -354,7 +329,7 @@
         Args.TurnPenalties = {
             "Type":"File",
             "Description":"Turn Penalties Database",
-            "Value":"%Input Folder%\\networks\\PeoriaStreets_TurnPenalties.bin"
+            "Value":"%Input Folder%\\networks\\OahuStreets_TurnPenalties.bin"
         }
         Args.TransitRoutes = {
             "Type":"File",

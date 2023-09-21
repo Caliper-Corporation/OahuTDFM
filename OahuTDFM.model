@@ -1,5 +1,5 @@
 
-Macro "PeoriaABM" (Args)
+Macro "OahuTDFM" (Args)
 Body:
     // model = FlowChart( { StartNodes } , { EndNodes } , Description)
     model = FlowChart({"Population Synthesis"},{"Reports"},)
