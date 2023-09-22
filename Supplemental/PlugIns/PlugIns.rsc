@@ -101,12 +101,9 @@ Body:
     folders = {Args.[Output Folder],
                Args.[Output Folder] + "\\Intermediate\\",
                Args.[Output Folder] + "\\Population\\",
-               Args.[Output Folder] + "\\Population\\Intermediate\\", 
-               Args.[Output Folder] + "\\Population\\Intermediate\\IPUWeights\\",
                Args.[Output Folder] + "\\Networks\\",
                Args.[Output Folder] + "\\access\\",
                Args.[Output Folder] + "\\skims\\",
-               Args.[Output Folder] + "\\taz\\",
                Args.[Output Folder] + "\\ToursAndTrips\\",
                Args.[Output Folder] + "\\OD\\"    
                }
