@@ -1,6 +1,6 @@
 Macro "Pattern Choice Model"(Args)
     abm = RunMacro("Get ABM Manager", Args)
-
+    
     RunMacro("NM Models Setup", Args, abm)
 
     RunMacro("Sub Pattern Choice", Args, abm)
@@ -14,7 +14,7 @@ Macro "NM Models Setup"(Args, abm)
     // Add several HH fields
     flds = {{Name: "HHAvgFreeTime", Type: "Real", Description: "Average free time (hours) per HH member"},
             {Name: "SubPattern", Type: "String", Width: 3, Description: "SubPattern:|N: No Tours|W: Work Tours|I: Individual Discretionary|J: Joint Discretionary"}}
-    abm.DropHHFields({"HHAvgFreeTime"})
+    //abm.DropHHFields({"HHAvgFreeTime"})
     abm.AddHHFields(flds) 
     
     // Compute Person and HH variables for pattern choice
@@ -31,20 +31,20 @@ endMacro
 
 // Calculate variables needed by non mandatory choice models
 Macro "Calculate Time Usage Fields"(Args, abm)
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
+    TimeManager = RunMacro("Get Time Manager", abm)
     
     objT = CreateObject("Table", Args.MandatoryTours)
     vwTempTours = ExportView(objT.GetView() + "|", "MEM", "TempTours", {"PerID", "TourStartTime", "TourEndTime"},)
-    abm.TimeManager.UpdateMatrixFromTours({ViewName: vwTempTours, PersonID: 'PerID', Departure: 'TourStartTime', Arrival: 'TourEndTime'})
+    TimeManager.UpdateMatrixFromTours({ViewName: vwTempTours, PersonID: 'PerID', Departure: 'TourStartTime', Arrival: 'TourEndTime'})
     CloseView(vwTempTours)
     objT = null
 
-    abm.TimeManager.ExportTimeUseMatrix(Args.MandTimeUseMatrix)
+    TimeManager.ExportTimeUseMatrix(Args.MandTimeUseMatrix)
     
     // Fill HH Field with common and average time across persons
     hhSpec = {ViewName: abm.HHView, HHID: abm.HHID}
     opts = {HHSpec: hhSpec, Metric: "AverageFreeTime", HHFillField: "HHAvgFreeTime"}
-    abm.TimeManager.FillHHTimeField(opts)
+    TimeManager.FillHHTimeField(opts)
 endMacro
 
 

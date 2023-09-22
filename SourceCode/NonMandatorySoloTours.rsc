@@ -3,7 +3,6 @@
 //=================================================================================================
 Macro "SoloTours Setup"(Args)
     abm = RunMacro("Get ABM Manager", Args)
-
     flds = {{Name: "TimeAvailForSoloTours_09to18", Type: "Real", Width: 12, Decimals: 1, Description: "Available time from 9 AM to 6 PM for discretionary solo tours"},
             {Name: "MaximumFreeTime", Type: "Real", Width: 12, Decimals: 1, Description: "Max Free Time in hrs (temp field used for avail)"},
             {Name: "SoloTourPattern", Type: "String", Width: 12,   Description: "Chosen Solo Tour Pattern"},
@@ -35,14 +34,16 @@ Macro "SoloTours Setup"(Args)
         end
     end
     fldNames = flds.Map(do (f) Return(f.Name) end)
-    abm.DropPersonFields(fldNames)
+
     abm.AddPersonFields(flds)
 
     // Time avail for solo tours
     //---Initilizing the time-use matrix from data after mandatory tours and joint discretionary tours
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
-    abm.TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix})
-    RunMacro("Get Time Avail for Solo Tours", Args, abm)
+    TimeManager = RunMacro("Get Time Manager", abm)
+
+    TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix})
+    
+    RunMacro("Get Time Avail for Solo Tours", Args, abm, TimeManager)
 
     // Compute MC/DC Logsums
     RunMacro("NonMandatory Solo Accessibility", Args)
@@ -52,10 +53,10 @@ endMacro
 
 
 //==================================================================================================
-Macro "Get Time Avail for Solo Tours"(Args, abm)
+Macro "Get Time Avail for Solo Tours"(Args, abm, TimeManager)
     perSpec = {ViewName: abm.PersonView, PersonID: abm.PersonID}
     opts = {PersonSpec: perSpec, PersonFillField: "TimeAvailForSoloTours_09to18", Metric: "FreeTime", StartTime: 540, EndTime: 1080}
-    abm.TimeManager.FillPersonTimeField(opts)
+    TimeManager.FillPersonTimeField(opts)
 endMacro
 
 
@@ -161,15 +162,15 @@ endMacro
 Macro "SoloTours Scheduling"(Args)
     // Initilizing the time-use matrix from data after mandatory and joint tours
     abm = RunMacro("Get ABM Manager", Args)
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
-    abm.TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix}) // loading the existing file
+    TimeManager = RunMacro("Get Time Manager", abm)
+    TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix}) // loading the existing file
 
     purps = {"Other1", "Shop1", "Other2", "Other3", "Shop2"}
     pbar = CreateObject("G30 Progress Bar", "Solo Tour Scheduling for Other1, Shop1, Other2, Other3 and Shop2 Tours", false, 5)
     for p in purps do
         pbar1 = CreateObject("G30 Progress Bar", "Solo Tour Scheduling (Duration, StartTime, Mode and TimeManagerUpdate) for " + p + " Tours", true, 4)
 
-        spec = {ModelType: p, abmManager: abm}
+        spec = {ModelType: p, abmManager: abm, TimeManager: TimeManager}
         // Duration Model
         RunMacro("SoloTours Duration", Args, spec)
         if pbar1.Step() then
@@ -198,7 +199,7 @@ Macro "SoloTours Scheduling"(Args)
     pbar.Destroy()
 
     // Write out time manager matrix
-    abm.TimeManager.ExportTimeUseMatrix(Args.SoloTimeUseMatrix)
+    TimeManager.ExportTimeUseMatrix(Args.SoloTimeUseMatrix)
     Return(true)
 endMacro
 
@@ -207,13 +208,15 @@ endMacro
 Macro "SoloTours Duration"(Args, spec)
     p = spec.ModelType
     abm = spec.abmManager
+    TimeManager = spec.TimeManager
+
     purpose = SubString(p, 1, StringLength(p) - 1) //"Other" or "Shop"
     tourNo = Right(p,1)
     tourFilter = printf("NumberSolo%sTours >= %s", {purpose, tourNo})
 
     personSpec = {ViewName: abm.PersonView, PersonID: abm.PersonID, Filter: tourFilter}   
     opts = {PersonSpec: personSpec, PersonFillField: "MaximumFreeTime", Metric: "MaxAvailTime", StartTime: 360, EndTime: 1380} // 0700 to 2300
-    abm.TimeManager.FillPersonTimeField(opts)
+    TimeManager.FillPersonTimeField(opts)
 
     // Get Duration Availabilities
     utilFunction = Args.("SoloTourDur" + purpose + "Utility")
@@ -244,6 +247,8 @@ endMacro
 Macro "SoloTours StartTime"(Args, spec)
     p = spec.ModelType
     abm = spec.abmManager
+    TimeManager = spec.TimeManager
+
     purpose = SubString(p, 1, StringLength(p) - 1) // "Other" or "Shop"
     tourNo = Right(p,1)
 
@@ -258,7 +263,7 @@ Macro "SoloTours StartTime"(Args, spec)
             DurationField: "Solo_" + p + "_Duration", 
             StartTimeAlts: startTimeAlts, 
             OutputAvailFile: Args.SoloStartAvails}
-    abm.TimeManager.GetStartTimeAvailabilities(opts)
+    TimeManager.GetStartTimeAvailabilities(opts)
 
     objA = CreateObject("Table", Args.SoloStartAvails)
     vwJ = JoinViews("SoloToursPersonData", GetFieldFullSpec(abm.PersonHHView, abm.PersonID), GetFieldFullSpec(objA.GetView(), "RecordID"),)
@@ -347,12 +352,13 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     abm = MCOpts.abmManager
     tourNo = Right(p,1)
     modelName = "Solo Tours Mode " + purpose
-    
+    ptSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
+
     obj = null
     obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SoloToursMode" + purpose + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-    obj.AddMatrixSource({SourceName: "PTSkim", File: Args.("TransitWalkSkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "PTSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
@@ -428,6 +434,8 @@ endMacro
 Macro "Solo Update TimeManager"(Args, spec)
     p = spec.ModelType
     abm = spec.abmManager
+    TimeManager = spec.TimeManager
+
     purpose = SubString(p, 1, StringLength(p) - 1) // "Other" or "Shop"
     tourNo = Right(p,1)
     
@@ -439,7 +447,7 @@ Macro "Solo Update TimeManager"(Args, spec)
                 PersonID: abm.PersonID,
                 Departure: "DepTimeToSolo_" + p,
                 Arrival: "ArrTimeFromSolo_" + p}
-    abm.TimeManager.UpdateMatrixFromTours(tourOpts)
+    TimeManager.UpdateMatrixFromTours(tourOpts)
 
     CloseView(vwTemp)
 endMacro

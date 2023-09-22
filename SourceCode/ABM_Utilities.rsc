@@ -320,17 +320,19 @@ Macro "Fill Travel Times"(Args, spec)
     if TypeOf(spec.OField) <> "string" or TypeOf(spec.DField) <> "string" or TypeOf(spec.FillField) <> "string" then
         Throw("Options 'OField', 'DField' and 'FillField' to macro 'Fill Travel Times' need to be strings")
 
+    skimsDir = printf("%s\\output\\skims\\transit\\", {Args.[Scenario Folder]})
+    
     // Define skim files: Change this spec after skims by mode are produced by the model.
     skimSpec = null
     skimSpec.Auto.AM = {File: Args.HighwaySkimAM, Core: "Time"}
     skimSpec.Auto.PM = {File: Args.HighwaySkimPM, Core: "Time"}
     skimSpec.Auto.OP = {File: Args.HighwaySkimOP, Core: "Time"}
-    skimSpec.PTWalk.AM = {File: Args.TransitWalkSkimAM, Core: "Total Time"}
-    skimSpec.PTWalk.PM = {File: Args.TransitWalkSkimPM, Core: "Total Time"}
-    skimSpec.PTWalk.OP = {File: Args.TransitWalkSkimOP, Core: "Total Time"}
-    skimSpec.PTDrive.AM = {File: Args.TransitDriveSkimAM, Core: "Total Time"}
-    skimSpec.PTDrive.PM = {File: Args.TransitDriveSkimPM, Core: "Total Time"}
-    skimSpec.PTDrive.OP = {File: Args.TransitDriveSkimOP, Core: "Total Time"}
+    skimSpec.PTWalk.AM = {File: skimsDir + "AM_w_bus.mtx", Core: "Total Time"}
+    skimSpec.PTWalk.PM = {File: skimsDir + "PM_w_bus.mtx", Core: "Total Time"}
+    skimSpec.PTWalk.OP = {File: skimsDir + "OP_w_bus.mtx", Core: "Total Time"}
+    skimSpec.PTDrive.AM = {File: skimsDir + "AM_pnr_bus.mtx", Core: "Total Time"}
+    skimSpec.PTDrive.PM = {File: skimsDir + "PM_pnr_bus.mtx", Core: "Total Time"}
+    skimSpec.PTDrive.OP = {File: skimsDir + "OP_pnr_bus.mtx", Core: "Total Time"}
     skimSpec.Walk = {File: Args.WalkSkim, Core: "Time"}
     skimSpec.Bike = {File: Args.BikeSkim, Core: "Time"}
 
@@ -538,7 +540,7 @@ endMacro
 */
 Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
-    RunMacro("Add External and Truck OD", Args)
+    //RunMacro("Add External and Truck OD", Args)
     RunMacro("Create Daily OD Matrix", Args)
     Return(true)
 endMacro
