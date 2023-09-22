@@ -9,7 +9,7 @@ Macro "Driver License"(Args)
     obj = CreateObject("PMEChoiceModel", {ModelName: "Driver License"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\DriverLicense.mdl"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddPrimarySpec({Name: "PersonHH", Filter: "!(UnivGQStudent = 1 and Autos > 0)"})
+    obj.AddPrimarySpec({Name: "PersonHH", Filter: "!(UnivGQStudent = 1 and Vehicles > 0)"})
     obj.AddUtility({UtilityFunction: Args.DriverLicenseUtility, AvailabilityExpressions: availSpec})
     obj.AddOutputSpec({ChoicesField: "License"})
     obj.ReportShares = 1
@@ -44,7 +44,7 @@ Macro "Auto Ownership"(Args)
     obj.AddTableSource({SourceName: "TAZ4Ds", View: vwTAZ4Ds, IDField: "TAZID"})
     obj.AddPrimarySpec({Name: "HH", Filter: "UnivGQ <> 1", OField: "TAZID"})
     obj.AddUtility({UtilityFunction: Args.AutoOwnershipUtility})
-    obj.AddOutputSpec({ChoicesField: "Autos"})
+    obj.AddOutputSpec({ChoicesField: "Vehicles"})
     obj.ReportShares = 1
     obj.RandomSeed = 199999
     ret = obj.Evaluate()
@@ -52,10 +52,10 @@ Macro "Auto Ownership"(Args)
         Throw("Running 'Auto Availability' choice model failed.")
     Args.[AutoOwnership Spec] = CopyArray(ret) // For calibration purposes
 
-    // Since the choice model returns 1 for '0 Autos', 2 for '1 Auto' etc, subtract one from the output field
-    //abm.[HH.Autos] = abm.[HH.Autos] - 1
+    // Since the choice model returns 1 for '0 Vehicles', 2 for '1 Auto' etc, subtract one from the output field
+    //abm.[HH.Vehicles] = abm.[HH.Vehicles] - 1
     abm.CreateHHSet({Filter: "UnivGQ <> 1", Activate: 1})
-    abm.FillHHFields({Autos: "Autos - 1"}) // Alternate way
+    abm.FillHHFields({Vehicles: "Vehicles - 1"}) // Alternate way
 
     return(true)
 endMacro
