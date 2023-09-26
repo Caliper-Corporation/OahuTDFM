@@ -157,9 +157,10 @@ Macro "Synthesize Population"(Args)
     // Set up and run the synthesis
     o = CreateObject("PopulationSynthesis")
     o.RandomSeed = 314159
+    o.PopulationFactor = 0.1
     
     // Define Seed Data. Specify relationship between HH file and TAZ and between HH and Person file
-    o.HouseholdFile({FileName: Args.PUMS_Households, ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP"})
+    o.HouseholdFile({FileName: Args.PUMS_Households, ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP", Filter: "NP > 0 and NP < 9 and WGTP > 0"})
     o.PersonFile({FileName: Args.PUMS_Persons, ID: "PERID", HHID: "HHID"})
     
     // Define the marginals data (Disaggregated SED marginals)
@@ -497,7 +498,7 @@ Macro "Dorm Residents Synthesis"(Args)
     // Add new fields to HH and Person Table
     newFlds = {{Name: "UnivGQ", Type: "Short", Width: 2, Description: "1 if this is a university dorm HH (resident)"},
                {Name: "Univ", Type: "String", Width: 10, Description: "University Name (Filled from dorm synthesis)"},
-               {Name: "Autos", Type: "Short", Description: "Number of autos in the HH"}}
+               {Name: "Vehicles", Type: "Short", Description: "Number of autos in the HH"}}
     abm.AddHHFields(newFlds)
 
     newFlds = { {Name: "UnivGQStudent", Type: "Short", Width: 2, Description: "1 if this is a university student"},
@@ -541,7 +542,7 @@ Macro "Dorm Residents Synthesis"(Args)
         vUniv = Vector(nUniv, "String", {{"Constant", vecs.University[i]}})
 
         // Add records, select and set HH vectors
-        vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Autos: vecsDist.Vehicles,
+        vecsOutHH = {TAZID: vUnivTAZ, HouseholdID: vHHID, Weight: vOne, HHSize: vOne, Vehicles: vecsDist.Vehicles,
                      IncomeCategory: vecsDist.IncomeCategory, UnivGQ: vOne, Univ: vUniv}
         AddRecords(abm.HHView,,,{"Empty Records": nUniv})
         abm.CreateHHSet({Filter: 'HouseholdID = null', Activate: 1})

@@ -101,12 +101,9 @@ Body:
     folders = {Args.[Output Folder],
                Args.[Output Folder] + "\\Intermediate\\",
                Args.[Output Folder] + "\\Population\\",
-               Args.[Output Folder] + "\\Population\\Intermediate\\", 
-               Args.[Output Folder] + "\\Population\\Intermediate\\IPUWeights\\",
                Args.[Output Folder] + "\\Networks\\",
                Args.[Output Folder] + "\\access\\",
                Args.[Output Folder] + "\\skims\\",
-               Args.[Output Folder] + "\\taz\\",
                Args.[Output Folder] + "\\ToursAndTrips\\",
                Args.[Output Folder] + "\\OD\\"    
                }
@@ -115,23 +112,26 @@ Body:
         o.Create()
     end
 
+    // Release or close any unwanted instances of the two class objects below
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
+
     // Set time period arguments
     periods = null
     periods.AM.StartTime = 360 // 7 AM
     periods.AM.EndTime = 540   // 9 AM
     periods.PM.StartTime = 900 // 3 PM
     periods.PM.EndTime = 1140  // 7 PM
-
-    // Create empty ABM Manager object
-    abm = CreateObject("ABM_Manager")
-    Return({"ABM Manager": abm, "TimePeriods": periods})
+    Return({TimePeriods: periods})
 EndMacro
 
 
 Macro "Model.OnModelDone" (Args,Result)
 Body:
     mr = CreateObject("Model.Runtime")
-    mr.RunCode("Export ABM Data", Args)
+    mr.RunCode("Export ABM Data", Args, {Overwrite: 1})
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
     Return(Result)
 EndMacro
 

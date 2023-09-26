@@ -299,6 +299,10 @@ Macro "transit skim" (Args)
     rsFile = Args.TransitRoutes
     skim_dir = Args.OutputSkims
 
+    Line = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Line"})
+    Node = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Node"})
+    NodeLayer = Node.GetView()
+
     transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
 
     for period in periods do
@@ -363,6 +367,15 @@ Macro "transit skim" (Args)
 
                 ok = obj.Run()
                 if !ok then goto quit
+
+                m = CreateObject("Matrix", outFile)
+                idx = m.AddIndex({IndexName: "TAZ",
+                                    ViewName: NodeLayer, Dimension: "Both",
+                                    OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
+                idxint = m.AddIndex({IndexName: "InternalTAZ",
+                                        ViewName: NodeLayer, Dimension: "Both",
+                                        // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
+                                        OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
             end // for transMode
         end
     end

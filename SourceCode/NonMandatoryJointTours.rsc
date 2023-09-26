@@ -34,7 +34,7 @@ Macro "JointTours Setup"(Args)
                       }
     end
     fldNames = flds.Map(do (f) Return(f.Name) end)
-    abm.DropHHFields(fldNames)
+    //abm.DropHHFields(fldNames)
     abm.AddHHFields(flds) 
     
     // Add several person fields
@@ -47,13 +47,13 @@ Macro "JointTours Setup"(Args)
             {Name: "InJoint_Other1_Tour", Type: "Short", Description: "Is person on the first Other joint discretionary tour?"},
             {Name: "InJoint_Other2_Tour", Type: "Short", Description: "Is person on the second Other joint discretionary tour?"},
             {Name: "InJoint_Shop1_Tour", Type: "Short", Description: "Is person on the first Shop joint discretionary tour?"}}
-    abm.DropPersonFields(fldNames)
+    //abm.DropPersonFields(fldNames)
     abm.AddPersonFields(flds) 
     
     // Compute Person and HH variables for pattern choice
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
-    abm.TimeManager.LoadTimeUseMatrix({MatrixFile: Args.MandTimeUseMatrix})
-    RunMacro("Get Time Avail for Joint Tours", Args, abm)
+    TimeManager = RunMacro("Get Time Manager", abm)
+    TimeManager.LoadTimeUseMatrix({MatrixFile: Args.MandTimeUseMatrix})
+    RunMacro("Get Time Avail for Joint Tours", Args, abm, TimeManager)
 
     // Compute NonMandatory Accessibilities 
     RunMacro("NonMandatory Joint Accessibility", Args)
@@ -177,8 +177,8 @@ endMacro
 Macro "JointTours Scheduling"(Args)
     // Initialize Time Manager
     abm = RunMacro("Get ABM Manager", Args)
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
-    abm.TimeManager.LoadTimeUseMatrix({MatrixFile: Args.MandTimeUseMatrix}) // loading the existing file
+    TimeManager = RunMacro("Get Time Manager", abm)
+    TimeManager.LoadTimeUseMatrix({MatrixFile: Args.MandTimeUseMatrix}) // loading the existing file
 
     // Get master set of person combinations
     maxHHSize = 9
@@ -190,7 +190,7 @@ Macro "JointTours Scheduling"(Args)
         pbar1 = CreateObject("G30 Progress Bar", "Joint Tour Scheduling (Composition, Participation, Duration, StartTime, Mode and TimeManagerUpdate) for " + p + " Tours", true, 6)
 
         // Composition Model
-        spec = {ModelType: p, abmManager: abm}
+        spec = {ModelType: p, abmManager: abm, TimeManager: TimeManager}
         RunMacro("JointTours Composition", Args, spec)
         if pbar1.Step() then
             Return()
@@ -227,7 +227,7 @@ Macro "JointTours Scheduling"(Args)
     pbar.Destroy()
 
     // Write out time manager matrix
-    abm.TimeManager.ExportTimeUseMatrix(Args.JointTimeUseMatrix)
+    TimeManager.ExportTimeUseMatrix(Args.JointTimeUseMatrix)
     ret_value = 1
   
     Return(true)
@@ -542,6 +542,8 @@ endMacro
 Macro "JointTours Duration"(Args, spec)
     p = spec.ModelType
     abm = spec.abmManager
+    TimeManager = spec.TimeManager
+
     purpose = SubString(p, 1, StringLength(p) - 1) //"Other" or "Shop"
     TourNo = s2i(Right(p, 1))
     id = Stringlength(p) - 5 + TourNo // Yields 1, 2 or 3 for Shop1, Other1 and Other2 respectively
@@ -553,7 +555,7 @@ Macro "JointTours Duration"(Args, spec)
     HHSpec = {ViewName: abm.HHView, HHID: abm.HHID, Filter: HHFilter}
     PersonSpec = {ViewName: abm.PersonView, PersonID: abm.PersonID, Filter: PersonFilter}   
     opts = {PersonSpec: PersonSpec, HHSpec: HHSpec, HHFillField: "MaxFreeTime", Metric: "MaxAvailTime", StartTime: 360, EndTime: 1380} // 0700 to 2300
-    abm.TimeManager.FillHHTimeField(opts)
+    TimeManager.FillHHTimeField(opts)
 
     // Get Duration Availabilities
     utilFunction = Args.("JointTourDur" + purpose + "Utility")
@@ -585,6 +587,8 @@ endMacro
 Macro "JointTours StartTime"(Args, spec)
     p = spec.ModelType
     abm = spec.abmManager
+    TimeManager = spec.TimeManager
+
     purpose = SubString(p, 1, StringLength(p) - 1) // "Other" or "Shop"
     TourNo = s2i(Right(p, 1))
     id = Stringlength(p) - 5 + TourNo // Yields 1, 2 or 3 for Shop1, Other1 and Other2 respectively
@@ -604,7 +608,7 @@ Macro "JointTours StartTime"(Args, spec)
             DurationField: "Joint_" + p + "_Duration", 
             StartTimeAlts: startTimeAlts, 
             OutputAvailFile: Args.JointStartAvails}
-    abm.TimeManager.GetJointStartTimeAvailabilities(opts)
+    TimeManager.GetJointStartTimeAvailabilities(opts)
 
     objA = CreateObject("Table", Args.JointStartAvails)
     vwJ = JoinViews("JointToursHHData", GetFieldFullSpec(abm.HHView, abm.HHID), GetFieldFullSpec(objA.GetView(), "RecordID"),)
@@ -691,12 +695,13 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     tod = MCOpts.TimePeriod
     abm = MCOpts.abmManager
     modelName = "Joint Tours Mode " + purpose
+    ptSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
     
     obj = null
     obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: modelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursMode" + purpose + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-    obj.AddMatrixSource({SourceName: "PTSkim", File: Args.("TransitWalkSkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "PTSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddTableSource({SourceName: "HH", View: abm.HHView, IDField: abm.HHID})
@@ -767,6 +772,7 @@ endMacro
 Macro "JT Update TimeManager"(Args, spec)
     p = spec.ModelType
     abm = spec.abmManager
+    TimeManager = spec.TimeManager
     
     fldsToExport = {abm.PersonID, "InJoint_" + p + "_Tour", "DepTimeTo" + "Joint_" + p, "ArrTimeFrom" + "Joint_" + p}
     vwTemp = ExportView(abm.PersonHHView + "|", "MEM", "TempPersonHH", fldsToExport,)
@@ -775,10 +781,10 @@ Macro "JT Update TimeManager"(Args, spec)
                 PersonID: abm.PersonID,
                 Departure: "DepTimeTo" + "Joint_" + p,
                 Arrival: "ArrTimeFrom" + "Joint_" + p}
-    abm.TimeManager.UpdateMatrixFromTours(tourOpts)
+    TimeManager.UpdateMatrixFromTours(tourOpts)
 
     // Refill time fields
-    RunMacro("Get Time Avail for Joint Tours", Args, abm)
+    RunMacro("Get Time Avail for Joint Tours", Args, abm, TimeManager)
 
     CloseView(vwTemp)
 endMacro
@@ -786,14 +792,14 @@ endMacro
 
 //=================================================================================================
 // Calculate time available by person needed by discretionary joint tour models 
-Macro "Get Time Avail for Joint Tours"(Args, abm)
+Macro "Get Time Avail for Joint Tours"(Args, abm, TimeManager)
     hhSpec = {ViewName: abm.HHView, HHID: abm.HHID}
     opts = {HHSpec: hhSpec, Metric: "AverageFreeTime", HHFillField: "HHAvgFreeTime_09to18", StartTime: 540, EndTime: 1080}
-    abm.TimeManager.FillHHTimeField(opts)
+    TimeManager.FillHHTimeField(opts)
 
     perSpec = {ViewName: abm.PersonView, PersonID: abm.PersonID}
     opts = {PersonSpec: perSpec, Metric: "FreeTime", PersonFillField: "FreeTime_07to20", StartTime: 420, EndTime: 1200}
-    abm.TimeManager.FillPersonTimeField(opts)
+    TimeManager.FillPersonTimeField(opts)
 endMacro
 
 
