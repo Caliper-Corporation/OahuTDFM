@@ -129,7 +129,9 @@ EndMacro
 Macro "Model.OnModelDone" (Args,Result)
 Body:
     mr = CreateObject("Model.Runtime")
-    mr.RunCode("Close ABM Manager", Args, {Overwrite: 1})
+    mr.RunCode("Export ABM Data", Args, {Overwrite: 1})
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
     Return(Result)
 EndMacro
 
