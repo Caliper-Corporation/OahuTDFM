@@ -91,8 +91,8 @@ endMacro
     Null out the ABM Manager object (i.e. call the destructor)
     Null out the ABM Args argument
 */
-Macro "Close ABM Manager"(Args, opts)
-    RunMacro("Export ABM Data", Args, opts)
+Macro "Close ABM Manager"(Args)
+    RunMacro("Export ABM Data", Args, {Overwrite: 0})
     RunMacro("ReleaseSingleton", "ABM_Manager")
     RunMacro("ReleaseSingleton", "ABM.TimeManager")
     Return(true)
