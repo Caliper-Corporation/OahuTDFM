@@ -861,7 +861,7 @@ EndMacro
 Macro "ABM Postprocess" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"Create Mandatory Trip File","Generate ABM Trip File"}},
+        {"MacroNames",{"Create Mandatory Trip File","Generate ABM Trip File", "Close ABM Manager"}},
     {"Picture", "bmp\\planreport_v3.bmp"},
     {"PicturePosition", "CenterRight"}
     }

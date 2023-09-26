@@ -1,6 +1,6 @@
 Class "ABM.TimeManager"(opts)
     init do
-        self.View = null                    // The In-Memory view that contains the PersonID field and a corresponding HHID field
+        self.ViewLookup = null              // The In-Memory view that contains the PersonID field and a corresponding HHID field
         self.PersonID = null                // The PersonID field in the In-Memory view
         self.HHID = null                    // The HHID field in the In-Memory view
         self.ViewTimeSlots = null           // A view that contains the 96 time intervals and their start and end time (minutes from midnight)
@@ -9,12 +9,21 @@ Class "ABM.TimeManager"(opts)
         self.TimeUseMatrix = null           // The handle of main matrix file of time usage indicators (Persons by 96 time slots)
         self.TimeUseMatrixCurrency = null   // The main currency of matrix file of time usage indicators (Persons by 96 time slots)
         self.validate = CreateObject("Caliper.Validate")
+        self.HasData = 0
 
+        if opts <> null then
+            self.Initialize(opts)
+    endItem
+
+
+    macro "Initialize"(opts) do
         self.CheckRequiredOptions(opts)
 
         // Create In-Memory lookup of the Person and HH fields.
         // Set class variables View, PersonID, HHID, TimeUseMatrix, TimeUseMatrixCurrency
         self.SetClassVariables(opts)
+
+        self.HasData = 1
     endItem
 
 
@@ -27,6 +36,11 @@ Class "ABM.TimeManager"(opts)
 
         if opts.PersonID = null then
             Throw("Please provide the 'PersonID' field for the 'ABM.TimeManager' class.")
+    endItem
+
+
+    macro "HasData" do
+        Return(self.HasData)
     endItem
 
 
@@ -43,7 +57,7 @@ Class "ABM.TimeManager"(opts)
         hhID = self.validate.GetString(opts.HHID, "ABM.TimeManager 'Initialization': Invalid 'HHID' option")
 
         // Export to In-Memory view
-        self.View = ExportView(viewName + "|" + set, "MEM", "IDLookup", {pID, hhID},)
+        self.ViewLookup = ExportView(viewName + "|" + set, "MEM", "IDLookup", {pID, hhID},)
         self.PersonID = "__PersonID"
         self.HHID = "__HHID"
 
@@ -51,7 +65,7 @@ Class "ABM.TimeManager"(opts)
             Return()
 
         // Rename fields
-        modify = CreateObject("CC.ModifyTableOperation", self.View)
+        modify = CreateObject("CC.ModifyTableOperation", self.ViewLookup)
         modify.ChangeField(pID, {Name: self.PersonID})
         modify.ChangeField(hhID, {Name: self.HHID})
         modify.Apply()
@@ -86,7 +100,7 @@ Class "ABM.TimeManager"(opts)
 
 
     private macro "CreateMatrixShell" do
-        vP = GetDataVector(self.View + "|", self.PersonID, )
+        vP = GetDataVector(self.ViewLookup + "|", self.PersonID, )
         vT = Vector(self.NumberTimeSlots, "Long", {{"Sequence", 1, 1}})
 
         // Create empty matrix: Current limitation of 'CreateFromArrays': Cannot accept InMemory Matrix
@@ -217,7 +231,7 @@ Class "ABM.TimeManager"(opts)
         fldsOut = SubArray(aggrFlds, 2, nIntervals)
 
         // Get vectors for all persons using join. Done because filling matrix on a selection index rather than the base index much slower.
-        vwP = self.View
+        vwP = self.ViewLookup
         vwJ = JoinViews("Persons_Aggr", GetFieldFullSpec(vwP, self.PersonID), GetFieldFullSpec(vwPersonAggr, personIDFld),)
         vecs = GetDataVectors(vwPersonAggr + "|", fldsOut, {"Missing as Zero": "True", "Column Based": "True"})
         SetView(vwJ)
@@ -861,8 +875,8 @@ Class "ABM.TimeManager"(opts)
     // Aggregate matrix from Persons by TimeSlots to HHs by TimeSlots
     private macro "AggregateTimeUseMatrix"(mc, method) do
         // Aggregate TimeUse matrix to prodice HHID by MaxUsedTime
-        rowAggr = {GetFieldFullSpec(self.View, self.PersonID), 
-                    GetFieldFullSpec(self.View, self.HHID)}
+        rowAggr = {GetFieldFullSpec(self.ViewLookup, self.PersonID), 
+                    GetFieldFullSpec(self.ViewLookup, self.HHID)}
         
         colAggr = {GetFieldFullSpec(self.ViewTimeSlots, self.TimeSlotID), 
                     GetFieldFullSpec(self.ViewTimeSlots, self.TimeSlotID)}
@@ -911,12 +925,16 @@ Class "ABM.TimeManager"(opts)
     private macro "OpenView"(vwName, tableName, errorTag) do
         msg = "'ABM.TimeManager' " + errorTag + ": "
 
-        if vwName <> null then
+        if vwName <> null then do
             vwName = self.validate.GetString(vwName, msg + "Invalid 'ViewName' option")
+            vws = GetViews()
+            if vws[1].position(vwName) = 0 then
+                Throw("Time Manager: '" + vwName + "' not found.")
+        end
         else do
             tableName = self.validate.GetString(tableName, msg + "Invalid 'TableName' option")
-            objTable = CreateObject("AddTables", {TableName: tableName})
-            vwName = objTable.TableView
+            objTable = CreateObject("Table", tableName)
+            vwName = objTable.GetView()
         end 
         
         ret = null
@@ -952,10 +970,11 @@ Class "ABM.TimeManager"(opts)
         self.TimeUseMatrixCurrency = null
         self.TimeUseMatrix = null
         self.validate = null
-        if self.View <> null then
-            CloseView(self.View)
+        if self.ViewLookup <> null then
+            CloseView(self.ViewLookup)
         if self.ViewTimeSlots <> null then
             CloseView(self.ViewTimeSlots)
+        self.HasData = 0
     endItem
 endClass
 

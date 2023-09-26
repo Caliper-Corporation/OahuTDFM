@@ -112,7 +112,6 @@ Macro "Mandatory Mode Choice"(Args)
     
     RunMacro("School MC Postprocess", abm)
 
-    RunMacro("Export ABM Data", Args)
     pbar.Destroy()
     return(true)
 endMacro
@@ -274,12 +273,14 @@ Macro "Evaluate Mode Choice"(Args, spec)
             continue
 
         autoSkimFile = Args.("HighwaySkim" + tod)
-        ptWalkSkimFile = Args.("TransitWalkSkim" + tod)
-        ptDriveSkimFile = Args.("TransitDriveSkim" + tod)
+
+        ptWalkSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
+        ptDriveSkimFile = printf("%s\\output\\skims\\transit\\%s_pnr_bus.mtx", {Args.[Scenario Folder], tod})
         
         // Run Model and populate results
         tag = category + "_" + tod + "_Mode" + direction
         obj = CreateObject("PMEChoiceModel", {ModelName: tag + " Tour Mode"})
+
         obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\" + tag + ".mdl"
         obj.AddAlternatives({AlternativesTree: spec.Alternatives})
         obj.AddTableSource({SourceName: "PersonHH", View: vwPHH, IDField: abm.PersonID})

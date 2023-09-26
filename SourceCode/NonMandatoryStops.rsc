@@ -40,13 +40,14 @@ Macro "JointStops Scheduling"(Args)
     RunMacro("Tour Order", {View: vwMem, Type: 'Joint'})
 
     // Load time manager object
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
-    abm.TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix}) // loading the existing file
+    TimeManager = RunMacro("Get Time Manager", abm)
+    TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix}) // loading the existing file
 
     opt = null
     opt.abmManager = abm
     opt.ToursObj = objT
-    pbar = CreateObject("G30 Progress Bar", "Running Intemediate Stops Scheduling for Joint Discretionary Tours (Max 3 tours)", false, maxTours)
+    opt.TimeManager = TimeManager
+    pbar = CreateObject("G30 Progress Bar", "Running Intermediate Stops Scheduling for Joint Discretionary Tours (Max 3 tours)", false, maxTours)
     for i = 1 to maxTours do
         opt.TourNumber = i
 
@@ -82,7 +83,7 @@ Macro "JointStops Scheduling"(Args)
     CloseView(vwMem)
 
     // Export Final Time Manager Matrix
-    abm.TimeManager.ExportTimeUseMatrix(Args.JointTimeUseMatrix)
+    TimeManager.ExportTimeUseMatrix(Args.JointTimeUseMatrix)
     Return(true)
 endMacro
 
@@ -155,22 +156,25 @@ endMacro
 // ========================================================================================================
 Macro "JointStop Scheduling Prep"(opt)
     abm = opt.abmManager
+    TimeManager = opt.TimeManager
+
     TourSpec = {ViewName: opt.ToursObj.GetView(), HHID: "HID", Set: opt.TourSet}
     PersonSpec = {ViewName: abm.PersonView, PersonID: abm.PersonID, Set: opt.PersonSet}   
     
     // From the time manager fill the time after arrival from previous tour and the departure time of the next tour
     // A bit tricky because we are using the tour data as the temp HH data. 
     opts = {PersonSpec: PersonSpec, HHSpec: TourSpec, HHFillField: "ArrTimePrevTour", Metric: "EarliestTime", TimeField: "TourStartTime"}
-    abm.TimeManager.FillHHTimeField(opts)
+    TimeManager.FillHHTimeField(opts)
 
     opts = {PersonSpec: PersonSpec, HHSpec: TourSpec, HHFillField: "DepTimeNextTour", Metric: "LatestTime", TimeField: "TourEndTime"}
-    abm.TimeManager.FillHHTimeField(opts)
+    TimeManager.FillHHTimeField(opts)
 endMacro
 
 
 //=========================================================================================================
 Macro "JointStop Update TimeManager"(opt)
     abm = opt.abmManager
+    TimeManager = opt.TimeManager
     
     vwTempTours = ExportView(opt.ToursObj.GetView() + "|" + opt.TourSet, "MEM", "TempTours", {"HID", "TourStartTime", "TourEndTime"},)
     vwJ = JoinViews("PersonTours", GetFieldFullSpec(abm.PersonView, abm.HHIDinPersonView), GetFieldFullSpec(vwTempTours, "HID"), )
@@ -178,7 +182,7 @@ Macro "JointStop Update TimeManager"(opt)
     CloseView(vwJ)
     CloseView(vwTempTours)
 
-    abm.TimeManager.UpdateMatrixFromTours({ViewName: vwTemp, PersonID: abm.PersonID, Departure: 'TourStartTime', Arrival: 'TourEndTime'})
+    TimeManager.UpdateMatrixFromTours({ViewName: vwTemp, PersonID: abm.PersonID, Departure: 'TourStartTime', Arrival: 'TourEndTime'})
     CloseView(vwTemp)
 endMacro
 
@@ -225,13 +229,14 @@ Macro "SoloStops Scheduling"(Args)
     RunMacro("Tour Order", {View: vwMem, Type: 'Solo'})
     
     // Load time manager object
-    abm.TimeManager = CreateObject("ABM.TimeManager", {TableName: Args.Persons, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
-    abm.TimeManager.LoadTimeUseMatrix({MatrixFile: Args.SoloTimeUseMatrix}) // loading the existing file
+    TimeManager = RunMacro("Get Time Manager", abm)
+    TimeManager.LoadTimeUseMatrix({MatrixFile: Args.SoloTimeUseMatrix}) // loading the existing file
 
     opt = null
     opt.abmManager = abm
     opt.ToursObj = objT
-    pbar = CreateObject("G30 Progress Bar", "Running Intemediate Stops Scheduling for Solo Discretionary Tours (Max 3 tours)", false, maxTours)
+    opt.TimeManager = TimeManager
+    pbar = CreateObject("G30 Progress Bar", "Running Intermediate Stops Scheduling for Solo Discretionary Tours (Max 3 tours)", false, maxTours)
     for i = 1 to maxTours do
         opt.TourNumber = i
 
@@ -264,30 +269,31 @@ Macro "SoloStops Scheduling"(Args)
     CloseView(vwMem)
 
     // Export Final Time Manager Matrix
-    abm.TimeManager.ExportTimeUseMatrix(Args.SoloTimeUseMatrix)
+    TimeManager.ExportTimeUseMatrix(Args.SoloTimeUseMatrix)
     Return(true)
 endMacro
 
 
 //========================================================================================================
 Macro "SoloStop Scheduling Prep"(opt)
-    abm = opt.abmManager
+    TimeManager = opt.TimeManager
+
     Spec = {ViewName: opt.ToursObj.GetView(), PersonID: "PerID", Set: opt.TourSet}
     
     // From the time manager fill the time after arrival from previous tour and the departure time of the next tour
     opts = {PersonSpec: Spec, PersonFillField: "ArrTimePrevTour", Metric: "EarliestTime", TimeField: "TourStartTime"}
-    abm.TimeManager.FillPersonTimeField(opts)
+    TimeManager.FillPersonTimeField(opts)
 
     opts = {PersonSpec: Spec, PersonFillField: "DepTimeNextTour", Metric: "LatestTime", TimeField: "TourEndTime"}
-    abm.TimeManager.FillPersonTimeField(opts)
+    TimeManager.FillPersonTimeField(opts)
 endMacro
 
 
 //=========================================================================================================
 Macro "SoloStop Update TimeManager"(opt)
-    abm = opt.abmManager
+    TimeManager = opt.TimeManager
     vwTempTours = ExportView(opt.ToursObj.GetView() + "|" + opt.TourSet, "MEM", "TempTours", {"PerID", "TourStartTime", "TourEndTime"},)
-    abm.TimeManager.UpdateMatrixFromTours({ViewName: vwTempTours, PersonID: "PerID", Departure: 'TourStartTime', Arrival: 'TourEndTime'})
+    TimeManager.UpdateMatrixFromTours({ViewName: vwTempTours, PersonID: "PerID", Departure: 'TourStartTime', Arrival: 'TourEndTime'})
     CloseView(vwTempTours)
 endMacro
 
