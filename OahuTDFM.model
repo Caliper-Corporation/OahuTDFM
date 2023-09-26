@@ -861,9 +861,11 @@ EndMacro
 Macro "ABM Postprocess" (Args,Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames",{"Create Mandatory Trip File","Generate ABM Trip File", "Close ABM Manager"}},
-    {"Picture", "bmp\\planreport_v3.bmp"},
-    {"PicturePosition", "CenterRight"}
+        {"MacroNames",{"Create Mandatory Trip File",
+                        "Generate ABM Trip File",
+                        "Close ABM Manager"}},
+                    {"Picture", "bmp\\planreport_v3.bmp"},
+                    {"PicturePosition", "CenterRight"}
     }
 EndMacro
 
@@ -878,9 +880,9 @@ EndMacro
 Macro "Auto Assignments" (Args, Result)
     Attributes = {
         {"Class", {"GISDK"}},
-        {"MacroNames", {"Create Assignment OD Matrices"}},
-        {"Picture", "bmp\\plansubarea_v3.bmp"},
-        {"PicturePosition", "CenterRight"}
+        {"MacroNames",{"Create Assignment OD Matrices","Highway Assignment AM OP PM"}},
+    {"Picture", "bmp\\plansubarea_v3.bmp"},
+    {"PicturePosition", "CenterRight"}
     }
 EndMacro
 
