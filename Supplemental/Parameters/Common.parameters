@@ -2852,6 +2852,11 @@
             "Caption":"NT Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\NT_OD.mtx"
         }
+        Args.DAY_OD = {
+            "Type":"File",
+            "Caption":"Daily Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\Daily_OD.mtx"
+        }
 
 
 	Section = "Visitor Model"
