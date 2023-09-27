@@ -31,3 +31,5 @@ HighwayAssignment.rsc
 ../src/Visitors.rsc
 ../src/utils/NestedDC.rsc
 ../src/Airport.rsc
+../src/TransitAssignment.rsc
+../src/Reports.rsc

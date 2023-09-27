@@ -888,6 +888,9 @@ EndMacro
 
 
 Macro "Public Transit Assignments" (Args, Result)
+    Attributes = {
+        {"MacroNames", {"Transit Assignment"}}
+    }
 Body:
     ShowMessage("Public Transit Assignments: Not yet implemented")
     Return(1)
@@ -895,6 +898,9 @@ EndMacro
 
 
 Macro "Reports" (Args, Result)
+    Attributes = {
+        {"MacroNames", {"Reports"}}
+    }
 Body:
     ShowMessage("Reports: Not yet implemented")
     Return(1)
