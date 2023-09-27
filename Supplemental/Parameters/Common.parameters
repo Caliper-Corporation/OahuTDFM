@@ -2868,6 +2868,11 @@
             "Caption":"Daily Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\Daily_OD.mtx"
         }
+        Args.Transit_OD = {
+            "Type":"File",
+            "Caption":"Transit OD Matrix",
+            "Value":"%Output Folder%\\OD\\Transit_OD.mtx"
+        }
 
 
 	Section = "Visitor Model"
@@ -3044,72 +3049,4 @@
             "Caption":"Public Transport Summaries",
             "Value":"%Output Folder%\\PTAssignment\\PT_Summary.bin"
         }
-        Args.AM_PT_Flows = {
-            "Type":"File",
-            "Caption":"AM Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Flows.bin"
-        }
-        Args.PM_PT_Flows = {
-            "Type":"File",
-            "Caption":"PM Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Flows.bin"
-        }
-        Args.OP_PT_Flows = {
-            "Type":"File",
-            "Caption":"OP Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Flows.bin"
-        }
-        Args.AM_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"AM Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_WalkFlows.bin"
-        }
-        Args.PM_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"PM Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_WalkFlows.bin"
-        }
-        Args.OP_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"OP Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_WalkFlows.bin"
-        }
-        Args.AM_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"AM Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_OnOff_Counts.bin"
-        }
-        Args.PM_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"PM Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_OnOff_Counts.bin"
-        }
-        Args.OP_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"OP Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_OnOff_Counts.bin"
-        }
-        Args.AM_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Agg_LinkFlows.bin"
-        }
-        Args.PM_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Agg_LinkFlows.bin"
-        }
-        Args.OP_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Agg_LinkFlows.bin"
-        }
+      
