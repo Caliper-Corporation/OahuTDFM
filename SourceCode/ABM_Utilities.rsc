@@ -562,9 +562,10 @@ Macro "Write ABM OD"(Args)
     tripTime = CreateExpression(vwTrips, "Time", "(OrigDep + DestArr)/2",)
 
     amQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amStart), tripTime, String(amEnd)})
-    mdQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amEnd), tripTime, String(pmStart)})
+    // mdQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amEnd), tripTime, String(pmStart)})
     pmQry = printf("(%s >= %s and %s < %s)", {tripTime, String(pmStart), tripTime, String(pmEnd)})
-    exprStr = printf("if %s then 'AM' else if %s then 'MD' else if %s then 'PM' else 'NT'", {amQry, mdQry, pmQry})
+    // exprStr = printf("if %s then 'AM' else if %s then 'MD' else if %s then 'PM' else 'NT'", {amQry, mdQry, pmQry})
+    exprStr = printf("if %s then 'AM' else if %s then 'PM' else 'OP'", {amQry, pmQry})
     odPeriod = CreateExpression(vwTrips, "ODPeriod", exprStr,)
 
     vMode = objT.Mode
@@ -574,7 +575,7 @@ Macro "Write ABM OD"(Args)
     mSkimObj.SetIndex("TAZ")
     mcSkim = mSkimObj.Time
     
-    periods = {'AM', 'MD', 'PM', 'NT'}
+    periods = {'AM', 'PM', 'OP'}
     for p in periods do
         outFile = Args.(p + "_OD")
         label = printf("%s_OD", {p})
@@ -627,7 +628,8 @@ endMacro
 
 Macro "Create Daily OD Matrix"(Args)
     ret_value = 1
-    periods = {'AM', 'MD', 'PM', 'NT'}
+    // periods = {'AM', 'MD', 'PM', 'NT'}
+    periods = {'AM', 'PM', 'OP'}
     CopyFile(Args.AM_OD, Args.DAY_OD)
     day = CreateObject("Matrix", Args.DAY_OD)
     names = day.GetCoreNames()

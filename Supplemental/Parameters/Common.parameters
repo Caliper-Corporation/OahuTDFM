@@ -86,6 +86,22 @@
             "Value":null
         }
 
+        Args.AMCapFactor = {
+            "Type":"int",
+            "Description":"Peak hour to AM period capacity factor",
+            "Value":2.5
+        }
+        Args.PMCapFactor = {
+            "Type":"int",
+            "Description":"Peak hour to PM period capacity factor",
+            "Value":3.5
+        }
+        Args.OPCapFactor = {
+            "Type":"int",
+            "Description":"Peak hour to NT period capacity factor",
+            "Value":7
+        }
+
     Section = "Parameters|ABM"
 
         Args.WorkCarpoolOccupancy = {
@@ -2837,25 +2853,25 @@
             "Caption":"AM Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\AM_OD.mtx"
         }
-        Args.MD_OD = {
-            "Type":"File",
-            "Caption":"MD Assignment OD Matrix",
-            "Value":"%Output Folder%\\OD\\MD_OD.mtx"
-        }
         Args.PM_OD = {
             "Type":"File",
             "Caption":"PM Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\PM_OD.mtx"
         }
-        Args.NT_OD = {
+        Args.OP_OD = {
             "Type":"File",
-            "Caption":"NT Assignment OD Matrix",
-            "Value":"%Output Folder%\\OD\\NT_OD.mtx"
+            "Caption":"OP Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\OP_OD.mtx"
         }
         Args.DAY_OD = {
             "Type":"File",
             "Caption":"Daily Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\Daily_OD.mtx"
+        }
+        Args.Transit_OD = {
+            "Type":"File",
+            "Caption":"Transit OD Matrix",
+            "Value":"%Output Folder%\\OD\\Transit_OD.mtx"
         }
 
 
@@ -2989,23 +3005,23 @@
 	
 	Section = "AssignmentOutputs"
 	
-        Args.AM_CarFlows = {
+        Args.AMFlows = {
             "Type":"File",
-            "VisualizeMenu":
-            {"FlowMap"},
-            "Value":"%Output Folder%\\Assignment\\AM_CarFlows.bin"
+            "Caption":"Highway AM Flows",
+            "Description":"AMFlows",
+            "Value":"%Output Folder%\\Assignment\\Roadway\\AMFlows.bin"
         }
-        Args.PM_CarFlows = {
+        Args.PMFlows = {
             "Type":"File",
-            "VisualizeMenu":
-            {"FlowMap"},
-            "Value":"%Output Folder%\\Assignment\\PM_CarFlows.bin"
+            "Caption":"Highway PM Flows",
+            "Description":"PMFlows",
+            "Value":"%Output Folder%\\Assignment\\Roadway\\PMFlows.bin"
         }
-        Args.OP_CarFlows = {
+        Args.OPFlows = {
             "Type":"File",
-            "VisualizeMenu":
-            {"FlowMap"},
-            "Value":"%Output Folder%\\Assignment\\OP_CarFlows.bin"
+            "Caption":"Highway NT Flows",
+            "Description":"OPFlows",
+            "Value":"%Output Folder%\\Assignment\\Roadway\\OPFlows.bin"
         }
         Args.AM_IterLog = {
             "Type":"File",
@@ -3033,72 +3049,4 @@
             "Caption":"Public Transport Summaries",
             "Value":"%Output Folder%\\PTAssignment\\PT_Summary.bin"
         }
-        Args.AM_PT_Flows = {
-            "Type":"File",
-            "Caption":"AM Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Flows.bin"
-        }
-        Args.PM_PT_Flows = {
-            "Type":"File",
-            "Caption":"PM Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Flows.bin"
-        }
-        Args.OP_PT_Flows = {
-            "Type":"File",
-            "Caption":"OP Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Flows.bin"
-        }
-        Args.AM_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"AM Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_WalkFlows.bin"
-        }
-        Args.PM_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"PM Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_WalkFlows.bin"
-        }
-        Args.OP_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"OP Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_WalkFlows.bin"
-        }
-        Args.AM_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"AM Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_OnOff_Counts.bin"
-        }
-        Args.PM_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"PM Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_OnOff_Counts.bin"
-        }
-        Args.OP_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"OP Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_OnOff_Counts.bin"
-        }
-        Args.AM_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Agg_LinkFlows.bin"
-        }
-        Args.PM_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Agg_LinkFlows.bin"
-        }
-        Args.OP_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Agg_LinkFlows.bin"
-        }
+      

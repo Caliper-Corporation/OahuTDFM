@@ -18,6 +18,7 @@ NonMandatorySoloTours.rsc
 NonMandatoryStops.rsc
 TimeManager.rsc
 NonresidentDistribution.rsc
+HighwayAssignment.rsc
 ../src/utils/utils.rsc
 ../src/utils/RoadwayProjectManagement.rsc
 ../src/utils/TransitProjectManagement.rsc
@@ -30,3 +31,5 @@ NonresidentDistribution.rsc
 ../src/Visitors.rsc
 ../src/utils/NestedDC.rsc
 ../src/Airport.rsc
+../src/TransitAssignment.rsc
+../src/Reports.rsc
