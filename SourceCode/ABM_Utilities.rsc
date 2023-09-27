@@ -5,12 +5,8 @@
     If the views pertaining to the object are closed (For e.g. the flowchart automatically closes all view when you start), the views are added
 */
 Macro "Get ABM Manager"(Args)
-    abm = Args.[ABM Manager]
-    if abm = null then do
-        abm = CreateObject("ABM_Manager")
-        Args.[ABM Manager] = abm
-    end
-    
+    abm = RunMacro("GetSingleton", "ABM_Manager")
+
     if !abm.IsHHDataLoaded() then
         abm.SetHouseholdData({File: Args.Households, ID: "HouseholdID"})
 
@@ -31,13 +27,21 @@ endMacro
     'Export ABM Data' exports the in-memory tables from the abm manager object back to the population and household files
 */
 Macro "Export ABM Data"(Args, opts)
-    abm = Args.[ABM Manager]
-    if abm = null or TypeOf(abm) <> "object" then
-        Return()
+    abm = RunMacro("Get ABM Manager", Args)
+    iter = String(Args.Iteration)
+    if iter = null then
+        iter = "1"
     
     // Export HH Data
     if abm.IsHHDataLoaded() then do
-        hhOpts = {File: Args.Households}
+        if opts.Overwrite then
+            outFile = Args.Households
+        else do
+            pth = SplitPath(Args.Households)
+            outFile = pth[1] + pth[2] + pth[3] + "_OutputIter" + iter + ".bin"
+        end
+
+        hhOpts = {File: outFile} 
         if opts.HHFields <> null then
             hhOpts = hhOpts + {Fields: opts.HHFields}
         if opts.HHFilter <> null then
@@ -49,7 +53,14 @@ Macro "Export ABM Data"(Args, opts)
 
     // Export Person Data
     if abm.IsPersonDataLoaded() then do
-        pOpts = {File: Args.Persons}
+        if opts.Overwrite then
+            outFile = Args.Persons
+        else do
+            pth = SplitPath(Args.Persons)
+            outFile = pth[1] + pth[2] + pth[3] + "_OutputIter" + iter + ".bin"
+        end
+
+        pOpts = {File: outFile}
         if opts.PersonFields <> null then
             pOpts = pOpts + {Fields: opts.PersonFields}
         if opts.PersonFilter <> null then
@@ -65,10 +76,27 @@ endMacro
     ABM Manager Utilities:
     Macro to create an empty ABM object and return it. Will be called by the flowchart plugin macros.
 */
-Macro "Create ABM Object"
-    abm = CreateObject("ABM_Manager")
-    Return(abm)
+Macro "Get Time Manager"(abm)
+    mr = CreateObject("Model.Runtime")
+    codeUI = mr.GetModelCodeUI()
+    timeManager = RunMacro("GetSingleton", "ABM.TimeManager",,codeUI)
+    
+    if !timeManager.HasData() then
+        timeManager.Initialize({ViewName: abm.PersonView, PersonID: abm.PersonID, HHID: abm.HHIDinPersonView})
+
+    Return(timeManager)
 endMacro
+
+/*
+    Null out the ABM Manager object (i.e. call the destructor)
+    Null out the ABM Args argument
+*/
+Macro "Close ABM Manager"(Args)
+    RunMacro("Export ABM Data", Args, {Overwrite: 0})
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
+    Return(true)
+endmacro
 
 
 /*
@@ -132,7 +160,7 @@ Macro "ABM Preprocess"(Args)
 
 
     fldNames = flds.Map(do (f) Return(f.Name) end)
-    abm.DropPersonFields(fldNames)
+    //abm.DropPersonFields(fldNames)
     abm.AddPersonFields(flds)
 
     // HH File
@@ -143,7 +171,7 @@ Macro "ABM Preprocess"(Args)
             {Name: "NSchoolDropoffs", Type: "Integer", Width: 12, Description: "Number of kids in the HH who choose school drop offs"},
             {Name: "NSchoolPickups", Type: "Integer", Width: 12, Description: "Number of kids in the HH who choose school pick ups"}}
     fldNames = flds.Map(do (f) Return(f.Name) end)
-    abm.DropHHFields(fldNames)
+    //abm.DropHHFields(fldNames)
     abm.AddHHFields(flds)
     
     Return(true)
@@ -292,17 +320,19 @@ Macro "Fill Travel Times"(Args, spec)
     if TypeOf(spec.OField) <> "string" or TypeOf(spec.DField) <> "string" or TypeOf(spec.FillField) <> "string" then
         Throw("Options 'OField', 'DField' and 'FillField' to macro 'Fill Travel Times' need to be strings")
 
+    skimsDir = printf("%s\\output\\skims\\transit\\", {Args.[Scenario Folder]})
+    
     // Define skim files: Change this spec after skims by mode are produced by the model.
     skimSpec = null
     skimSpec.Auto.AM = {File: Args.HighwaySkimAM, Core: "Time"}
     skimSpec.Auto.PM = {File: Args.HighwaySkimPM, Core: "Time"}
     skimSpec.Auto.OP = {File: Args.HighwaySkimOP, Core: "Time"}
-    skimSpec.PTWalk.AM = {File: Args.TransitWalkSkimAM, Core: "Total Time"}
-    skimSpec.PTWalk.PM = {File: Args.TransitWalkSkimPM, Core: "Total Time"}
-    skimSpec.PTWalk.OP = {File: Args.TransitWalkSkimOP, Core: "Total Time"}
-    skimSpec.PTDrive.AM = {File: Args.TransitDriveSkimAM, Core: "Total Time"}
-    skimSpec.PTDrive.PM = {File: Args.TransitDriveSkimPM, Core: "Total Time"}
-    skimSpec.PTDrive.OP = {File: Args.TransitDriveSkimOP, Core: "Total Time"}
+    skimSpec.PTWalk.AM = {File: skimsDir + "AM_w_bus.mtx", Core: "Total Time"}
+    skimSpec.PTWalk.PM = {File: skimsDir + "PM_w_bus.mtx", Core: "Total Time"}
+    skimSpec.PTWalk.OP = {File: skimsDir + "OP_w_bus.mtx", Core: "Total Time"}
+    skimSpec.PTDrive.AM = {File: skimsDir + "AM_pnr_bus.mtx", Core: "Total Time"}
+    skimSpec.PTDrive.PM = {File: skimsDir + "PM_pnr_bus.mtx", Core: "Total Time"}
+    skimSpec.PTDrive.OP = {File: skimsDir + "OP_pnr_bus.mtx", Core: "Total Time"}
     skimSpec.Walk = {File: Args.WalkSkim, Core: "Time"}
     skimSpec.Bike = {File: Args.BikeSkim, Core: "Time"}
 
@@ -510,7 +540,8 @@ endMacro
 */
 Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
-    RunMacro("Add External and Truck OD", Args)
+    //RunMacro("Add External and Truck OD", Args)
+    RunMacro("Create Daily OD Matrix", Args)
     Return(true)
 endMacro
 
@@ -531,9 +562,10 @@ Macro "Write ABM OD"(Args)
     tripTime = CreateExpression(vwTrips, "Time", "(OrigDep + DestArr)/2",)
 
     amQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amStart), tripTime, String(amEnd)})
-    mdQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amEnd), tripTime, String(pmStart)})
+    // mdQry = printf("(%s >= %s and %s < %s)", {tripTime, String(amEnd), tripTime, String(pmStart)})
     pmQry = printf("(%s >= %s and %s < %s)", {tripTime, String(pmStart), tripTime, String(pmEnd)})
-    exprStr = printf("if %s then 'AM' else if %s then 'MD' else if %s then 'PM' else 'NT'", {amQry, mdQry, pmQry})
+    // exprStr = printf("if %s then 'AM' else if %s then 'MD' else if %s then 'PM' else 'NT'", {amQry, mdQry, pmQry})
+    exprStr = printf("if %s then 'AM' else if %s then 'PM' else 'OP'", {amQry, pmQry})
     odPeriod = CreateExpression(vwTrips, "ODPeriod", exprStr,)
 
     vMode = objT.Mode
@@ -543,7 +575,7 @@ Macro "Write ABM OD"(Args)
     mSkimObj.SetIndex("TAZ")
     mcSkim = mSkimObj.Time
     
-    periods = {'AM', 'MD', 'PM', 'NT'}
+    periods = {'AM', 'PM', 'OP'}
     for p in periods do
         outFile = Args.(p + "_OD")
         label = printf("%s_OD", {p})
@@ -593,3 +625,26 @@ Macro "Add External and Truck OD"(Args)
         mExt = null
     end
 endMacro
+
+Macro "Create Daily OD Matrix"(Args)
+    ret_value = 1
+    // periods = {'AM', 'MD', 'PM', 'NT'}
+    periods = {'AM', 'PM', 'OP'}
+    CopyFile(Args.AM_OD, Args.DAY_OD)
+    day = CreateObject("Matrix", Args.DAY_OD)
+    names = day.GetCoreNames()
+    for name in names do
+        day.(name) := nz(day.(name))
+    end
+    for p in periods do
+        mobj = CreateObject("Matrix", Args.(p + "_OD"))
+        for name in names do
+            day.(name) := day.(name) + nz(mobj.(name))
+        end
+        mobj = null
+    end
+    quit:
+    Return(ret_value)
+endmacro
+
+

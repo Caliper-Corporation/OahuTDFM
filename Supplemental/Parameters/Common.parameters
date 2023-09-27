@@ -86,6 +86,22 @@
             "Value":null
         }
 
+        Args.AMCapFactor = {
+            "Type":"int",
+            "Description":"Peak hour to AM period capacity factor",
+            "Value":2.5
+        }
+        Args.PMCapFactor = {
+            "Type":"int",
+            "Description":"Peak hour to PM period capacity factor",
+            "Value":3.5
+        }
+        Args.OPCapFactor = {
+            "Type":"int",
+            "Description":"Peak hour to NT period capacity factor",
+            "Value":7
+        }
+
     Section = "Parameters|ABM"
 
         Args.WorkCarpoolOccupancy = {
@@ -226,28 +242,8 @@
 
         Args.SEDMarginals = {
             "Type":"File",
-            "Caption":"Output marginals from disaggregate curves",
+            "Caption":"Marginals from disaggregate curves",
             "Value":"%Output Folder%\\Population\\SEDMarginals.bin"
-        }
-        Args.HHSeed = {
-            "Type":"File",
-            "Caption":"Processed household seed",
-            "Value":"%Output Folder%\\Population\\Intermediate\\HHSeed.bin"
-        }
-        Args.PersonSeed = {
-            "Type":"File",
-            "Caption":"Processed person seed",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PersonSeed.bin"
-        }
-        Args.BGMarginals = {
-            "Type":"File",
-            "Caption":"Processed marginal file",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Marginals.bin"
-        }
-        Args.BlockMarginals = {
-            "Type":"File",
-            "Caption":"Processed nested marginal file",
-            "Value":"%Output Folder%\\Population\\Intermediate\\PopSyn_Nested_Marginals.bin"
         }
         Args.Households = {
             "Type":"File",
@@ -265,11 +261,6 @@
             "Type":"hidden",
             "Caption":"SQL DB for reporting",
             "Value":"%Output Folder%\\Population\\PopSQL.db"
-        }
-        Args.BGTabulations = {
-            "Type":"File",
-            "Caption":"Output block group tabulations",
-            "Value":"%Output Folder%\\Population\\PopSyn_BGTabulations.bin"
         }
         Args.[Synthesized Tabulations] = {
             "Type":"File",
@@ -354,7 +345,7 @@
         Args.TurnPenalties = {
             "Type":"File",
             "Description":"Turn Penalties Database",
-            "Value":"%Input Folder%\\networks\\PeoriaStreets_TurnPenalties.bin"
+            "Value":"%Input Folder%\\networks\\OahuStreets_TurnPenalties.bin"
         }
         Args.TransitRoutes = {
             "Type":"File",
@@ -599,7 +590,7 @@
                 {"ASC","Constant",1.491,1,0},
                 {"Worker","PersonHH.IndustryCategory < 10",0.7829,1,0},
                 {"Age {25-64}","PersonHH.Age >= 25 and PersonHH.Age < 65",1.1508,1,0},
-                {"Low Income HH","PersonHH.Inc_Category <= 2",0.7168,0,1}}
+                {"Low Income HH","PersonHH.IncomeCategory = 1",0.7168,0,1}}
         }
 	
 	Section = "Long Term Choices|Auto Ownership"
@@ -622,16 +613,16 @@
                 {"HH has no kids","HH.Kids = 0",0.6075,1,0,0,0,0},
                 {"Kids per licensed adults","if HH.NLicensed > 0 then HH.Kids/HH.NLicensed else 0",0.6075,1,0,0,0,0},
                 {"HH with 5 or more persons","HH.HHSize >= 5",0.504,0,0,0,1,1},
-                {"HH with high income","HH.Inc_Category >= 5",0.5124,0,0,0,1,1},
-                {"Low income HH with only seniors","HH.Inc_Category <= 2 and (HH.Seniors = HH.HHSize)",0.4344,1,0,0,0,0},
+                {"HH with high income","HH.IncomeCategory = 4",0.5124,0,0,0,1,1},
+                {"Low income HH with only seniors","HH.IncomeCategory = 1 and (HH.Seniors = HH.HHSize)",0.4344,1,0,0,0,0},
                 {"Connectivity Index > 0.5","TAZ4Ds.ConnectivityIndex.O > 0.5",0.4182,1,0,0,0,0},
                 {"Walk Index > 0.8","TAZ4Ds.WalkIndex.O > 0.8",0.2188,1,0,0,0,0},
                 {"HH Density < 1000","TAZ4Ds.HouseholdDensity.O > 0.5",-0.5902,1,0,0,0,0},
                 {"Jobs-Housing diversity > 0.5","TAZ4Ds.JobsHousingDiversity.O > 0.5",0.2448,1,0,0,0,0},
                 {"Transit Access to Jobs > 1000","TAZ4Ds.TransitAccessibilityToJobsAM.O > 0.5",0.9947,1,0,0,0,0},
                 {"Transit Access to Retail > 1000","TAZ4Ds.TransitAccessibilityToRetailAM.O > 0.5",0.123,1,0,0,0,0},
-                {"Non Motorized DC Accessibility (Low Income HH)","(HH.Inc_Category <= 2)*(DCAccessibility.DestAccessibilityNM.O)",0.1057,1,0,0,0,0},
-                {"Transit DC Accessibility (Low Income HH)","(HH.Inc_Category <= 2)*(DCAccessibility.DestAccessibilityPT.O)",0.0655,1,1,0,0,0}}
+                {"Non Motorized DC Accessibility (Low Income HH)","(HH.IncomeCategory = 1)*(DCAccessibility.DestAccessibilityNM.O)",0.1057,1,0,0,0,0},
+                {"Transit DC Accessibility (Low Income HH)","(HH.IncomeCategory = 1)*(DCAccessibility.DestAccessibilityPT.O)",0.0655,1,1,0,0,0}}
         }
 	
 	Section = "Long Term Choices|Worker Models|Worker Category"
@@ -1725,7 +1716,7 @@
                 {"No. of Pre-School Kids","HH.PreSchKids",0,-0.8166,0,0,-1.382,0},
                 {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",0,0,0,0.6053,0,0},
                 {"Kids per Adult","HH.KidsPerAdult",2.061,1.344,1.255,1.21,0,0},
-                {"High Income","HH.Inc_Category >= 6",0.714,0,0,0,0,0},
+                {"High Income","HH.IncomeCategory = 4",0.714,0,0,0,0,0},
                 {"Has Worker","HH.Workers > 0",-1.001,0,0,0,0,0},
                 {"Vehicles >= 2","HH.Vehicles >= 2",-0.5635,0,0,0,0,0},
                 {"Vehicles >= 3","HH.Vehicles >= 3",-0.85,0,0,0,0,0},
@@ -1745,7 +1736,7 @@
                 {"HH has Pre-School Kids","HH.PreSchKids > 0",2.249,1.563,0,0,0},
                 {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",-3.407,-4.403,0,-5.141,0},
                 {"Kids per Adult","HH.KidsPerAdult",-0.4707,-1.762,-1.762,-0.7732,0},
-                {"High Income","HH.Inc_Category >= 6",0.3247,0,0,0,0},
+                {"High Income","HH.IncomeCategory = 4",0.3247,0,0,0,0},
                 {"Vehicles >= 3","HH.Vehicles >= 3",-2.047,0,0,0,0},
                 {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.377,0,0,0,0}}
         }
@@ -2862,20 +2853,25 @@
             "Caption":"AM Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\AM_OD.mtx"
         }
-        Args.MD_OD = {
-            "Type":"File",
-            "Caption":"MD Assignment OD Matrix",
-            "Value":"%Output Folder%\\OD\\MD_OD.mtx"
-        }
         Args.PM_OD = {
             "Type":"File",
             "Caption":"PM Assignment OD Matrix",
             "Value":"%Output Folder%\\OD\\PM_OD.mtx"
         }
-        Args.NT_OD = {
+        Args.OP_OD = {
             "Type":"File",
-            "Caption":"NT Assignment OD Matrix",
-            "Value":"%Output Folder%\\OD\\NT_OD.mtx"
+            "Caption":"OP Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\OP_OD.mtx"
+        }
+        Args.DAY_OD = {
+            "Type":"File",
+            "Caption":"Daily Assignment OD Matrix",
+            "Value":"%Output Folder%\\OD\\Daily_OD.mtx"
+        }
+        Args.Transit_OD = {
+            "Type":"File",
+            "Caption":"Transit OD Matrix",
+            "Value":"%Output Folder%\\OD\\Transit_OD.mtx"
         }
 
 
@@ -3009,23 +3005,23 @@
 	
 	Section = "AssignmentOutputs"
 	
-        Args.AM_CarFlows = {
+        Args.AMFlows = {
             "Type":"File",
-            "VisualizeMenu":
-            {"FlowMap"},
-            "Value":"%Output Folder%\\Assignment\\AM_CarFlows.bin"
+            "Caption":"Highway AM Flows",
+            "Description":"AMFlows",
+            "Value":"%Output Folder%\\Assignment\\Roadway\\AMFlows.bin"
         }
-        Args.PM_CarFlows = {
+        Args.PMFlows = {
             "Type":"File",
-            "VisualizeMenu":
-            {"FlowMap"},
-            "Value":"%Output Folder%\\Assignment\\PM_CarFlows.bin"
+            "Caption":"Highway PM Flows",
+            "Description":"PMFlows",
+            "Value":"%Output Folder%\\Assignment\\Roadway\\PMFlows.bin"
         }
-        Args.OP_CarFlows = {
+        Args.OPFlows = {
             "Type":"File",
-            "VisualizeMenu":
-            {"FlowMap"},
-            "Value":"%Output Folder%\\Assignment\\OP_CarFlows.bin"
+            "Caption":"Highway NT Flows",
+            "Description":"OPFlows",
+            "Value":"%Output Folder%\\Assignment\\Roadway\\OPFlows.bin"
         }
         Args.AM_IterLog = {
             "Type":"File",
@@ -3053,72 +3049,4 @@
             "Caption":"Public Transport Summaries",
             "Value":"%Output Folder%\\PTAssignment\\PT_Summary.bin"
         }
-        Args.AM_PT_Flows = {
-            "Type":"File",
-            "Caption":"AM Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Flows.bin"
-        }
-        Args.PM_PT_Flows = {
-            "Type":"File",
-            "Caption":"PM Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Flows.bin"
-        }
-        Args.OP_PT_Flows = {
-            "Type":"File",
-            "Caption":"OP Public Transport Flows",
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Flows.bin"
-        }
-        Args.AM_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"AM Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_WalkFlows.bin"
-        }
-        Args.PM_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"PM Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_WalkFlows.bin"
-        }
-        Args.OP_PT_WalkFlows = {
-            "Type":"File",
-            "Caption":"OP Public Transport Walk Flows",
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_WalkFlows.bin"
-        }
-        Args.AM_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"AM Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_OnOff_Counts.bin"
-        }
-        Args.PM_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"PM Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_OnOff_Counts.bin"
-        }
-        Args.OP_PT_OnOff_Counts = {
-            "Type":"File",
-            "Caption":"OP Public Transport Boarding Counts",
-            "VisualizeMenu":
-            {"PTOn","PTOff"},
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_OnOff_Counts.bin"
-        }
-        Args.AM_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\AM_PT_Agg_LinkFlows.bin"
-        }
-        Args.PM_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\PM_PT_Agg_LinkFlows.bin"
-        }
-        Args.OP_PT_Agg_LinkFlows = {
-            "Type":"File",
-            "VisualizeMenu":
-            {"PTFlows"},
-            "Value":"%Output Folder%\\PTAssignment\\OP_PT_Agg_LinkFlows.bin"
-        }
+      

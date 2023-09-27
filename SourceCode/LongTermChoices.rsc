@@ -9,7 +9,7 @@ Macro "Driver License"(Args)
     obj = CreateObject("PMEChoiceModel", {ModelName: "Driver License"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\DriverLicense.mdl"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddPrimarySpec({Name: "PersonHH", Filter: "!(UnivGQStudent = 1 and Autos > 0)"})
+    obj.AddPrimarySpec({Name: "PersonHH", Filter: "!(UnivGQStudent = 1 and Vehicles > 0)"})
     obj.AddUtility({UtilityFunction: Args.DriverLicenseUtility, AvailabilityExpressions: availSpec})
     obj.AddOutputSpec({ChoicesField: "License"})
     obj.ReportShares = 1
@@ -44,7 +44,7 @@ Macro "Auto Ownership"(Args)
     obj.AddTableSource({SourceName: "TAZ4Ds", View: vwTAZ4Ds, IDField: "TAZID"})
     obj.AddPrimarySpec({Name: "HH", Filter: "UnivGQ <> 1", OField: "TAZID"})
     obj.AddUtility({UtilityFunction: Args.AutoOwnershipUtility})
-    obj.AddOutputSpec({ChoicesField: "Autos"})
+    obj.AddOutputSpec({ChoicesField: "Vehicles"})
     obj.ReportShares = 1
     obj.RandomSeed = 199999
     ret = obj.Evaluate()
@@ -52,10 +52,10 @@ Macro "Auto Ownership"(Args)
         Throw("Running 'Auto Availability' choice model failed.")
     Args.[AutoOwnership Spec] = CopyArray(ret) // For calibration purposes
 
-    // Since the choice model returns 1 for '0 Autos', 2 for '1 Auto' etc, subtract one from the output field
-    //abm.[HH.Autos] = abm.[HH.Autos] - 1
+    // Since the choice model returns 1 for '0 Vehicles', 2 for '1 Auto' etc, subtract one from the output field
+    //abm.[HH.Vehicles] = abm.[HH.Vehicles] - 1
     abm.CreateHHSet({Filter: "UnivGQ <> 1", Activate: 1})
-    abm.FillHHFields({Autos: "Autos - 1"}) // Alternate way
+    abm.FillHHFields({Vehicles: "Vehicles - 1"}) // Alternate way
 
     return(true)
 endMacro
@@ -142,7 +142,7 @@ Macro "Remote Work"(Args)
     // Add fields for 'WorkFromHome' and 'TravelToWork'
     newFlds = {{Name: "WorkFromHome", Type: "Short", Width: 2, Description: "Does person work from home on given day? Only filled if 'WorkAttendance = 1'"},
                {Name: "TravelToWork", Type: "Short", Width: 2, Description: "Does person travel to work on given day? 1 if WorkAttendance = 1 and WorkFromHome = 0"}}
-    abm.DropPersonFields({"WorkFromHome", "TravelToWork"})
+    //abm.DropPersonFields({"WorkFromHome", "TravelToWork"})
     abm.AddPersonFields(newFlds)
 
     // Set values for the university GQ students who are also workers or for part time workers under 18.
@@ -287,7 +287,7 @@ Macro "Work Location"(Args)
         if Args.WorkSPFlag then do
             tempOutputSP = GetTempPath() + "ShadowPrice_Industry" + indCode + ".bin"
             obj.AddShadowPrice({TargetName: "TAZData", TargetField: sizeFlds[i], 
-                                Iterations: 10, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
+                                Iterations: 2, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "WorkTAZ"})
         obj.RandomSeed = 899981 + 42*i
@@ -350,7 +350,7 @@ Macro "Univ Location"(Args)
     if Args.UnivSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
         tempOutputSP = GetTempPath() + "ShadowPrice_University.bin"
         obj.AddShadowPrice({TargetName: "TAZData", TargetField: enrollmentFld, 
-                            Iterations: 10, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
+                            Iterations: 2, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
     end
     obj.AddOutputSpec({ChoicesField: "UnivTAZ"})
     obj.RandomSeed = 999983
@@ -414,8 +414,8 @@ endMacro
 // School Location Choice
 Macro "School Location"(Args)
     // Define school segments
-    filters = {"Age >= 5 and Age <= 11", "Age >= 12 and Age <= 14", "Age >= 15 and Age <= 18"}
-    categories = {"Elementary", "Middle", "HighSchool"}
+    filters = {"Age >= 5 and Age <= 18"}
+    categories = {"K12"}
 
     availExpressions = null
     availExpressions.Alternative = {"Destinations"}
@@ -456,7 +456,7 @@ Macro "School Location"(Args)
         if Args.SchoolSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
             tempOutputSP = GetTempPath() + "ShadowPrice_" + type + ".bin"
             obj.AddShadowPrice({TargetName: "TAZData", TargetField: type + "Enrollment", 
-                                Iterations: 10, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
+                                Iterations: 2, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "SchoolTAZ"})
         obj.RandomSeed = 1099997

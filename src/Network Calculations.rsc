@@ -415,6 +415,12 @@ macro "Speeds and Capacities" (Args, Result)
     {FieldName: "BAHourlyCapacityPM"},  
     {FieldName: "ABHourlyCapacityOP"}, 
     {FieldName: "BAHourlyCapacityOP"},  
+    {FieldName: "ABCapacityAM"}, 
+    {FieldName: "BACapacityAM"},  
+    {FieldName: "ABCapacityPM"}, 
+    {FieldName: "BACapacityPM"},  
+    {FieldName: "ABCapacityOP"}, 
+    {FieldName: "BACapacityOP"},  
     {FieldName: "ABAlpha"}, 
     {FieldName: "BAAlpha"}, 
     {FieldName: "ABBeta"}, 
@@ -433,6 +439,7 @@ macro "Speeds and Capacities" (Args, Result)
     join.cap_phpl = join.cape_phpl
     periods = {"AM", "PM", "OP"}
     for period in periods do
+        // hourly capacities
         join.("ABHourlyCapacity" + period) = if join.("AB_LANE" + period) <> null and join.Dir >= 0 
             then join.cape_phpl * join.("AB_LANE" + period) 
             else if join.("AB_LANE" + period) = null and join.Dir = -1 
@@ -443,6 +450,10 @@ macro "Speeds and Capacities" (Args, Result)
             else if join.("BA_LANE" + period) = null and join.Dir = 1 
                 then null 
                 else join.cape_phpl
+
+        // period capacities
+        join.("ABCapacity" + period) = join.("ABHourlyCapacity" + period) * Args.(period + "CapFactor")
+        join.("BACapacity" + period) = join.("BAHourlyCapacity" + period) * Args.(period + "CapFactor")
     end
     join.ABAlpha = join.Alpha
     join.BAAlpha = join.Alpha
@@ -873,35 +884,48 @@ EndMacro
 
 macro "BuildHighwayNetwork Oahu" (Args)
 
+    periods = {"AM", "PM", "OP"}
+    out_dir = Args.[Output Folder] + "/skims"
+
     ret_value = 1
     LineDB = Args.HighwayDatabase
-    netfile = Args.HighwayNetwork
     // TurnPenaltyFile = Args.TurnPenalties
-    netObj = CreateObject("Network.Create")
-    netObj.LayerDB = LineDB
-    netObj.Filter =  "D = 1" 
-    netObj.AddLinkField({Name: "FreeFlowTime", Field: {"ABFreeFlowTime", "BAFreeFlowTime"}})
-    netObj.AddLinkField({Name: "AMTime", Field: {"ABAMTime", "BAAMTime"}})
-    netObj.AddLinkField({Name: "PMTime", Field: {"ABPMTime", "BAPMTime"}})
-    netObj.AddLinkField({Name: "OPTime", Field: {"ABOPTime", "BAOPTime"}})
-    // netObj.AddLinkField({Name: "HourlyCapacity", Field: {"ABHourlyCapacity", "BAHourlyCapacity"}})
-    netObj.AddLinkField({Name: "HourlyCapacityAM", Field: {"ABHourlyCapacityAM", "BAHourlyCapacityAM"}})
-    netObj.AddLinkField({Name: "HourlyCapacityPM", Field: {"ABHourlyCapacityPM", "BAHourlyCapacityPM"}})
-    netObj.AddLinkField({Name: "HourlyCapacityOP", Field: {"ABHourlyCapacityOP", "BAHourlyCapacityOP"}})
-    netObj.AddLinkField({Name: "WalkTime", Field: {"ABWalkTime", "BAWalkTime"}})
-    netObj.AddLinkField({Name: "BikeTime", Field: {"ABBikeTime", "BABikeTime"}})
-    netObj.AddLinkField({Name: "Alpha", Field: {"ABAlpha", "BAAlpha"}})
-    netObj.AddLinkField({Name: "Beta", Field: {"ABBeta", "BABeta"}})
-    netObj.OutNetworkName = netfile
-    netObj.Run()
     
-    netSetObj = null
-    netSetObj = CreateObject("Network.Settings")
-    netSetObj.LayerDB = LineDB
-    netSetObj.LoadNetwork(netfile)
-    netSetObj.CentroidFilter = "Centroid = 1"
-        // netSetObj.SetPenalties({LinkPenaltyTable: TurnPenaltyFile, PenaltyField: "Penalty"})
-    netSetObj.Run()
+    for period in periods do
+        netfile = out_dir + "/highwaynet_" + period + ".net"
+    
+        netObj = CreateObject("Network.Create")
+        netObj.LayerDB = LineDB
+        netObj.Filter =  "D = 1 and (nz(AB_LANE" + period + ") + nz(BA_LANE" + period + ") > 0)" 
+        netObj.AddLinkField({Name: "FreeFlowTime", Field: {"ABFreeFlowTime", "BAFreeFlowTime"}})
+        netObj.AddLinkField({Name: "Time", Field: {"AB" + period + "Time", "BA" + period + "Time"}})
+        // netObj.AddLinkField({Name: "AMTime", Field: {"ABAMTime", "BAAMTime"}})
+        // netObj.AddLinkField({Name: "PMTime", Field: {"ABPMTime", "BAPMTime"}})
+        // netObj.AddLinkField({Name: "OPTime", Field: {"ABOPTime", "BAOPTime"}})
+        // netObj.AddLinkField({Name: "HourlyCapacity", Field: {"ABHourlyCapacity", "BAHourlyCapacity"}})
+        // netObj.AddLinkField({Name: "HourlyCapacityAM", Field: {"ABHourlyCapacityAM", "BAHourlyCapacityAM"}})
+        // netObj.AddLinkField({Name: "HourlyCapacityPM", Field: {"ABHourlyCapacityPM", "BAHourlyCapacityPM"}})
+        // netObj.AddLinkField({Name: "HourlyCapacityOP", Field: {"ABHourlyCapacityOP", "BAHourlyCapacityOP"}})
+        netObj.AddLinkField({Name: "Capacity", Field: {"ABCapacity" + period, "BACapacity" + period}})
+        // netObj.AddLinkField({Name: "AMCapacity", Field: {"ABCapacityAM", "BACapacityAM"}})
+        // netObj.AddLinkField({Name: "PMCapacity", Field: {"ABCapacityPM", "BACapacityPM"}})
+        // netObj.AddLinkField({Name: "OPCapacity", Field: {"ABCapacityOP", "BACapacityOP"}})
+        netObj.AddLinkField({Name: "WalkTime", Field: {"ABWalkTime", "BAWalkTime"}})
+        netObj.AddLinkField({Name: "BikeTime", Field: {"ABBikeTime", "BABikeTime"}})
+        netObj.AddLinkField({Name: "Alpha", Field: {"ABAlpha", "BAAlpha"}})
+        netObj.AddLinkField({Name: "Beta", Field: {"ABBeta", "BABeta"}})
+        netObj.OutNetworkName = netfile
+        netObj.Run()
+        
+        netSetObj = null
+        netSetObj = CreateObject("Network.Settings")
+        netSetObj.LayerDB = LineDB
+        netSetObj.LoadNetwork(netfile)
+        netSetObj.CentroidFilter = "Centroid = 1"
+            // netSetObj.SetPenalties({LinkPenaltyTable: TurnPenaltyFile, PenaltyField: "Penalty"})
+        netSetObj.Run()
+
+    end
 
     quit:
     Return(ret_value)
@@ -947,7 +971,7 @@ endmacro
 Macro "Create Transit Networks" (Args)
 
     rsFile = Args.TransitRoutes
-    Periods = Args.TimePeriods
+    Periods = {"AM", "PM", "OP"}
     AccessModes = Args.AccessModes
     skim_dir = Args.OutputSkims
 

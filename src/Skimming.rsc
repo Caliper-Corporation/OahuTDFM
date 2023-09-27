@@ -12,12 +12,12 @@ macro "HighwayNetworkSkim Oahu" (Args)
     ret_value = 1
 
     LineDB = Args.HighwayDatabase
-    netfile = Args.HighwayNetwork
     AMhwyskimfile = Args.HighwaySkimAM
     PMhwyskimfile = Args.HighwaySkimPM
     OPhwyskimfile = Args.HighwaySkimOP
     walkskimfile = Args.WalkSkim
     bikeskimfile = Args.BikeSkim
+    net_dir = Args.[Output Folder] + "/skims"
     
     Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
     Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
@@ -26,11 +26,11 @@ macro "HighwayNetworkSkim Oahu" (Args)
     TAZData = Args.DemographicOutputs
     dem = CreateObject("Table", TAZData)
 
-    SkimFiles = {AMhwyskimfile, PMhwyskimfile, OPhwyskimfile}
-    SkimVar = {"AMTime", "PMTime", "OPTime"}
-    for i = 1 to SkimFiles.length do
-        hwyskimfile = SkimFiles[i]
-        skimvar = SkimVar[i]
+    periods = {"AM", "PM", "OP"}
+    for period in periods do
+        netfile = net_dir + "/highwaynet_" + period + ".net"
+        hwyskimfile = Args.("HighwaySkim" + period)
+        skimvar = "Time"
         obj = CreateObject("Network.Skims")
         obj.LoadNetwork (netfile)
         obj.LayerDB = LineDB
@@ -61,8 +61,7 @@ macro "HighwayNetworkSkim Oahu" (Args)
         ok = obj.Run()
 
         m = CreateObject("Matrix", hwyskimfile)
-        currCoreNames = m.GetCoreNames()
-        m.RenameCores({CurrentNames: currCoreNames, NewNames: {"Time", "Distance"}})
+        m.RenameCores({CurrentNames: "Length (Skim)", NewNames: "Distance"})
         idx = m.AddIndex({IndexName: "TAZ",
                     ViewName: NodeLayer, Dimension: "Both",
                     OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
@@ -293,11 +292,15 @@ endmacro
 
 Macro "transit skim" (Args)
     
-    periods = Args.TimePeriods
+    periods = {"AM", "PM", "OP"}
     access_modes = Args.AccessModes
     modeTable = Args.TransitModeTable
     rsFile = Args.TransitRoutes
     skim_dir = Args.OutputSkims
+
+    Line = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Line"})
+    Node = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Node"})
+    NodeLayer = Node.GetView()
 
     transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
 
@@ -363,6 +366,15 @@ Macro "transit skim" (Args)
 
                 ok = obj.Run()
                 if !ok then goto quit
+
+                m = CreateObject("Matrix", outFile)
+                idx = m.AddIndex({IndexName: "TAZ",
+                                    ViewName: NodeLayer, Dimension: "Both",
+                                    OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
+                idxint = m.AddIndex({IndexName: "InternalTAZ",
+                                        ViewName: NodeLayer, Dimension: "Both",
+                                        // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
+                                        OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
             end // for transMode
         end
     end

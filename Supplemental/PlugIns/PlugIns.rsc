@@ -2,14 +2,14 @@
 Macro "Model.Attributes" (Args,Result)
     Attributes = {
         {"BackgroundColor",{255,255,255}},
-        {"BannerHeight", 90},
-        {"BannerPicture", "Supplemental\\bmp\\Peoria_logo.bmp"},
-        {"BannerWidth", 600},
+        {"BannerHeight", 119},
+        {"BannerPicture", "Supplemental\\bmp\\Oahu_logo.bmp"},
+        {"BannerWidth", 250},
         {"ResizePicture", 1},
         {"Base Scenario Name", "Base"},
         {"ClearLogFiles", 1},
         {"CloseOpenFiles", 1},
-        {"CodeUI", "ui\\PeoriaCode_ui.dbd"},
+        {"CodeUI", "ui\\OahuCode_ui.dbd"},
         {"DebugMode", 1},
         {"ExpandStages", "Side by Side"},
         {"HideBanner", 0},
@@ -74,7 +74,7 @@ Body:
     o = CreateObject("CC.Directory", RunMacro("FlowChart.ResolveValue", uiFolder, Args))
     o.Create()
 
-    RunMacro("CompileGISDKCode", {Source: srcFolder + "PeoriaCode.lst", UIDB: uiFolder + "PeoriaCode_ui.dbd", Silent: 0, ErrorMessage: "Error compiling Peoria Source Code"})
+    RunMacro("CompileGISDKCode", {Source: srcFolder + "OahuCode.lst", UIDB: uiFolder + "OahuCode_ui.dbd", Silent: 0, ErrorMessage: "Error compiling Oahu Source Code"})
 
     if lower(GetMapUnits()) <> "miles" then
         MessageBox("Set the system units to miles before running the model", {Caption: "Warning", Icon: "Warning", Buttons: "yes"})
@@ -101,12 +101,9 @@ Body:
     folders = {Args.[Output Folder],
                Args.[Output Folder] + "\\Intermediate\\",
                Args.[Output Folder] + "\\Population\\",
-               Args.[Output Folder] + "\\Population\\Intermediate\\", 
-               Args.[Output Folder] + "\\Population\\Intermediate\\IPUWeights\\",
                Args.[Output Folder] + "\\Networks\\",
                Args.[Output Folder] + "\\access\\",
                Args.[Output Folder] + "\\skims\\",
-               Args.[Output Folder] + "\\taz\\",
                Args.[Output Folder] + "\\ToursAndTrips\\",
                Args.[Output Folder] + "\\OD\\"    
                }
@@ -115,23 +112,26 @@ Body:
         o.Create()
     end
 
+    // Release or close any unwanted instances of the two class objects below
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
+
     // Set time period arguments
     periods = null
     periods.AM.StartTime = 360 // 7 AM
     periods.AM.EndTime = 540   // 9 AM
     periods.PM.StartTime = 900 // 3 PM
     periods.PM.EndTime = 1140  // 7 PM
-
-    // Create empty ABM Manager object
-    abm = CreateObject("ABM_Manager")
-    Return({"ABM Manager": abm, "TimePeriods": periods})
+    Return({TimePeriods: periods})
 EndMacro
 
 
 Macro "Model.OnModelDone" (Args,Result)
 Body:
     mr = CreateObject("Model.Runtime")
-    mr.RunCode("Export ABM Data", Args)
+    mr.RunCode("Export ABM Data", Args, {Overwrite: 1})
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
     Return(Result)
 EndMacro
 
