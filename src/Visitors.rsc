@@ -10,6 +10,7 @@ Macro "Visitor Model" (Args)
     RunMacro("Visitor Create MC Features", Args)
     RunMacro("Visitor Calculate MC", Args)
     RunMacro("Visitor Calculate DC", Args)
+    RunMacro("Visitor Directionality", Args)
     return(1)
 endmacro
 
@@ -455,5 +456,48 @@ Macro "Visitor Apply Probabilities" (Args, nhb)
                 end
             end
         end
+    end
+endmacro
+
+/*
+Convert from PA to OD format for auto modes
+*/
+
+Macro "Visitor Directionality" (Args)
+
+    out_dir = Args.[Output Folder]
+    trip_dir = out_dir + "/visitors/trip_matrices"
+    factor_file = Args.VisDirectionFactors
+
+    factors = CreateObject("Table", factor_file)
+    fac_vw = factors.GetView()
+    rh = GetFirstRecord(fac_vw + "|", )
+    auto_modes = {"auto"}
+    while rh <> null do
+        trip_type = fac_vw.trip_type
+        period = fac_vw.tod
+        pa_factor = fac_vw.pa_fac
+
+        pa_mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
+        od_mtx_file = trip_dir + "/od_per_trips_" + trip_type + "_" + period + ".mtx"
+        CopyFile(pa_mtx_file, od_mtx_file)
+
+        mtx = CreateObject("Matrix", od_mtx_file)
+
+        cores = mtx.GetCores()
+        t_mtx = mtx.Transpose()
+        t_cores = t_mtx.GetCores()
+        for mode in auto_modes do
+            cores.(mode) := cores.(mode) * pa_factor + t_cores.(mode) * (1 - pa_factor)
+        end
+
+        // Drop non-auto modes (these remain PA format)
+        core_names = mtx.GetCoreNames()
+        for core_name in core_names do
+            if auto_modes.position(core_name) = 0 then mtx.DropCores({core_name})
+        end
+        
+        skip:
+        rh = GetNextRecord(fac_vw + "|", rh, )
     end
 endmacro

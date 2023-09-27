@@ -2927,6 +2927,12 @@
             "Caption":"Visitor trip rates",
             "Value":"%Input Folder%\\visitors\\vis_generation.csv"
         }
+        
+        Args.VisDirectionFactors = {
+            "Type":"File",
+            "Caption":"Visitor trip rates",
+            "Value":"%Input Folder%\\visitors\\vis_directionality.csv"
+        }
 
     Section = "Airport"
 
