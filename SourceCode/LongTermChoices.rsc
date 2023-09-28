@@ -253,7 +253,7 @@ Macro "Work Location"(Args)
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.WorkDCShadowPrices
-    if !GetFileInfo(ShadowPricesTable) then do
+    if !GetFileInfo(ShadowPricesTable) or Args.WorkSPFlag then do
         spOpts = null
         spOpts.OutputFile = ShadowPricesTable
         spOpts.Fields = indCodes.Map(do (f) Return("Industry" + String(f)) end)
@@ -287,7 +287,7 @@ Macro "Work Location"(Args)
         if Args.WorkSPFlag then do
             tempOutputSP = GetTempPath() + "ShadowPrice_Industry" + indCode + ".bin"
             obj.AddShadowPrice({TargetName: "TAZData", TargetField: sizeFlds[i], 
-                                Iterations: 2, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
+                                Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "WorkTAZ"})
         obj.RandomSeed = 899981 + 42*i
@@ -327,7 +327,7 @@ Macro "Univ Location"(Args)
     enrollmentFld = RunMacro("Adjust University Enrollment", Args.DemographicOutputs)
 
     ShadowPricesTable = Args.UnivDCShadowPrices
-    if !GetFileInfo(ShadowPricesTable) then do
+    if !GetFileInfo(ShadowPricesTable) or Args.UnivSPFlag then do
         spOpts = null
         spOpts.OutputFile = ShadowPricesTable
         spOpts.Fields = {"ShadowPrice"}
@@ -350,7 +350,7 @@ Macro "Univ Location"(Args)
     if Args.UnivSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
         tempOutputSP = GetTempPath() + "ShadowPrice_University.bin"
         obj.AddShadowPrice({TargetName: "TAZData", TargetField: enrollmentFld, 
-                            Iterations: 2, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
+                            Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
     end
     obj.AddOutputSpec({ChoicesField: "UnivTAZ"})
     obj.RandomSeed = 999983
@@ -423,7 +423,7 @@ Macro "School Location"(Args)
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.SchoolDCShadowPrices
-    if !GetFileInfo(ShadowPricesTable) then do
+    if !GetFileInfo(ShadowPricesTable) or Args.SchoolSPFlag then do
         spOpts = null
         spOpts.OutputFile = ShadowPricesTable
         spOpts.Fields = CopyArray(categories)
@@ -456,7 +456,7 @@ Macro "School Location"(Args)
         if Args.SchoolSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
             tempOutputSP = GetTempPath() + "ShadowPrice_" + type + ".bin"
             obj.AddShadowPrice({TargetName: "TAZData", TargetField: type + "Enrollment", 
-                                Iterations: 2, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
+                                Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "SchoolTAZ"})
         obj.RandomSeed = 1099997
@@ -563,7 +563,7 @@ Macro "Copy Shadow Prices"(spOpts)
     objT = CreateObject("Table", spOpts.SourceFile)
     objJ = objT.Join({Table: objSP, LeftFields: {"ID"}, RightFields: {spOpts.TargetData.IDField}})
     outfld = spOpts.TargetData.OutputField
-    objJ.(outfld) = objJ.(outfld) + objJ.Shadow
+    objJ.(outfld) = nz(objJ.Shadow)
     objJ = null
     objT = null
     objSP = null
