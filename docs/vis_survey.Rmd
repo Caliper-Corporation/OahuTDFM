@@ -242,6 +242,29 @@ tod_factors <- add_tod %>%
   summarize(trips = sum(weight)) %>%
   mutate(factor = trips / sum(trips)) %>%
   select(-trips)
+
+dir_factors <- add_tod %>%
+  filter(trip_purp != "H") %>%
+  group_by(trip_type = trip_purp, tod) %>%
+  summarize(pa_fac = sum(pa_flag) / n()) %>%
+  mutate(
+    pa_fac = ifelse(trip_type == "NHB", .5, pa_fac)
+  )
+
+# For auto trips, calculate the percent of SOV and the average occupany for HOV
+occ_factors <- add_tod %>%
+  filter(trip_purp != "H") %>%
+  mutate(
+    sov = ifelse(party == 1, 1, 0),
+    sov = ifelse(mode != "auto", NA, sov),
+    hov = ifelse(party > 1 & mode == "auto", party, NA)
+  ) %>%
+  group_by(trip_type = trip_purp, tod) %>%
+  summarize(
+    samples = n(),
+    pct_sov = round(mean(sov, na.rm = TRUE), 2),
+    hov_occ = round(mean(hov, na.rm = TRUE), 2)
+  )
 ```
 
 
@@ -263,5 +286,7 @@ impacted by COVID-related reductions in visitor numbers.
 write_csv(add_tod, "data/_private/vis_survey/output/vis_trips.csv", na = "")
 write_csv(trip_rates, "data/_private/vis_survey/output/vis_generation.csv", na = "")
 write_csv(tod_factors, "data/_private/vis_survey/output/vis_tod_factors.csv", na = "")
+write_csv(dir_factors, "data/_private/vis_survey/output/vis_directionality.csv", na = "")
+write_csv(occ_factors, "data/_private/vis_survey/output/vis_occupancy.csv", na = "")
 ```
 

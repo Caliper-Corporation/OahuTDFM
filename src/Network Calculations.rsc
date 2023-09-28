@@ -489,8 +489,7 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     // input data files
     LineDB = Args.HighwayDatabase
     RouteSystem = Args.TransitRoutes
-    WalkSpeed = Args.WalkSpeed
-    BikeSpeed = Args.BikeSpeed
+    
     Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
     Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
     fields = {
@@ -518,10 +517,14 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     {FieldName: "BATransitTimeOP"} 
    }
     Line.AddFields({Fields: fields})
-    Line.ABWalkTime = Line.Length / WalkSpeed * 60
-    Line.BAWalkTime = Line.Length / WalkSpeed * 60
-    Line.ABBikeTime = Line.Length / BikeSpeed * 60
-    Line.BABikeTime = Line.Length / BikeSpeed * 60
+
+    // Bike/Walk times
+    Line.WalkSpeed = if Line.WalkSpeed = null then Args.WalkSpeed else Line.WalkSpeed
+    Line.BikeSpeed = if Line.BikeSpeed = null then Args.BikeSpeed else Line.BikeSpeed
+    Line.ABWalkTime = Line.Length / Line.WalkSpeed * 60
+    Line.BAWalkTime = Line.Length / Line.WalkSpeed * 60
+    Line.ABBikeTime = Line.Length / Line.BikeSpeed * 60
+    Line.BABikeTime = Line.Length / Line.BikeSpeed * 60
 
     SpeedCap = Args.SpeedCapacityLookup
     SC = CreateObject("Table", SpeedCap)

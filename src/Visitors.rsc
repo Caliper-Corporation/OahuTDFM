@@ -10,6 +10,8 @@ Macro "Visitor Model" (Args)
     RunMacro("Visitor Create MC Features", Args)
     RunMacro("Visitor Calculate MC", Args)
     RunMacro("Visitor Calculate DC", Args)
+    RunMacro("Visitor Directionality", Args)
+    RunMacro("Visitor Occupancy", Args)
     return(1)
 endmacro
 
@@ -455,5 +457,78 @@ Macro "Visitor Apply Probabilities" (Args, nhb)
                 end
             end
         end
+    end
+endmacro
+
+/*
+Convert from PA to OD format for auto modes
+*/
+
+Macro "Visitor Directionality" (Args)
+
+    out_dir = Args.[Output Folder]
+    trip_dir = out_dir + "/visitors/trip_matrices"
+    factor_file = Args.VisDirectionFactors
+
+    factors = CreateObject("Table", factor_file)
+    fac_vw = factors.GetView()
+    rh = GetFirstRecord(fac_vw + "|", )
+    auto_modes = {"auto"}
+    while rh <> null do
+        trip_type = fac_vw.trip_type
+        period = fac_vw.tod
+        pa_factor = fac_vw.pa_fac
+
+        pa_mtx_file = trip_dir + "/pa_per_trips_" + trip_type + "_" + period + ".mtx"
+        // they are actually still person trips at the end of this macro,
+        // but the occupancy macro follows directly after and converts them to
+        // vehicle trips.
+        od_mtx_file = trip_dir + "/od_veh_trips_" + trip_type + "_" + period + ".mtx"
+        CopyFile(pa_mtx_file, od_mtx_file)
+
+        mtx = CreateObject("Matrix", od_mtx_file)
+        t_mtx = mtx.Transpose()
+
+        for mode in auto_modes do
+            mtx.(mode) := mtx.(mode) * pa_factor + t_mtx.(mode) * (1 - pa_factor)
+        end
+
+        // Drop non-auto modes (these remain PA format)
+        core_names = mtx.GetCoreNames()
+        for core_name in core_names do
+            if auto_modes.position(core_name) = 0 then mtx.DropCores({core_name})
+        end
+        
+        rh = GetNextRecord(fac_vw + "|", rh, )
+    end
+endmacro
+
+/*
+Split auto core into sov/hov
+*/
+
+Macro "Visitor Occupancy" (Args)
+
+    out_dir = Args.[Output Folder]
+    trip_dir = out_dir + "/visitors/trip_matrices"
+    factor_file = Args.VisOccupancyFactors
+
+    factors = CreateObject("Table", factor_file)
+    fac_vw = factors.GetView()
+    rh = GetFirstRecord(fac_vw + "|", )
+    auto_modes = {"auto"}
+    while rh <> null do
+        trip_type = fac_vw.trip_type
+        period = fac_vw.tod
+        pct_sov = fac_vw.pct_sov
+        hov_occ = fac_vw.hov_occ
+
+        od_mtx_file = trip_dir + "/od_veh_trips_" + trip_type + "_" + period + ".mtx"
+        mtx = CreateObject("Matrix", od_mtx_file)
+        mtx.AddCores({"sov", "hov"})
+        mtx.sov := mtx.auto * pct_sov
+        mtx.hov := (mtx.auto - mtx.sov) / hov_occ
+        
+        rh = GetNextRecord(fac_vw + "|", rh, )
     end
 endmacro
