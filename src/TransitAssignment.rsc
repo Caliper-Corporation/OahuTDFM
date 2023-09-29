@@ -49,34 +49,40 @@ macro "PTAssign" (Args)
     net_dir = Args.[Output Folder] + "/skims/transit"
     assn_dir = Args.[Output Folder] + "/Assignment/Transit"
     RunMacro("Create Directory", assn_dir)
-
+    access_modes = Args.AccessModes
     periods = {"AM", "PM", "OP"}
-    // TODO: assign pnr after creating separate matrix cores
-    // access_modes = {"w", "knr", "pnr"}
+    modeTable = Args.TransitModeTable
+
+    // Get the main transit modes from the mode table. Exclude the all-transit
+    // network from assignment.
+    transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
+    transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
+
+    // TODO: remove this line to assign pnr after creating separate matrix cores
     access_modes = {"w", "knr"}
 
     for period in periods do
         for access in access_modes do
             tnet_file = net_dir + "/" + period + "_" + access + ".tnw"
-
-            obj = CreateObject("Network.PublicTransportAssignment", {RS: RouteSystem, NetworkName: tnet_file})
-            obj.ODLayerType = "Node"
-            obj.Method = "PFE"
-            obj.Iterations = 1
-            obj.FlowTable = assn_dir + "/" + period + "_" + access + "_flows.bin"
-            obj.WalkFlowTable = assn_dir + "/" + period + "_" + access + "_walkflows.bin"
-            obj.OnOffTable = assn_dir + "/" + period + "_" + access + "_onoff.bin"
-            obj.TransitLinkFlowsTable = assn_dir + "/" + period + "_" + access + "_agg.bin"
-            // TODO: update class names to depend on modes present in scenario (e.g. rail)
-            class_name = period + "-" + access + "-bus"
-            // TODO: update this once OD cores are updated
-            access2 = if access = "w"
-                then "Walk"
-                else "Drive"
-            mopts = {MatrixFile: Args.Transit_OD, Matrix: period + access2 + "TransitTrips"}
-            obj.AddDemandMatrix({Class: class_name, Matrix: mopts})
-            ok = obj.Run()
-            results = obj.GetResults()
+            for transit_mode in transit_modes do
+                obj = CreateObject("Network.PublicTransportAssignment", {RS: RouteSystem, NetworkName: tnet_file})
+                obj.ODLayerType = "Node"
+                obj.Method = "PFE"
+                obj.Iterations = 1
+                obj.FlowTable = assn_dir + "/" + access + "_" + transit_mode + "_" + period + "_flows.bin"
+                obj.WalkFlowTable = assn_dir + "/" + access + "_" + transit_mode + "_" + period + "_walkflows.bin"
+                obj.OnOffTable = assn_dir + "/" + access + "_" + transit_mode + "_" + period + "_onoff.bin"
+                obj.TransitLinkFlowsTable = assn_dir + "/" + access + "_" + transit_mode + "_" + period + "_agg.bin"
+                class_name = period + "-" + access + "-" + transit_mode
+                // TODO: update this once OD cores are updated
+                access2 = if access = "w"
+                    then "Walk"
+                    else "Drive"
+                mopts = {MatrixFile: Args.Transit_OD, Matrix: period + access2 + "TransitTrips"}
+                obj.AddDemandMatrix({Class: class_name, Matrix: mopts})
+                ok = obj.Run()
+                results = obj.GetResults()
+            end
         end
     end
 
