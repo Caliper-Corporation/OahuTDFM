@@ -1528,54 +1528,54 @@ Macro "Count Difference Map" (macro_opts)
   RunMacro("Add Fields", {view: vw, a_fields: a_fields})
 
   // Create data frame
-  df = CreateObject("df")
-  opts = null
-  opts.view = vw
-  opts.fields = {count_id_field, count_field, vol_field}
-  df.read_view(opts)
-  df.rename(count_field, "Count")
-  df.rename(vol_field, "Volume")
+  df = CreateObject("Table", vw)
+  df.AddField("Count")
+  df.Count = df.(count_field)
+  df.AddField("Volume")
+  df.Volume = df.(vol_field)
 
   if combine_oneway_pairs then do
     // Aggregate by count ID
-    df2 = df.copy()
-    df2.group_by(count_id_field)
-    df2.summarize({"Count", "Volume"}, "sum")
-    df2.filter(count_id_field + " <> null")
-    df2.rename("Count", "NumCountLinks")
+    df2 = df.Export()
+    df2 = df2.Aggregate({
+      GroupBy: count_id_field,
+      FieldStats: {Count: "sum", Volume: "sum"}
+    })
 
     // Join aggregated data back to disaggregate column of count IDs
-    df.select(count_id_field)
-    df.left_join(df2, count_id_field, count_id_field)
-    df.rename("sum_Count", "Count")
-    df.rename("sum_Volume", "Volume")
-  end else do
-    df.select({count_id_field, "Count", "Volume"})
+    join = df.Join({
+      Table: df2,
+      LeftFields: count_id_field,
+      RightFields: count_id_field
+    })
+    join.Count = join.sum_Count
+    join.Volume = join.sum_Volume
+    join = null
   end
 
   // Calculate remaining fields
-  df.mutate("diff", df.tbl.Volume - df.tbl.Count)
-  df.mutate("absdiff", abs(df.tbl.diff))
-  df.mutate("pctdiff", df.tbl.diff / df.tbl.Count * 100)
-  v_c = df.tbl.Count
+  v_vol = df.Volume
+  v_count = df.Count
+  v_diff = v_vol - v_count
+  df.diff = v_diff
+  df.absdiff = abs(v_diff)
+  df.pctdiff = df.diff / df.Count * 100
+  v_c = df.Count
   v_MDD = if (v_c <= 50000) then (11.65 * Pow(v_c, -.37752)) * 100
      else if (v_c <= 90000) then (400 * Pow(v_c, -.7)) * 100
      else if (v_c <> null)  then (.157 - v_c * .0000002) * 100
      else null
-  df.mutate("MDD", v_MDD)
-  v_exceedMDD = if abs(df.tbl.pctdiff) > v_MDD then 1 else 0
-  df.mutate("ExceedMDD", v_exceedMDD)
-
-  // Fill data view
-  df.update_view(vw)
+  df.MDD = v_MDD
+  v_exceedMDD = if abs(df.pctdiff) > v_MDD then 1 else 0
+  df.ExceedMDD = v_exceedMDD
 
   // Rename fields to add suffix (and remove any that already exist)
   for f = 1 to a_fields.length do
     cur_field = a_fields[f][1]
 
     new_field = cur_field + field_suffix
-    RunMacro("Remove Field", vw, new_field)
-    RunMacro("Rename Field", vw, cur_field, new_field)
+    df.DropFields(new_field)
+    df.RenameField({FieldName: cur_field, NewName: new_field})
   end
 
   // Scaled Symbol Theme
@@ -1616,7 +1616,7 @@ Macro "Count Difference Map" (macro_opts)
         {50, "False", 100, "True"},
         {100, "False", 10000, "True"}
         }},
-      {"Other", "False"}
+      {"Other", "True"}
     }
   )
 

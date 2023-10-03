@@ -1,6 +1,7 @@
 Macro "Reports" (Args)
     RunMacro("Load Link Layer", Args)
     RunMacro("Calculate Daily Fields", Args)
+    RunMacro("Create Count Difference Map", Args)
     return(1)
 endmacro
 
@@ -182,4 +183,29 @@ Macro "Calculate Daily Fields" (Args)
   RunMacro("Add Fields", {view: llyr, a_fields: fields_to_add})
   SetDataVectors(llyr + "|", output, )
   DropLayerFromWorkspace(llyr)
+EndMacro
+
+
+/*
+Create maps that compare model volumes to counts.
+Produced for all scenarios, but only a valid comparison for
+the base year scenario.
+*/
+
+Macro "Create Count Difference Map" (Args)
+  
+  output_dir = Args.[Output Folder]
+  hwy_dbd = Args.HighwayDatabase
+  map_dir = output_dir + "/_summaries/maps"
+  RunMacro("Create Directory", map_dir)
+
+  // Create total count diff map
+  opts = null
+  opts.output_file = map_dir + "/Count Difference - Total.map"
+  opts.hwy_dbd = hwy_dbd
+  opts.count_id_field = "CountID"
+  opts.count_field = "DailyCount"
+  opts.vol_field = "Total_Flow_Daily"
+  opts.field_suffix = "All"
+  RunMacro("Count Difference Map", opts)
 EndMacro
