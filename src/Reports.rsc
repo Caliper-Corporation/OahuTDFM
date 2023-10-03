@@ -1,9 +1,10 @@
 Macro "Reports" (Args)
-    RunMacro("Load Link Layer", Args)
-    RunMacro("Calculate Daily Fields", Args)
-    RunMacro("Create Count Difference Map", Args)
-    RunMacro("VOC Maps", Args)
-    RunMacro("Speed Maps", Args)
+    // RunMacro("Load Link Layer", Args)
+    // RunMacro("Calculate Daily Fields", Args)
+    // RunMacro("Create Count Difference Map", Args)
+    // RunMacro("VOC Maps", Args)
+    // RunMacro("Speed Maps", Args)
+    RunMacro("Count PRMSEs", Args)
     return(1)
 endmacro
 
@@ -474,3 +475,34 @@ Macro "Speed Maps" (Args)
     CloseMap(map)
   end
 EndMacro
+
+
+/*
+Creates tables with %RMSE and volume % diff by facility type and volume group
+*/
+
+Macro "Count PRMSEs" (Args)
+  hwy_dbd = Args.HighwayDatabase
+
+  opts.hwy_bin = Substitute(hwy_dbd, ".dbd", ".bin", )
+  opts.volume_field = "Volume_All"
+  opts.count_id_field = "CountID"
+  opts.count_field = "Count_All"
+  opts.class_field = "HCMType"
+  opts.area_field = "AreaType"
+  opts.median_field = "HCMMedian"
+  opts.screenline_field = "Scr_Line"
+  opts.volume_breaks = {10000, 25000, 50000, 100000}
+  opts.out_dir = Args.[Output Folder] + "/_reports/roadway_tables"
+  RunMacro("Roadway Count Comparison Tables", opts)
+
+//   // Rename screenline to cutline
+//   in_file = opts.out_dir + "/count_comparison_by_screenline.csv"
+//   out_file = opts.out_dir + "/count_comparison_by_cutline.csv"
+//   if GetFileInfo(out_file) <> null then DeleteFile(out_file)
+//   RenameFile(in_file, out_file)
+
+//   // Run it again to generate the screenline table
+//   opts.screenline_field = "Screenline"
+//   RunMacro("Roadway Count Comparison Tables", opts)
+endmacro
