@@ -1528,54 +1528,54 @@ Macro "Count Difference Map" (macro_opts)
   RunMacro("Add Fields", {view: vw, a_fields: a_fields})
 
   // Create data frame
-  df = CreateObject("df")
-  opts = null
-  opts.view = vw
-  opts.fields = {count_id_field, count_field, vol_field}
-  df.read_view(opts)
-  df.rename(count_field, "Count")
-  df.rename(vol_field, "Volume")
+  df = CreateObject("Table", vw)
+  df.AddField("Count")
+  df.Count = df.(count_field)
+  df.AddField("Volume")
+  df.Volume = df.(vol_field)
 
   if combine_oneway_pairs then do
     // Aggregate by count ID
-    df2 = df.copy()
-    df2.group_by(count_id_field)
-    df2.summarize({"Count", "Volume"}, "sum")
-    df2.filter(count_id_field + " <> null")
-    df2.rename("Count", "NumCountLinks")
+    df2 = df.Export()
+    df2 = df2.Aggregate({
+      GroupBy: count_id_field,
+      FieldStats: {Count: "sum", Volume: "sum"}
+    })
 
     // Join aggregated data back to disaggregate column of count IDs
-    df.select(count_id_field)
-    df.left_join(df2, count_id_field, count_id_field)
-    df.rename("sum_Count", "Count")
-    df.rename("sum_Volume", "Volume")
-  end else do
-    df.select({count_id_field, "Count", "Volume"})
+    join = df.Join({
+      Table: df2,
+      LeftFields: count_id_field,
+      RightFields: count_id_field
+    })
+    join.Count = join.sum_Count
+    join.Volume = join.sum_Volume
+    join = null
   end
 
   // Calculate remaining fields
-  df.mutate("diff", df.tbl.Volume - df.tbl.Count)
-  df.mutate("absdiff", abs(df.tbl.diff))
-  df.mutate("pctdiff", df.tbl.diff / df.tbl.Count * 100)
-  v_c = df.tbl.Count
+  v_vol = df.Volume
+  v_count = df.Count
+  v_diff = v_vol - v_count
+  df.diff = v_diff
+  df.absdiff = abs(v_diff)
+  df.pctdiff = df.diff / df.Count * 100
+  v_c = df.Count
   v_MDD = if (v_c <= 50000) then (11.65 * Pow(v_c, -.37752)) * 100
      else if (v_c <= 90000) then (400 * Pow(v_c, -.7)) * 100
      else if (v_c <> null)  then (.157 - v_c * .0000002) * 100
      else null
-  df.mutate("MDD", v_MDD)
-  v_exceedMDD = if abs(df.tbl.pctdiff) > v_MDD then 1 else 0
-  df.mutate("ExceedMDD", v_exceedMDD)
-
-  // Fill data view
-  df.update_view(vw)
+  df.MDD = v_MDD
+  v_exceedMDD = if abs(df.pctdiff) > v_MDD then 1 else 0
+  df.ExceedMDD = v_exceedMDD
 
   // Rename fields to add suffix (and remove any that already exist)
   for f = 1 to a_fields.length do
     cur_field = a_fields[f][1]
 
     new_field = cur_field + field_suffix
-    RunMacro("Remove Field", vw, new_field)
-    RunMacro("Rename Field", vw, cur_field, new_field)
+    df.DropFields(new_field)
+    df.RenameField({FieldName: cur_field, NewName: new_field})
   end
 
   // Scaled Symbol Theme
@@ -1616,7 +1616,7 @@ Macro "Count Difference Map" (macro_opts)
         {50, "False", 100, "True"},
         {100, "False", 10000, "True"}
         }},
-      {"Other", "False"}
+      {"Other", "True"}
     }
   )
 
@@ -2487,38 +2487,29 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
 
   RunMacro("Create Directory", out_dir)
 
-  hwy_vw = OpenTable("hwy", "FFB", {hwy_bin})
-  SetView(hwy_vw)
-  count_set = "count_set"
-  query = "Select * where nz(" + count_field + ") > 0"
-  n = SelectByQuery(count_set, "several", query)
+  tbl = CreateObject("Table", hwy_bin)
+  n = tbl.SelectByQuery({
+    SetName: "count_set",
+    Query: "Select * where nz(" + count_field + ") > 0"
+  })
+  if n = 0 then Throw("No links with counts found.")
 
   // Counts split across paired 1-way links are duplicated. Keep only 1.
-  df = CreateObject("df")
-  df.read_view({
-    view: hwy_vw,
-    set: count_set,
-    fields: {
-      count_id_field, count_field, volume_field, class_field,
-      area_field, median_field, screenline_field
+  tbl = tbl.Aggregate({
+    GroupBy: {count_id_field, class_field, area_field, median_field, screenline_field},
+    FieldStats: {
+      (count_field): "max",
+      (volume_field): "max"
     }
   })
-  df.group_by(count_id_field)
-  df.summarize({count_field, volume_field, class_field, area_field, median_field, screenline_field}, "first")
-  field_names = df.colnames()
-  for field_name in field_names do
-    if Left(field_name, 6) = "first_"
-      then new_name = Substitute(field_name, "first_", "", )
-      else new_name = field_name
-      df.rename(field_name, new_name)
-  end
-  agg_vw = df.create_view("agg")
-  SetView(agg_vw)
+  tbl.RenameField({FieldName: "max_" + volume_field, NewName: volume_field})
+  tbl.RenameField({FieldName: "max_" + count_field, NewName: count_field})
 
   // overall/total fields
-  {v_count, v_volume, v_class} = GetDataVectors(
-    agg_vw + "|", {count_field, volume_field, class_field}, 
-  )
+  v_count = tbl.(count_field)
+  v_volume = tbl.(volume_field)
+  v_class = tbl.(class_field)
+
   n = v_count.length
   total_count = VectorStatistic(v_count, "Sum", )
   total_volume = VectorStatistic(v_volume, "Sum", )
@@ -2541,9 +2532,10 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
     class_set = "class"
     if TypeOf(class_name) <> "string" then class_name = String(class_name)
     query = "Select * where " + class_field + " = '" + class_name + "'"
-    n = SelectByQuery(class_set, "several", query, )
+    n = tbl.SelectByQuery({SetName: class_set, Query: query})
     if n = 0 then continue
-    {v_count, v_volume} = GetDataVectors(agg_vw + "|" + class_set, {count_field, volume_field}, )
+    v_count = tbl.(count_field)
+    v_volume = tbl.(volume_field)
     total_count = VectorStatistic(v_count, "Sum", )
     total_volume = VectorStatistic(v_volume, "Sum", )
     pct_diff = round((total_volume - total_count) / total_count * 100, 2)
@@ -2562,7 +2554,7 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
   // Facility type and area type table
   if area_field <> null then do
     lines = null
-    v_area = GetDataVector(agg_vw + "|", area_field, )
+    v_area = tbl.(area_field)
     v_area = SortVector(v_area, {Unique: "true"})
     for class_name in v_class do
       for area in v_area do
@@ -2570,9 +2562,10 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
         if TypeOf(class_name) <> "string" then class_name = String(class_name)
         if TypeOf(area) <> "string" then area = String(area)
         query = "Select * where " + class_field + " = '" + class_name + "' and " + area_field + " = '" + area + "'"
-        n = SelectByQuery(set_name, "several", query, )
+        n = tbl.SelectByQuery({SetName: set_name, Query: query})
         if n = 0 then continue
-        {v_count, v_volume} = GetDataVectors(agg_vw + "|" + set_name, {count_field, volume_field}, )
+        v_count = tbl.(count_field)
+        v_volume = tbl.(volume_field)
         total_count = VectorStatistic(v_count, "Sum", )
         total_volume = VectorStatistic(v_volume, "Sum", )
         pct_diff = round((total_volume - total_count) / total_count * 100, 2)
@@ -2593,7 +2586,7 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
   // Add median
   if median_field <> null then do
     lines = null
-    v_median = GetDataVector(agg_vw + "|", median_field, )
+    v_median = tbl.(median_field)
     v_median = SortVector(v_median, {Unique: "true"})
     for class_name in v_class do
       for area in v_area do
@@ -2605,9 +2598,10 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
           query = "Select * where " + class_field + " = '" + class_name + "' and " + 
             area_field + " = '" + area + "' and " + 
             median_field + " = '" + med + "'"
-          n = SelectByQuery(set_name, "several", query, )
+          n = tbl.SelectByQuery({SetName: set_name, Query: query})
           if n = 0 then continue
-          {v_count, v_volume} = GetDataVectors(agg_vw + "|" + set_name, {count_field, volume_field}, )
+          v_count = tbl.(count_field)
+          v_volume = tbl.(volume_field)
           total_count = VectorStatistic(v_count, "Sum", )
           total_volume = VectorStatistic(v_volume, "Sum", )
           pct_diff = round((total_volume - total_count) / total_count * 100, 2)
@@ -2635,9 +2629,10 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
     vol_set = "class"
     query = "Select * where " + count_field + " > " + String(low_vol) + 
       " and " + count_field + " <= " + String(high_vol)
-    n = SelectByQuery(vol_set, "several", query, )
+    n = tbl.SelectByQuery({SetName: vol_set, Query: query})
     if n = 0 then continue
-    {v_count, v_volume} = GetDataVectors(agg_vw + "|" + vol_set, {count_field, volume_field}, )
+    v_count = tbl.(count_field)
+    v_volume = tbl.(volume_field)
     total_count = VectorStatistic(v_count, "Sum", )
     total_volume = VectorStatistic(v_volume, "Sum", )
     pct_diff = round((total_volume - total_count) / total_count * 100, 2)
@@ -2658,15 +2653,16 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
 
   // Screenline table
   lines = null
-  v_screenline = GetDataVector(agg_vw + "|", screenline_field, )
+  v_screenline = tbl.(screenline_field)
   v_screenline = SortVector(v_screenline, {Unique: "true"})
   for screenline in v_screenline do
     if screenline = null then continue
     sl_set = "screenline"
     query = "Select * where " + screenline_field + " = " + String(screenline)
-    n = SelectByQuery(sl_set, "several", query, )
+    n = tbl.SelectByQuery({SetName: sl_set, Query: query})
     if n = 0 then continue
-    {v_count, v_volume} = GetDataVectors(agg_vw + "|" + sl_set, {count_field, volume_field}, )
+    v_count = tbl.(count_field)
+    v_volume = tbl.(volume_field)
     total_count = VectorStatistic(v_count, "Sum", )
     total_volume = VectorStatistic(v_volume, "Sum", )
     pct_diff = round((total_volume - total_count) / total_count * 100, 2)
@@ -2680,9 +2676,6 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
   file = out_dir + "/count_comparison_by_screenline.csv"
   lines = {"Screenline,N,TotalCount,TotalVolume,PctDiff,PRMSE"} + lines
   RunMacro("Write CSV by Line", file, lines)
-
-  CloseView(hwy_vw)
-  CloseView(agg_vw)
 endmacro
 
 Macro "Write CSV by Line" (file, lines)
