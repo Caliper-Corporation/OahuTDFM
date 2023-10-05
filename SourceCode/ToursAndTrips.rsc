@@ -1245,7 +1245,7 @@ Macro "Get Joint Tour Segment"(spec)
     if n = 0 then
         Throw(printf("No Valid Joint Tours of Type %s detected. Check output", {p}))
 
-    modeMap = {Carpool: 2, Walk: 3, Bike: 4, PTWalk: 5, Other: 7}
+    modeMap = {Carpool: 2, Walk: 3, Bike: 4, Walk_Bus: 21, Other: 7}
 
     {flds, specs} = GetFields(abm.HHView,)
     vecs = abm.GetHHVectors(flds)
@@ -1309,7 +1309,7 @@ Macro "Get Solo Tour Segment"(spec)
     if n = 0 then
         Throw(printf("No Valid Solo Tours of Type %s detected. Check output", {p}))
 
-    modeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, PTWalk: 5, Other: 7}
+    modeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, Walk_Bus: 21, Other: 7}
 
     {flds, specs} = GetFields(abm.PersonView,)
     flds = ArrayExclude(flds, {abm.HHIDinPersonView})
