@@ -84,12 +84,13 @@ endMacro
 //=================================================================================================
 Macro "JointTours Frequency"(Args)
     abm = RunMacro("Get ABM Manager", Args)
+    objDC = CreateObject("Table", Args.NonMandatoryDestAccessibility)
 
     // Run Model for all HH whose SubPattern contains J and populate output fields
     obj = CreateObject("PMEChoiceModel", {ModelName: "Joint Tours Frequency"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursFrequency.mdl"
     obj.AddTableSource({SourceName: "HH", View: abm.HHView, IDField: abm.HHID})
-    obj.AddTableSource({SourceName: "DCLogsums", File: Args.NonMandatoryDestAccessibility, IDField: "TAZID"})
+    obj.AddTableSource({SourceName: "DCLogsums", View: objDC.GetView(), IDField: "TAZID"})
     obj.AddPrimarySpec({Name: "HH", Filter: "Lower(SubPattern) contains 'j'", OField: "TAZID"})
     obj.AddUtility({UtilityFunction: Args.JointTourFrequencyUtility})
     obj.AddOutputSpec({ChoicesField: "JointTourPattern"})
@@ -98,7 +99,7 @@ Macro "JointTours Frequency"(Args)
     ret = obj.Evaluate()
     if !ret then
         Throw("Model Run failed for Joint Tours Frequency")
-    Args.[Joint Tours Frequency Spec] = CopyArray(ret)
+    Args.[JointTours Frequency Spec] = CopyArray(ret)
     obj = null
 
     // Writing the choice from JointTourPattern into number of other and shop tours
@@ -928,10 +929,10 @@ Macro "NonMandatory Activity Time"(Args, Opts)
     // Simulate time after choice of interval is made
     simFld = Opts.SimulatedTimeField
     if simFld <> null then do
-        if primarySpec.Name = "HH" then
-            set = abm.CreateHHSet({Filter: filter, Activate: 1})
-        else
+        if primarySpec.Name contains "Person" then
             set = abm.CreatePersonSet({Filter: filter, Activate: 1, UsePersonHHView: 1})
+        else
+            set = abm.CreateHHSet({Filter: filter, Activate: 1})
 
         if set.Size > 0 then do
             // Simulate duration in minutes for duration choice predicted above
@@ -948,10 +949,10 @@ Macro "NonMandatory Activity Time"(Args, Opts)
     minDur = Opts.MinimumDuration
     if minDur > 0 then do
         qry = printf("(%s) and (%s < %s)", {filter, Opts.SimulatedTimeField, string(minDur)})
-        if primarySpec.Name = "HH" then
-            set = abm.CreateHHSet({Filter: qry, Activate: 1})
-        else
+        if primarySpec.Name contains "Person" then
             set = abm.CreatePersonSet({Filter: qry, Activate: 1, UsePersonHHView: 1})
+        else
+            set = abm.CreateHHSet({Filter: qry, Activate: 1})
         
         if set.Size > 0 then do
             v = Vector(set.Size, "Long", {{"Constant", minDur}})
