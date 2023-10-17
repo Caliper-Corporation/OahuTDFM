@@ -13,7 +13,7 @@ Macro "School Carpool Eligibility"(abm)
     noUnivFilter = "(AttendUniv <> 1)"                                          // Only select persons who are not univ students or school students
     noTwoTours = "(nz(NumberWorkTours) < 2)"                                    // Only select persons who make 0 or 1 work tours
     vehAvailFilter = "((VehicleUsed = 1 or VehiclesRem > 0) and License = 1)"   // Select persons who have a license with available car
-    modeFilter = "(WorkMode <> 'PTDrive' and WorkMode <> 'PTWalk' and WorkMode <> 'Carpool')"             // No PT or Carpool
+    modeFilter = "(!(Lower(WorkMode) contains 'bus') and !(Lower(WorkMode) contains 'rail') and Lower(WorkMode) <> 'carpool')"             // No PT or Carpool
 
     exprStr = printf("if %s and %s and %s and %s and %s then 1 else 0", {ageFilter, noUnivFilter, noTwoTours, vehAvailFilter, modeFilter})
     expr = CreateExpression(abm.PersonHHView, "EligibleAdult", exprStr,)

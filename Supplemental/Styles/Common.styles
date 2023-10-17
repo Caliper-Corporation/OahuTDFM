@@ -203,8 +203,8 @@
                                                 Columns: {{Name: "Description", Type: "string", Width:  "15%"},
 														                              {Name: "Expression", Type: "string", Width:  "30%"},
                                                           {"Name":"Coefficient","Type":"real","Width":"10%","Decimals":"4"},
-                                                          {"Name":"Walk_Bus","Type":"boolean","Align":"center"},
-                                                          {"Name":"Walk_Rail","Type":"boolean","Align":"center"},
+                                                          {"Name":"W_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"W_Rail","Type":"boolean","Align":"center"},
                                                           {"Name":"PNR_Bus","Type":"boolean","Align":"center"},
                                                           {"Name":"PNR_Rail","Type":"boolean","Align":"center"},
                                                           {"Name":"KNR_Bus","Type":"boolean","Align":"center"},
@@ -219,7 +219,7 @@
                                                           {"Name":"Carpool","Type":"boolean","Align":"center"},
                                                           {"Name":"Walk","Type":"boolean","Align":"center"},
                                                           {"Name":"Bike","Type":"boolean","Align":"center"},
-                                                          {"Name":"Walk_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"W_Bus","Type":"boolean","Align":"center"},
                                                           {"Name":"SchoolBus","Type":"boolean","Align":"center"}}
                                             })
 
@@ -230,7 +230,7 @@
                                               {Name: "Carpool",   Type: "real",    Fixed: "false"},
                                               {Name: "Walk",   Type: "real",    Fixed: "false"},
                                               {Name: "Bike",   Type: "real",    Fixed: "false"},
-                                              {Name: "Bus",   Type: "real",    Fixed: "false"},
+                                              {Name: "W_Bus",   Type: "real",    Fixed: "false"},
                                               {Name: "Other",   Type: "real",    Fixed: "false"}}
                                   })
 
@@ -451,7 +451,7 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "Walk_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                             })
 
@@ -470,7 +470,7 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"}}
                                                 })
 
   Styles.NMStopsDurUtility = Pme.Table({Height: 21, Autosize: "True", Values: "Columns", 
@@ -543,7 +543,7 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "Walk_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                             })
 
@@ -555,7 +555,7 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"}}
                                             })
 
   Styles.PctSlider  = Pme.RealSlider({Min: 0.0, Max: 100.0})
