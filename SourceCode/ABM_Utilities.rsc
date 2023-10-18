@@ -141,10 +141,10 @@ Macro "ABM Preprocess"(Args)
                     {Name: "UnivMode", Type: "String", Width: 12},
                     {Name: "SchoolForwardMode", Type: "String", Width: 12},
                     {Name: "SchoolReturnMode", Type: "String", Width: 12},
-                    {Name: "WorkModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|6. PTDrive|7. Other|8. SchoolBus"},
-                    {Name: "UnivModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|6. PTDrive|7. Other|8. SchoolBus"},
-                    {Name: "SchoolForwardModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|8. SchoolBus"},
-                    {Name: "SchoolReturnModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|8. SchoolBus"},
+                    {Name: "WorkModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike7. Other|8. SchoolBus|21: W_Bus|22: W_Rail|31: PNR_Bus|32: PNR_Rail|41: KNR_Bus|42: KNR_Rail"},
+                    {Name: "UnivModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike7. Other|8. SchoolBus|21: W_Bus|22: W_Rail|31: PNR_Bus|32: PNR_Rail|41: KNR_Bus|42: KNR_Rail"},
+                    {Name: "SchoolForwardModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|8. SchoolBus|21: W_Bus"},
+                    {Name: "SchoolReturnModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|8. SchoolBus|21: W_Bus"},
                     {Name: "VehiclePriority", Type: "Short", Description: "A lower value indicates a higher priority of being allocated a vehicle"},
                     {Name: "VehicleAvail", Type: "Short", Description: "Temporary field that determines if a vehicle is available prior to mode choice"},
                     {Name: "VehicleUsed", Type: "Short", Description: "Temporary field that determines if a vehicle was used by this person for mode choice"},
@@ -320,21 +320,22 @@ Macro "Fill Travel Times"(Args, spec)
     if TypeOf(spec.OField) <> "string" or TypeOf(spec.DField) <> "string" or TypeOf(spec.FillField) <> "string" then
         Throw("Options 'OField', 'DField' and 'FillField' to macro 'Fill Travel Times' need to be strings")
 
-    skimsDir = printf("%s\\output\\skims\\transit\\", {Args.[Scenario Folder]})
+    trSkimsDir = printf("%s\\output\\skims\\transit\\", {Args.[Scenario Folder]})
     
     // Define skim files: Change this spec after skims by mode are produced by the model.
+    periods = {"AM", "PM", "OP"}
     skimSpec = null
-    skimSpec.Auto.AM = {File: Args.HighwaySkimAM, Core: "Time"}
-    skimSpec.Auto.PM = {File: Args.HighwaySkimPM, Core: "Time"}
-    skimSpec.Auto.OP = {File: Args.HighwaySkimOP, Core: "Time"}
-    skimSpec.PTWalk.AM = {File: skimsDir + "AM_w_bus.mtx", Core: "Total Time"}
-    skimSpec.PTWalk.PM = {File: skimsDir + "PM_w_bus.mtx", Core: "Total Time"}
-    skimSpec.PTWalk.OP = {File: skimsDir + "OP_w_bus.mtx", Core: "Total Time"}
-    skimSpec.PTDrive.AM = {File: skimsDir + "AM_pnr_bus.mtx", Core: "Total Time"}
-    skimSpec.PTDrive.PM = {File: skimsDir + "PM_pnr_bus.mtx", Core: "Total Time"}
-    skimSpec.PTDrive.OP = {File: skimsDir + "OP_pnr_bus.mtx", Core: "Total Time"}
     skimSpec.Walk = {File: Args.WalkSkim, Core: "Time"}
     skimSpec.Bike = {File: Args.BikeSkim, Core: "Time"}
+    for p in periods do
+        skimSpec.Auto.(p) = {File: Args.("HighwaySkim" + p), Core: "Time"}
+        skimSpec.W_Bus.(p) = {File: trSkimsDir + p + "_w_bus.mtx", Core: "Total Time"}
+        skimSpec.W_Rail.(p) = {File: trSkimsDir + p + "_w_rail.mtx", Core: "Total Time"}
+        skimSpec.PNR_Bus.(p) = {File: trSkimsDir + p + "_pnr_bus.mtx", Core: "Total Time"}
+        skimSpec.PNR_Rail.(p) = {File: trSkimsDir + p + "_pnr_rail.mtx", Core: "Total Time"}
+        skimSpec.KNR_Bus.(p) = {File: trSkimsDir + p + "_knr_bus.mtx", Core: "Total Time"}
+        skimSpec.KNR_Rail.(p) = {File: trSkimsDir + p + "_knr_rail.mtx", Core: "Total Time"}
+    end
 
     // Clear values in field first
     baseFilter = printf("(%s <> null and %s <> null)", {spec.OField, spec.DField})
@@ -352,8 +353,8 @@ Macro "Fill Travel Times"(Args, spec)
     if modeFld = null then
         mainModes = {"auto"}
     else do
-        mainModes = skimSpec.Map(do(f) Return(Lower(f[1])) end) // {"auto", "walk", "bike", "ptwalk", "ptdrive"}
-        exprStr = printf("if Lower(%s) <> 'walk' and Lower(%s) <> 'bike' and Lower(%s) <> 'ptwalk' and Lower(%s) <> 'ptdrive' then 'auto' else Lower(%s)", 
+        mainModes = skimSpec.Map(do(f) Return(Lower(f[1])) end)
+        exprStr = printf("if Lower(%s) <> 'walk' and Lower(%s) <> 'bike' and !(Lower(%s) contains 'bus') and !(Lower(%s) contains 'rail') then 'auto' else Lower(%s)", 
                          {modeFld, modeFld, modeFld, modeFld, modeFld})
         modeExpr = CreateExpression(vw, "ModeGroup", exprStr,)
     end
@@ -366,9 +367,8 @@ Macro "Fill Travel Times"(Args, spec)
     pmEnd = timePeriods.PM.EndTime
     depTimeFld = spec.DepTimeField
     if depTimeFld <> null then do
-        timeAllowance = '0'
-        amQry = printf("(%s - %s >= %s and %s - %s < %s)", {depTimeFld, timeAllowance, String(amStart), depTimeFld, timeAllowance, String(amEnd)})
-        pmQry = printf("(%s - %s >= %s and %s - %s < %s)", {depTimeFld, timeAllowance, String(pmStart), depTimeFld, timeAllowance, String(pmEnd)})
+        amQry = printf("(%s >= %s and %s < %s)", {depTimeFld, String(amStart), depTimeFld, String(amEnd)})
+        pmQry = printf("(%s >= %s and %s < %s)", {depTimeFld, String(pmStart), depTimeFld, String(pmEnd)})
         exprStr = printf("if %s then 'AM' else if %s then 'PM' else 'OP'", {amQry, pmQry})
         depPeriod = CreateExpression(vw, "DepPeriod", exprStr,)
     end
@@ -569,7 +569,7 @@ Macro "Write ABM OD"(Args)
     odPeriod = CreateExpression(vwTrips, "ODPeriod", exprStr,)
 
     vMode = objT.Mode
-    modes = SortArray(v2a(vMode), {Unique: 'True'}) // {'drivealone', 'carpool', 'walk', 'bike', 'ptwalk', 'ptdrive', 'other', 'schoolbus'}
+    modes = SortArray(v2a(vMode), {Unique: 'True'})
     
     mSkimObj = CreateObject("Matrix", Args.HighwaySkimAM)
     mSkimObj.SetIndex("TAZ")

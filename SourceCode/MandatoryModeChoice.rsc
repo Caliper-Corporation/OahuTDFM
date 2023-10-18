@@ -14,13 +14,15 @@ Macro "Mandatory Mode Choice"(Args)
 
     pbar = CreateObject("G30 Progress Bar", "Mandatory Mode Choice", true, 5)
     // Module for full time workers making work tours
+
+    ret = RunMacro("Construct MC Spec", Args, {Type: 'Work'})
     spec = {abmManager: abm, 
             Type: 'Work',
             Category: 'FullTimeWorker',
             Filter: 'WorkerCategory = 1 and TravelToWork = 1',
-            Alternatives: Args.WorkModes, 
-            Utility: Args.WorkModeUtility,
-            Availability: Args.WorkModeAvailability,
+            Alternatives: ret.NestingStructure, 
+            Utility: ret.Utility,
+            Availability: ret.Availability,
             LocationField: "WorkTAZ",
             ChoiceField: 'WorkMode',
             ChoiceCodeField: 'WorkModeCode',
@@ -34,9 +36,9 @@ Macro "Mandatory Mode Choice"(Args)
             Type: 'Work',
             Category: 'PartTimeWorker',
             Filter: 'WorkerCategory <> 1 and TravelToWork = 1',
-            Alternatives: Args.WorkModes,  
-            Utility: Args.WorkModeUtility,
-            Availability: Args.WorkModeAvailability,
+            Alternatives: ret.NestingStructure,  
+            Utility: ret.Utility,
+            Availability: ret.Availability,
             LocationField: "WorkTAZ",
             ChoiceField: 'WorkMode',
             ChoiceCodeField: 'WorkModeCode',
@@ -51,13 +53,14 @@ Macro "Mandatory Mode Choice"(Args)
         Return(true)
 
     // Module for anyone making univ tours
+    ret = RunMacro("Construct MC Spec", Args, {Type: 'Univ'})
     spec = {abmManager: abm, 
             Type: 'Univ',
             Category: 'University student',
             Filter: 'AttendUniv = 1',
-            Alternatives: Args.UnivModes,  
-            Utility: Args.UnivModeUtility,
-            Availability: Args.UnivModeAvailability,
+            Alternatives: ret.NestingStructure,  
+            Utility: ret.Utility,
+            Availability: ret.Availability,
             LocationField: "UnivTAZ",
             ChoiceField: 'UnivMode',
             ChoiceCodeField: 'UnivModeCode',
@@ -240,6 +243,8 @@ Macro "Evaluate Mode Choice"(Args, spec)
     if (Lower(type) = 'work' or Lower(type) = 'univ') then // Use first work or univ tour
         purp = type + "1"
 
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+
     // Obtain util spec and include availabilities
     utilSpec = {UtilityFunction: spec.Utility, AvailabilityExpressions: spec.Availability}
 
@@ -272,24 +277,38 @@ Macro "Evaluate Mode Choice"(Args, spec)
         if set = null or set.Size = 0 then
             continue
 
+        // Skim Files
         autoSkimFile = Args.("HighwaySkim" + tod)
-
-        ptWalkSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
-        ptDriveSkimFile = printf("%s\\output\\skims\\transit\\%s_pnr_bus.mtx", {Args.[Scenario Folder], tod})
+        WalkBusSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
+        PNRBusSkimFile = printf("%s\\output\\skims\\transit\\%s_pnr_bus.mtx", {Args.[Scenario Folder], tod})
+        KNRBusSkimFile = printf("%s\\output\\skims\\transit\\%s_knr_bus.mtx", {Args.[Scenario Folder], tod})
+        railPresent = RunMacro("Is value in array", activeTransitModes, "Rail")
+        if railPresent then do
+            WalkRailSkimFile = printf("%s\\output\\skims\\transit\\%s_w_rail.mtx", {Args.[Scenario Folder], tod})
+            PNRRailSkimFile = printf("%s\\output\\skims\\transit\\%s_pnr_rail.mtx", {Args.[Scenario Folder], tod})
+            KNRRailSkimFile = printf("%s\\output\\skims\\transit\\%s_knr_rail.mtx", {Args.[Scenario Folder], tod})
+        end
         
         // Run Model and populate results
         tag = category + "_" + tod + "_Mode" + direction
         obj = CreateObject("PMEChoiceModel", {ModelName: tag + " Tour Mode"})
-
         obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\" + tag + ".mdl"
         obj.AddAlternatives({AlternativesTree: spec.Alternatives})
+        
         obj.AddTableSource({SourceName: "PersonHH", View: vwPHH, IDField: abm.PersonID})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: autoSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-        obj.AddMatrixSource({SourceName: "PTWalkSkim", File: ptWalkSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-        obj.AddMatrixSource({SourceName: "PTDriveSkim", File: ptDriveSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "W_BusSkim", File: WalkBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "PNR_BusSkim", File: PNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "KNR_BusSkim", File: KNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        if railPresent then do
+            obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+            obj.AddMatrixSource({SourceName: "PNR_RailSkim", File: PNRRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+            obj.AddMatrixSource({SourceName: "KNR_RailSkim", File: KNRRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        end
         obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
+        
         if direction = 'Return' then
             obj.AddPrimarySpec({Name: "PersonHH", Filter: finalFilter, OField: destField, DField: "TAZID"})
         else
@@ -321,7 +340,8 @@ Macro "Mode Choice PostProcess"(Args, spec)
     RunMacro("Update Dest to Home TT", Args, spec)
 
     // Attach Mode Codes
-    codeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, PTWalk: 5, PTDrive: 6, Other: 7, SchoolBus: 8}
+    codeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, Other: 7, SchoolBus: 8,
+                W_Bus: 21, W_Rail: 22, PNR_Bus: 31, PNR_Rail: 32, KNR_Bus: 41, KNR_Rail: 42}
     abm = spec.abmManager
     set = abm.CreatePersonSet({Filter: spec.Filter, Activate: 1})
     inputFld = spec.ChoiceField
@@ -331,10 +351,6 @@ Macro "Mode Choice PostProcess"(Args, spec)
     arrModeCode = arrMode.Map(do (f) Return(codeMap.(f)) end)
     vecsSet.(outputFld) = a2v(arrModeCode)
     abm.SetPersonVectors(vecsSet)
-
-    // Run additional post processing for school
-    //if spec.Type = 'School' and spec.Direction = 'Return' then
-    //    RunMacro("School MC Postprocess", spec.abmManager)
 endMacro
 
 
@@ -490,4 +506,185 @@ Macro "School MC Postprocess"(abm)
         CloseView(vwMem)
     end
     DestroyExpression(GetFieldFullSpec(vwP, exprEnroute))
+endMacro
+
+
+// Macro to filter transit modes
+Macro "Construct MC Spec"(Args, spec)
+    type = spec.Type
+    
+    // Stitch Auto and NM utilities together
+    autoUtil = Args.(type + "ModeUtilityAuto")
+    nmUtil = Args.(type + "ModeUtilityNM")
+    ret = RunMacro("Append Utility", autoUtil, nmUtil)
+    AutoNMUtil = ret.Utility
+    AutoNMAlts = ret.Alternatives
+
+    // Get the active transit modes
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+    if activeTransitModes.Position('bus') = 0 then
+        Throw("No bus mode in mode choice utility for: " + type)
+
+    // Now remove non essential cols from the transit utility
+    trUtil = RunMacro("Filter Transit Utility Spec", Args.(type + "ModeUtilityPT"), activeTransitModes)
+    ret = RunMacro("Append Utility", AutoNMUtil, trUtil)
+    finalUtil = ret.Utility
+    finalAlts = ret.Alternatives
+
+    // Deal with availability next
+    avail = Args.(type + "ModeAvailability")
+    alts = avail.Alternative
+    exprs = avail.Expression
+    finalAvail = null
+    for i = 1 to alts.length do
+        alt = alts[i]
+        present = RunMacro("Is value in array", finalAlts, alt)
+        if present then do // Keep term
+            finalAvail.Alternative = finalAvail.Alternative + {alt}
+            finalAvail.Expression = finalAvail.Expression + {exprs[i]}
+        end 
+    end
+
+    // Deal finally with the nesting structure
+    nests = Args.(type + "Modes")
+    finalNests = CopyArray(nests)
+    trMainAlts = {'PT_Walk', 'PT_PNR', 'PT_KNR'}
+    for mainAlt in trMainAlts do
+        pos = nests.Parent.Position(mainAlt)
+        childAltString = nests.Alternatives[pos]
+        prunedAltString = RunMacro("Prune Transit Alt String", childAltString, activeTransitModes)
+        finalNests.Alternatives[pos] = prunedAltString
+    end
+
+    // Return
+    ret = null
+    ret.Utility = CopyArray(finalUtil)
+    ret.Availability = CopyArray(finalAvail)
+    ret.NestingStructure = CopyArray(finalNests)
+    Return(ret)
+endMacro
+
+
+// Given two utility specs, merge them together
+Macro "Append Utility"(util1, util2)
+    colNames1 = util1.Map(do (f) Return(f[1]) end)
+    colNames2 = util2.Map(do (f) Return(f[1]) end)
+    
+    exprs1 = util1.Expression
+    n1 = exprs1.length // Number of rows in the first utility spec.
+    dim dummy1[n1]
+    
+    exprs2 = util2.Expression
+    n2 = exprs2.length // Number of rows in the second utility spec.
+    dim dummy2[n2]
+
+    commonCols = {"Description", "Expression", "Coefficient"}
+    utilC = null
+    for col in commonCols do
+        utilC.(col) = util1.(col) + util2.(col)
+    end
+    
+    for col in colNames1 do
+        if commonCols.Position(col) > 0 then
+            continue
+        utilC.(col) = util1.(col) + CopyArray(dummy2)   // Add empty rows to the end corresponding to number of rows in second utility
+    end
+
+    for col in colNames2 do
+        if commonCols.Position(col) > 0 then
+            continue
+        utilC.(col) = CopyArray(dummy1) + util2.(col) // Add empty rows to the beginning corresponding to number of rows in first utility
+    end
+
+    colNames = utilC.Map(do (f) Return(f[1]) end)
+    altsC = null
+    for col in colNames do
+        if commonCols.Position(col) > 0 then
+            continue
+        altsC = altsC + {col}
+    end
+    Return({Utility: CopyArray(utilC), Alternatives: CopyArray(altsC)})
+endMacro
+
+
+// Remove non active transit modes from the transit utility spec
+Macro "Filter Transit Utility Spec"(util, activeTransitModes)
+    commonCols = {"Description", "Expression", "Coefficient"}
+    colNames = util.Map(do (f) Return(f[1]) end)
+
+    trUtil = null
+    retainedAlts = null
+    for col in colNames do
+        if commonCols.Position(col) > 0 then // Retain the common cols
+            trUtil.(col) = CopyArray(util.(col))
+        
+        // Check if col is contained in the active transit modes
+        retainCol = RunMacro("Is value in array", activeTransitModes, col)
+        if retainCol then do
+            retainedAlts = retainedAlts + {col}
+            trUtil.(col) = CopyArray(util.(col))
+        end
+    end
+
+    // Now remove rows that do not have the utilty term checked for all remaining alternatives
+    vSum = nz(a2v(trUtil.(retainedAlts[1])))
+    for i = 2 to retainedAlts.length do
+        vCol = a2v(trUtil.(retainedAlts[i]))
+        vSum = vSum + nz(vCol)
+    end
+
+    // If vSum for any row is 0, then this row can be deleted
+    outUtil = null
+    nRows = vSum.length
+    for i = 1 to nRows do
+        if vSum[i] > 0 then do
+            for col in commonCols + retainedAlts do
+                vec = trUtil.(col)
+                val = vec[i]
+                outUtil.(col) = outUtil.(col) + {val}
+            end
+        end
+    end
+    Return(CopyArray(outUtil))
+endMacro
+
+
+Macro "Is value in array"(arr, val)
+    val = Lower(val)
+    retain = 0
+    for mode in arr do
+        if val contains Lower(mode) then
+            retain = 1
+    end
+    Return(retain)
+endMacro
+
+
+Macro "Prune Transit Alt String"(str, activeTransitModes)
+    subModes = ParseString(str, " ,")
+    outStr = null
+    for mode in subModes do
+        if RunMacro("Is value in array", activeTransitModes, mode) then // Alternative present
+            outStr = outStr + mode + ", "
+    end
+    
+    // Remove final trailing ", "
+    if outStr = null or StringLength(outStr) < 3 then
+        Throw("Error processing transit alternatives. Please check nesting structure table.")
+    
+    outStr = Left(outStr, StringLength(outStr) - 2)
+    Return(outStr)
+endMacro
+
+
+Macro "Get Active Transit Modes"(Args)
+    // Get the active transit modes
+    mode_table = Args.TransitModeTable
+    trModes = RunMacro("Get Transit Net Def Col Names", mode_table)
+    activeTransitModes  = null
+    for mode in trModes do
+        if Lower(mode) <> "all" then
+            activeTransitModes = activeTransitModes + {mode}
+    end
+    Return(activeTransitModes)
 endMacro

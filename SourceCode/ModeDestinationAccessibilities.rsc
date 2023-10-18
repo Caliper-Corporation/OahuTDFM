@@ -6,7 +6,7 @@ Macro "Mandatory Accessibility"(Args)
     modeGroups = null
     modeGroups.Auto = {"DriveAlone", "Carpool", "Other"}
     modeGroups.NM = {"Bike", "Walk"}
-    modeGroups.PT = {"Bus"}
+    modeGroups.PT = {"W_Bus"}
 
     // Generate MC accessibilities from the aggregate mode choice spec
     spec = {Type: "Mandatory",
@@ -32,7 +32,7 @@ Macro "NonMandatory Joint Accessibility"(Args)
     modeGroups = null
     modeGroups.Auto = {"Carpool"}
     modeGroups.NM = {"Bike", "Walk"}
-    modeGroups.PT = {"PTWalk"}
+    modeGroups.PT = {"W_Bus"}
     spec = {Type: "NonMandatory",
             ModeGroups: modeGroups,
             OutputFile: Args.NonMandJointModeAccessOther,
@@ -63,8 +63,8 @@ Macro "NonMandatory Solo Accessibility"(Args)
     modeGroups = null
     modeGroups.Auto = {"DriveAlone", "Carpool"}
     modeGroups.NM = {"Bike", "Walk"}
-    modeGroups.PT = {"PTWalk"}
-    modeGroups.NoDA = {"Carpool", "Bike", "Walk", "PTWalk"}
+    modeGroups.PT = {"W_Bus"}
+    modeGroups.NoDA = {"Carpool", "Bike", "Walk", "W_Bus"}
     
     purps = {"Other", "Shop"}
     for p in purps do
@@ -167,7 +167,7 @@ Macro "MC Accessibility"(Args, spec)
         obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         w_t_skim = Args.[Output Folder] + "\\skims\\transit\\AM_w_bus.mtx"
-        obj.AddMatrixSource({SourceName: "PTSkim", File: w_t_skim, RowIndex: "RCIndex", ColIndex: "RCIndex"})
+        obj.AddMatrixSource({SourceName: "W_BusSkim", File: w_t_skim, RowIndex: "RCIndex", ColIndex: "RCIndex"})
         obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})

@@ -253,7 +253,8 @@ Macro "Work Location"(Args)
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.WorkDCShadowPrices
-    if !GetFileInfo(ShadowPricesTable) or Args.WorkSPFlag then do
+    spFlag = !GetFileInfo(ShadowPricesTable) or Args.WorkSPFlag
+    if spFlag then do
         spOpts = null
         spOpts.OutputFile = ShadowPricesTable
         spOpts.Fields = indCodes.Map(do (f) Return("Industry" + String(f)) end)
@@ -284,7 +285,7 @@ Macro "Work Location"(Args)
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
         obj.AddSizeVariable({Name: "TAZData", Field: sizeFlds[i]})
-        if Args.WorkSPFlag then do
+        if spFlag then do
             tempOutputSP = GetTempPath() + "ShadowPrice_Industry" + indCode + ".bin"
             obj.AddShadowPrice({TargetName: "TAZData", TargetField: sizeFlds[i], 
                                 Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
@@ -297,7 +298,7 @@ Macro "Work Location"(Args)
         obj = null
         
         // Copy values from temporary shadow price table to main shadow price table
-        if Args.WorkSPFlag then do
+        if spFlag then do
             spOpts = null
             spOpts.SourceFile = tempOutputSP
             spOpts.TargetData = {File: ShadowPricesTable, IDField: "TAZ", OutputField: "Industry" + indCode}
@@ -327,7 +328,8 @@ Macro "Univ Location"(Args)
     enrollmentFld = RunMacro("Adjust University Enrollment", Args.DemographicOutputs)
 
     ShadowPricesTable = Args.UnivDCShadowPrices
-    if !GetFileInfo(ShadowPricesTable) or Args.UnivSPFlag then do
+    spFlag = !GetFileInfo(ShadowPricesTable) or Args.UnivSPFlag
+    if spFlag then do
         spOpts = null
         spOpts.OutputFile = ShadowPricesTable
         spOpts.Fields = {"ShadowPrice"}
@@ -347,7 +349,7 @@ Macro "Univ Location"(Args)
     obj.AddUtility({UtilityFunction: Args.UnivLocUtility})
     obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
     obj.AddSizeVariable({Name: "TAZData", Field: enrollmentFld})
-    if Args.UnivSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
+    if spFlag then do // Perform shadow pricing only if shadow price table does not already exist
         tempOutputSP = GetTempPath() + "ShadowPrice_University.bin"
         obj.AddShadowPrice({TargetName: "TAZData", TargetField: enrollmentFld, 
                             Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
@@ -359,7 +361,7 @@ Macro "Univ Location"(Args)
         Throw("Running 'University Location' choice model failed.")
 
     // Copy values from temporary shadow price table to main shadow price table
-    if Args.UnivSPFlag then do
+    if spFlag then do
         spOpts = null
         spOpts.SourceFile = tempOutputSP
         spOpts.TargetData = {File: ShadowPricesTable, IDField: "TAZ", OutputField: "ShadowPrice"}
@@ -423,7 +425,8 @@ Macro "School Location"(Args)
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.SchoolDCShadowPrices
-    if !GetFileInfo(ShadowPricesTable) or Args.SchoolSPFlag then do
+    spFlag = !GetFileInfo(ShadowPricesTable) or Args.SchoolSPFlag
+    if spFlag then do
         spOpts = null
         spOpts.OutputFile = ShadowPricesTable
         spOpts.Fields = CopyArray(categories)
@@ -453,7 +456,7 @@ Macro "School Location"(Args)
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
         obj.AddSizeVariable({Name: "TAZData", Field: type + "Enrollment"})
-        if Args.SchoolSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
+        if spFlag then do // Perform shadow pricing only if shadow price table does not already exist
             tempOutputSP = GetTempPath() + "ShadowPrice_" + type + ".bin"
             obj.AddShadowPrice({TargetName: "TAZData", TargetField: type + "Enrollment", 
                                 Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
@@ -465,7 +468,7 @@ Macro "School Location"(Args)
             Throw("Running 'School Location' choice model for " + type + " failed")
         
         // Copy values from temporary shadow price table to main shadow price table
-        if Args.SchoolSPFlag then do
+        if spFlag then do
             spOpts = null
             spOpts.SourceFile = tempOutputSP
             spOpts.TargetData = {File: ShadowPricesTable, IDField: "TAZ", OutputField: type}
