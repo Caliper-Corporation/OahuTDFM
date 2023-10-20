@@ -225,6 +225,7 @@ id_tours <- split_k12_univ %>%
       "Work" %in% WHYTO ~ "Work",
       "Univ" %in% WHYTO ~ "Univ",
       "K12" %in% WHYTO ~ "K12",
+      "Shopping" %in% WHYTO ~ "Shop",
       TRUE ~ "Other"
     ),
     tour_id = paste(HOUSEID, PERSONID, tour_num, sep = "_")
