@@ -248,8 +248,10 @@ endMacro
 Macro "Work Location"(Args)
     // Run in a loop for the various industries
     sizeVars = Args.WorkLocSize
-    sizeFlds = sizeVars.[Attractions Field]
     indCodes = sizeVars.Industry
+    descriptions = sizeVars.Description
+    empFlds = sizeVars.[Attractions Field]
+    size_coefs = sizeVars.Coefficient
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.WorkDCShadowPrices
@@ -263,14 +265,44 @@ Macro "Work Location"(Args)
 
     abm = RunMacro("Get ABM Manager", Args)
     pbar = CreateObject("G30 Progress Bar", "Running Work Location Model by Industry", true, indCodes.length)
-    for i = 1 to indCodes.length do
+
+    for i = 1 to indCodes.length do    
         indCode = String(indCodes[i])
+        size_coef = size_coefs[i]
+        empFld = empFlds[i]
+        description = descriptions[i]
+
+        // Availability is restricted to only zones with relevant employment
+        availExpressions = null
+        availExpressions.Alternative = {"Destinations"}
+        availExpressions.Expression = {"TAZData." + empFld + ".D > 0"}    
         
+        // Compute the size term for the current industry and fill a column in
+        // the se data.
+        se = CreateObject("Table", Args.DemographicOutputs)
+        size_field = "WorkLocSize_" + indCode
+        se.AddField({
+            FieldName: size_field,
+            Description: "Work location choice model size term for industry " + indCode
+        })
+        opt = null
+        opt.TableObject = se
+        opt.Equation = {Variable: {empFld}, Coefficient: {size_coef}}
+        opt.FillField = size_field
+        opt.ExponentiateCoeffs = 1
+        RunMacro("Compute Size Variable", opt)
+        // if doing service employment, must add in hotel employment
+        if description = "Service" then do
+            se.(size_field) = se.(size_field) + (exp(size_coef) * "Emp_Hotel")
+        end
+        se = null
+
         utilSpec = null
+        utilSpec.AvailabilityExpressions = availExpressions
         utilSpec.UtilityFunction = Args.WorkLocUtility
         utilSpec.SubstituteStrings = {{"<IndCode>", indCode}}
         
-        // Find BG Location
+        // Find Work Location
         obj = CreateObject("PMEChoiceModel", {ModelName: "Work Location: Industry " + indCode})
         obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\WorkLocation_Ind" + indCode + ".dcm"
         obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
@@ -283,10 +315,10 @@ Macro "Work Location"(Args)
         obj.AddPrimarySpec({Name: "PersonHH", Filter: "WorkIndustry = " + indCode, OField: "TAZID"})
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
-        obj.AddSizeVariable({Name: "TAZData", Field: sizeFlds[i]})
+        obj.AddSizeVariable({Name: "TAZData", Field: size_field})
         if Args.WorkSPFlag then do
             tempOutputSP = GetTempPath() + "ShadowPrice_Industry" + indCode + ".bin"
-            obj.AddShadowPrice({TargetName: "TAZData", TargetField: sizeFlds[i], 
+            obj.AddShadowPrice({TargetName: "TAZData", TargetField: empFld, 
                                 Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "WorkTAZ"})

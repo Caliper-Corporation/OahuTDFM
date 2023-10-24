@@ -238,6 +238,14 @@
                                             {Name: "Attractions Field",   Type: "string",    Fixed: "false"}}
                             })
 
+    Styles.SizeVar2 = Pme.Table({Height: 13, Autosize: "True", Values: "Columns", 
+                                Columns:    {{Name: "Industry", Type: "real",  Fixed: "false", Width:  "10%"},
+                                            {Name: "Description", Type: "string",  Fixed: "false", Width:  "55%"},
+                                            {Name: "Attractions Field",   Type: "string",    Fixed: "false"},
+                                            {Name: "Coefficient",   Type: "real",    Fixed: "false"}
+                                            }
+                            })
+
    Styles.DestUtilityWithFilter = Pme.Table({Height: 21, Autosize: "True", Values: "Columns",
                                                 Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
 															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "35%"},
