@@ -802,16 +802,27 @@
 	
 	Section = "Long Term Choices|Location Models|School"
 	
+        Args.SchoolLocSize = {
+            "Type":"array",
+            "Caption":"Size Variable for School Location Destination",
+            "Description":"StopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Emp_Education",4.2965},
+                {"K12Enrollment",5.7177}
+        }
+
         Args.SchoolLocUtility = {
             "Type":"array",
             "Caption":"School Location Utility: Type is one of 'Elementary', 'Middle' or 'HighSchool'",
             "Style":"DestUtility",
             "Value":{
-                {"Highway Time","AutoSkim.Time",-0.172015},
-                {"Intrazonal","Intrazonal.IZ = 1",0.461716},
-                {"Distance between 1 and 2 miles","AutoSkim.Distance > 1 and AutoSkim.Distance <= 2",-0.643064},
-                {"Distance between 2 and 5 miles","AutoSkim.Distance > 2 and AutoSkim.Distance <= 5",-0.807949},
-                {"Distance between 5 and 20 miles","AutoSkim.Distance > 5 and AutoSkim.Distance <= 20",-0.964687},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",null,0.4678},
+                {"Highway Time","AutoSkim.Time",-0.0178},
+                {"Intrazonal","Intrazonal.IZ = 1",-0.6326},
+                {"MC logsums","ModeAccessibility.Auto",null,3.5019},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,4.405},
+                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobs",null,.0022}
                 {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
         }
         Args.SchoolDCShadowPrices = {

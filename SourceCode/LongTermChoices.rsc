@@ -451,7 +451,23 @@ Macro "School Location"(Args)
 
     availExpressions = null
     availExpressions.Alternative = {"Destinations"}
-    availExpressions.Expression = {"AutoSkim.Time <= 60"}
+    availExpressions.Expression = {"AutoSkim.Time <= 60 and K12Enrollment > 0"}
+
+    // Compute the size term
+    size_vars = Args.SchoolLocSize
+    se = CreateObject("Table", Args.DemographicOutputs)
+    size_field = "SchoolLocSize"
+    se.AddField({
+        FieldName: size_field,
+        Description: "School location choice model size term"
+    })
+    opt = null
+    opt.TableObject = se
+    opt.Equation = Args.SchoolLocSize
+    opt.FillField = size_field
+    opt.ExponentiateCoeffs = 1
+    RunMacro("Compute Size Variable", opt)
+    se = null
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.SchoolDCShadowPrices
@@ -481,6 +497,7 @@ Macro "School Location"(Args)
         obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "ModeAccessibility", File: Args.MandatoryModeAccessibility, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddPrimarySpec({Name: "PersonHH", Filter: filters[i], OField: "TAZID"})
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
