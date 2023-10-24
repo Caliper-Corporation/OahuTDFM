@@ -779,12 +779,25 @@
 	
 	Section = "Long Term Choices|Location Models|University"
 	
+        Args.UnivLocSize = {
+            "Type":"array",
+            "Caption":"Size Variable for School Location Destination",
+            "Description":"StopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"UnivEnrollment",6.7586},
+                {"OtherEnrollment",4.8565}
+        }
+
         Args.UnivLocUtility = {
             "Type":"array",
             "Caption":"University Location Utility",
             "Style":"DestUtility",
             "Value":{
-                {"Highway Time","AutoSkim.Time",-0.058127},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",null,-0.8874},
+                {"Highway Time","AutoSkim.Time",-0.0917},
+                {"Excess highway time over 30 min","(AutoSkim.Time - 30)","AutoSkim.Time > 30",0.0486},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,34.91},
                 {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1}}
         }
         Args.UnivDCShadowPrices = {

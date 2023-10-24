@@ -358,6 +358,29 @@ Macro "Univ Location"(Args)
     // Create temporary University Enrollment after subtracting dorm population that have been acocunnted for
     enrollmentFld = RunMacro("Adjust University Enrollment", Args.DemographicOutputs)
 
+    // Only TAZs with enrollment data are available
+    availExpressions = null
+    availExpressions.Alternative = {"Destinations"}
+    availExpressions.Expression = {"UnivEnrollment + OtherEnrollment > 0"}
+    utilSpec = null
+    utilSpec.UtilityFunction = Args.UnivLocUtility
+    utilSpec.AvailabilityExpressions = availExpressions
+
+    // Compute the size term
+    se = CreateObject("Table", Args.DemographicOutputs)
+    size_field = "UnivLocSize"
+    se.AddField({
+        FieldName: size_field,
+        Description: "University location choice model size term"
+    })
+    opt = null
+    opt.TableObject = se
+    opt.Equation = Args.UnivLocSize
+    opt.FillField = size_field
+    opt.ExponentiateCoeffs = 1
+    RunMacro("Compute Size Variable", opt)
+    se = null
+
     ShadowPricesTable = Args.UnivDCShadowPrices
     if !GetFileInfo(ShadowPricesTable) or Args.UnivSPFlag then do
         spOpts = null
@@ -373,15 +396,16 @@ Macro "Univ Location"(Args)
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\UniversityLocation.dcm"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
+    obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
     obj.AddTableSource({SourceName: "UnivDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "AttendUniv = 1 and UnivGQStudent <> 1", OField: "TAZID"})
-    obj.AddUtility({UtilityFunction: Args.UnivLocUtility})
+    obj.AddUtility(utilSpec)
     obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
-    obj.AddSizeVariable({Name: "TAZData", Field: enrollmentFld})
+    obj.AddSizeVariable({Name: "TAZData", Field: size_field})
     if Args.UnivSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
         tempOutputSP = GetTempPath() + "ShadowPrice_University.bin"
-        obj.AddShadowPrice({TargetName: "TAZData", TargetField: enrollmentFld, 
+        obj.AddShadowPrice({TargetName: "TAZData", TargetField: size_field, 
                             Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
     end
     obj.AddOutputSpec({ChoicesField: "UnivTAZ"})
@@ -454,7 +478,6 @@ Macro "School Location"(Args)
     availExpressions.Expression = {"AutoSkim.Time <= 60 and K12Enrollment > 0"}
 
     // Compute the size term
-    size_vars = Args.SchoolLocSize
     se = CreateObject("Table", Args.DemographicOutputs)
     size_field = "SchoolLocSize"
     se.AddField({
@@ -495,16 +518,17 @@ Macro "School Location"(Args)
         obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
         obj.AddTableSource({SourceName: "SchoolDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
         obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
+        obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "ModeAccessibility", File: Args.MandatoryModeAccessibility, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddPrimarySpec({Name: "PersonHH", Filter: filters[i], OField: "TAZID"})
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
-        obj.AddSizeVariable({Name: "TAZData", Field: type + "Enrollment"})
+        obj.AddSizeVariable({Name: "TAZData", Field: size_field})
         if Args.SchoolSPFlag then do // Perform shadow pricing only if shadow price table does not already exist
             tempOutputSP = GetTempPath() + "ShadowPrice_" + type + ".bin"
-            obj.AddShadowPrice({TargetName: "TAZData", TargetField: type + "Enrollment", 
+            obj.AddShadowPrice({TargetName: "TAZData", TargetField: size_field, 
                                 Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "SchoolTAZ"})
