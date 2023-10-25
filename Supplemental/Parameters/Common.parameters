@@ -761,7 +761,7 @@
                 {"Intrazonal destination","Intrazonal.IZ",null,2.3823},
                 {"MC logsums","ModeAccessibility.Auto",null,0.4618},
                 {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,27.34},
-                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobs",null,.1998},
+                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",null,.1998},
                 {"Shadow Prices","WorkDCShadowPrices.Industry<IndCode>.D",null,1}}
         }
         Args.WorkDCShadowPrices = {
@@ -787,7 +787,7 @@
             "Value":{
                 {"UnivEnrollment",6.7586},
                 {"OtherEnrollment",4.8565}
-        }
+        }}
 
         Args.UnivLocUtility = {
             "Type":"array",
@@ -823,7 +823,7 @@
             "Value":{
                 {"Emp_Education",4.2965},
                 {"K12Enrollment",5.7177}
-        }
+        }}
 
         Args.SchoolLocUtility = {
             "Type":"array",
@@ -835,7 +835,7 @@
                 {"Intrazonal","Intrazonal.IZ = 1",-0.6326},
                 {"MC logsums","ModeAccessibility.Auto",null,3.5019},
                 {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,4.405},
-                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobs",null,.0022}
+                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",null,.0022},
                 {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
         }
         Args.SchoolDCShadowPrices = {
