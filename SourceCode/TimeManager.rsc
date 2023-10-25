@@ -970,10 +970,13 @@ Class "ABM.TimeManager"(opts)
         self.TimeUseMatrixCurrency = null
         self.TimeUseMatrix = null
         self.validate = null
-        if self.ViewLookup <> null then
-            CloseView(self.ViewLookup)
-        if self.ViewTimeSlots <> null then
-            CloseView(self.ViewTimeSlots)
+        vws = GetViews()
+        if vws <> null then do
+            if vws[1].position(self.ViewLookup) > 0 then
+                CloseView(self.ViewLookup)
+            if vws[1].position(self.ViewTimeSlots) > 0 then
+                CloseView(self.ViewTimeSlots)
+        end
         self.HasData = 0
     endItem
 endClass

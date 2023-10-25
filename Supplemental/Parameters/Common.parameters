@@ -433,7 +433,7 @@
             "Style":"Nesting Structure S",
             "Value":{
                 {"Root","Motorized, NonMotorized, Other",null},
-                {"Motorized","DriveAlone, Carpool, Bus",0.63747},
+                {"Motorized","DriveAlone, Carpool, W_Bus",0.63747},
                 {"NonMotorized","Walk, Bike",0.138794}}
         }
         Args.MandatoryAggMCAvail = {
@@ -444,7 +444,7 @@
             "Value":{
                 {"Walk","AutoSkim.Distance <= 2"},
                 {"Bike","AutoSkim.Distance <= 10"},
-                {"Bus","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
         }
         Args.MandatoryAggMCUtility = {
             "Type":"array",
@@ -455,8 +455,8 @@
                 {"ASC","Constant",4.24115,3.47314,3.95687,3.59434,1.52073,null},
                 {"AM Skim Time","AutoSkim.Time",-0.007815,-0.007815,null,null,null,null},
                 {"AM Skim Distance","AutoSkim.Distance",null,null,-1.14549,-0.866468,null,null},
-                {"AM Transit IVTT","PTSkim.[In-Vehicle Time]",null,null,null,null,-0.007815,null},
-                {"AM Transit Fare/VOT","PTSkim.Fare/<VOT>",null,null,null,null,-0.4689,null},
+                {"AM Transit IVTT","W_BusSkim.[In-Vehicle Time]",null,null,null,null,-0.007815,null},
+                {"AM Transit Fare/VOT","W_BusSkim.Fare/<VOT>",null,null,null,null,-0.4689,null},
                 {"Auto Operating Cost Term: Distance*AOC/VOT","AutoSkim.Distance*<AOC>/<VOT>",-0.4689,-0.4689,null,null,null,null},
                 {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,null,null,null,0.006111,null},
                 {"log(TotalEmploymentDensity)","log(1 + TAZ4Ds.TotalEmploymentDensity.D)",null,null,0.081396,0.081396,null,null},
@@ -1172,7 +1172,10 @@
                 {"Root","Drive, NonMotorized, Transit, Other",null},
                 {"Drive","DriveAlone, Carpool",0.5},
                 {"NonMotorized","Walk, Bike",0.7},
-                {"Transit","PTWalk, PTDrive",0.66}}
+                {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
+                {"PT_Walk", "W_Bus, W_Rail", 0.5},
+                {"PT_PNR", "PNR_Bus, PNR_Rail", 0.5},
+                {"PT_KNR", "KNR_Bus, KNR_Rail", 0.5}}
         }
         Args.WorkModeAvailability = {
             "Type":"array",
@@ -1183,42 +1186,81 @@
                 {"Carpool","PersonHH.AttendSchool <> 1"},
                 {"Walk","WalkSkim.Distance <= 1.5"},
                 {"Bike","BikeSkim.Distance <= 10"},
-                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 60 and PTWalkSkim.[Total Time] <= 90"},
-                {"PTDrive","PTDriveSkim.[In-Vehicle Time] <= 60 and PTDriveSkim.[Total Time] <= 90"},
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"},
+                {"PNR_Bus","PNR_BusSkim.[In-Vehicle Time] <= 60 and PNR_BusSkim.[Total Time] <= 90"},
+                {"KNR_Bus","KNR_BusSkim.[In-Vehicle Time] <= 60 and KNR_BusSkim.[Total Time] <= 90"},
+                {"W_Rail","W_RailSkim.[In-Vehicle Time] <= 60 and W_RailSkim.[Total Time] <= 90"},
+                {"PNR_Rail","PNR_RailSkim.[In-Vehicle Time] <= 60 and PNR_RailSkim.[Total Time] <= 90"},
+                {"KNR_Rail","KNR_RailSkim.[In-Vehicle Time] <= 60 and KNR_RailSkim.[Total Time] <= 90"},
                 {"Other","PersonHH.VehicleAvail = 0"}}
         }
 	
-	Section = "MandatoryTours|Tour Mode|Work|Utility"
-	
-        Args.WorkModeUtility = {
+	Section = "MandatoryTours|Tour Mode|Work|UtilityAuto"
+        
+        Args.WorkModeUtilityAuto = {
             "Type":"array",
             "Caption":"Work Mode Utility",
-            "Style":"MandModeUtility",
+            "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",4.7664,1,0,0,0,0,0,0},
-                {"ASC (Carpool)","Constant",4.5,0,1,0,0,0,0,0},
-                {"ASC (Walk)","Constant",2.8717,0,0,1,0,0,0,0},
-                {"ASC (PTWalk)","Constant",-2.3937,0,0,0,0,1,0,0},
-                {"ASC (PTDrive)","Constant",-2.3937,0,0,0,0,0,1,0},
-                {"ASC (Other)","Constant",-1.9431,0,0,0,0,0,0,1},
-                {"Highway Time","AutoSkim.Time",-0.002052,1,1,0,0,0,0,1},
-                {"Transit IVTT (Walk)","PTWalkSkim.[In-Vehicle Time]",-0.002052,0,0,0,0,1,0,0},
-                {"Transit Init Wait plus Access","PTWalkSkim.[Initial Wait Time] + PTWalkSkim.[Access Walk Time]",-0.015498,0,0,0,0,1,0,0},
-                {"Transit Fare (Walk)","PTWalkSkim.Fare",-0.498423,0,0,0,0,1,0,0},
-                {"Transit IVTT (Drive)","PTDriveSkim.[In-Vehicle Time]",-0.002052,0,0,0,0,0,1,0},
-                {"Transit Init Wait plus Access","PTDriveSkim.[Initial Wait Time] + PTDriveSkim.[Access Drive Time]",-0.015498,0,0,0,0,0,1,0},
-                {"Transit Fare (Drive)","PTDriveSkim.Fare",-0.498423,0,0,0,0,0,1,0},
-                {"Distance Walk","WalkSkim.Distance",-0.172192,0,0,1,0,0,0,0},
-                {"Distance Bike","BikeSkim.Distance",-0.180012,0,0,0,1,0,0,0},
-                {"Kid","PersonHH.Age < 18",0.644639,0,1,0,0,0,0,0},
-                {"Driver License","PersonHH.License = 1",0.862251,0,1,0,0,0,0,0},
-                {"Senior","PersonHH.Age >= 65",0.110876,0,0,1,0,1,1,0},
-                {"Female","PersonHH.Gender = 2",0.219183,0,1,1,0,1,1,0},
-                {"Low Income HH","PersonHH.IncomeLevel = 1",0.037969,0,1,0,0,1,1,0},
-                {"Auto Sufficiency","PersonHH.Vehicles >= PersonHH.Workers",0.830344,1,0,0,0,0,0,0}}
+                {"ASC (DriveAlone)","Constant",4.7664,1,0,0},
+                {"ASC (Carpool)","Constant",4.5,0,1,0},
+                {"ASC (Other)","Constant",-1.9431,0,0,1},
+                {"Highway Time","AutoSkim.Time",-0.002052,1,1,1},
+                {"Kid","PersonHH.Age < 18",0.644639,0,1,0},
+                {"Driver License","PersonHH.License = 1",0.862251,0,1,0},
+                {"Female","PersonHH.Gender = 2",0.219183,0,1,0},
+                {"Low Income HH","PersonHH.IncomeLevel = 1",0.037969,0,1,0},
+                {"Auto Sufficiency","PersonHH.Vehicles >= PersonHH.Workers",0.830344,1,0,0}}
         }
 	
-	Section = "MandatoryTours|Tour Mode|University|Modes"
+	Section = "MandatoryTours|Tour Mode|Work|UtilityNM"
+        
+        Args.WorkModeUtilityNM = {
+            "Type":"array",
+            "Caption":"Work Mode Utility",
+            "Style":"MandModeUtilityNM",
+            "Value":{
+                {"ASC (Walk)","Constant",2.8717,1,0},
+                {"Distance Walk","WalkSkim.Distance",-0.172192,1,0},
+                {"Distance Bike","BikeSkim.Distance",-0.180012,0,1},
+                {"Senior","PersonHH.Age >= 65",0.110876,1,0},
+                {"Female","PersonHH.Gender = 2",0.219183,1,0}}
+        }
+
+    Section = "MandatoryTours|Tour Mode|Work|UtilityPT"
+        
+        Args.WorkModeUtilityPT = {
+            "Type":"array",
+            "Caption":"Work Mode Utility",
+            "Style":"MandModeUtilityPT",
+            "Value":{
+                {"ASC (W)","Constant",-2.3937,1,1,0,0,0,0},
+                {"ASC (PNR)","Constant",-2.3937,0,0,1,1,0,0},
+                {"ASC (KNR)","Constant",-2.3937,0,0,0,0,1,1},
+                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.002052,1,0,0,0,0,0},
+                {"Walk Bus Init Wait plus Access","W_BusSkim.[Initial Wait Time] + W_BusSkim.[Access Walk Time]",-0.015498,1,0,0,0,0,0},
+                {"Walk Bus Fare","W_BusSkim.Fare",-0.498423,1,0,0,0,0,0},
+                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.002052,0,1,0,0,0,0},
+                {"Walk Rail Init Wait plus Access","W_RailSkim.[Initial Wait Time] + W_RailSkim.[Access Walk Time]",-0.015498,0,1,0,0,0,0},
+                {"Walk Rail Fare","W_RailSkim.Fare",-0.498423,0,1,0,0,0,0},
+                {"PNR Bus IVTT","PNR_BusSkim.[In-Vehicle Time]",-0.002052,0,0,1,0,0,0},
+                {"PNR Bus Init Wait plus Access","PNR_BusSkim.[Initial Wait Time] + PNR_BusSkim.[Access Drive Time]",-0.015498,0,0,1,0,0,0},
+                {"PNR Bus Fare","PNR_BusSkim.Fare",-0.498423,0,0,1,0,0,0},
+                {"PNR Rail IVTT","PNR_RailSkim.[In-Vehicle Time]",-0.002052,0,0,0,1,0,0},
+                {"PNR Rail Init Wait plus Access","PNR_RailSkim.[Initial Wait Time] + PNR_RailSkim.[Access Drive Time]",-0.015498,0,0,0,1,0,0},
+                {"PNR Rail Fare","PNR_RailSkim.Fare",-0.498423,0,0,0,1,0,0},
+                {"KNR Bus IVTT","KNR_BusSkim.[In-Vehicle Time]",-0.002052,0,0,0,0,1,0},
+                {"KNR Bus Init Wait plus Access","KNR_BusSkim.[Initial Wait Time] + KNR_BusSkim.[Access Drive Time]",-0.015498,0,0,0,0,1,0},
+                {"KNR Bus Fare","KNR_BusSkim.Fare",-0.498423,0,0,0,0,1,0},
+                {"KNR Rail IVTT","KNR_RailSkim.[In-Vehicle Time]",-0.002052,0,0,0,0,0,1},
+                {"KNR Rail Init Wait plus Access","KNR_RailSkim.[Initial Wait Time] + KNR_RailSkim.[Access Drive Time]",-0.015498,0,0,0,0,0,1},
+                {"KNR Rail Fare","KNR_RailSkim.Fare",-0.498423,0,0,0,0,0,1},
+                {"Senior","PersonHH.Age >= 65",0.110876,1,1,1,1,1,1},
+                {"Female","PersonHH.Gender = 2",0.219183,1,1,1,1,1,1},
+                {"Low Income HH","PersonHH.IncomeLevel = 1",0.037969,1,1,1,1,1,1}}
+        }
+
+    Section = "MandatoryTours|Tour Mode|University|Modes"
 	
         Args.UnivModes = {
             "Type":"array",
@@ -1228,7 +1270,10 @@
                 {"Root","Drive, NonMotorized, Transit, Other",null},
                 {"Drive","DriveAlone, Carpool",0.5},
                 {"NonMotorized","Walk, Bike",0.7},
-                {"Transit","PTWalk, PTDrive",0.66}}
+                {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
+                {"PT_Walk", "W_Bus, W_Rail", 0.5},
+                {"PT_PNR", "PNR_Bus, PNR_Rail", 0.5},
+                {"PT_KNR", "KNR_Bus, KNR_Rail", 0.5}}
         }
         Args.UnivModeAvailability = {
             "Type":"array",
@@ -1238,44 +1283,71 @@
                 {"DriveAlone","PersonHH.VehicleAvail = 1"},
                 {"Walk","WalkSkim.Distance <= 1.5"},
                 {"Bike","BikeSkim.Distance <= 10"},
-                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 90"},
-                {"PTDrive","PTDriveSkim.[In-Vehicle Time] <= 90"},
+                {"W_Bus","W_BusSkim.[Total Time] <= 90"},
+                {"PNR_Bus","PNR_BusSkim.[Total Time] <= 90"},
+                {"KNR_Bus","KNR_BusSkim.[Total Time] <= 90"},
+                {"W_Rail","W_RailSkim.[Total Time] <= 90"},
+                {"PNR_Rail","PNR_RailSkim.[Total Time] <= 90"},
+                {"KNR_Rail","KNR_RailSkim.[Total Time] <= 90"},
                 {"Other","PersonHH.VehicleAvail = 0"}}
         }
 	
-	Section = "MandatoryTours|Tour Mode|University|Utility"
+	Section = "MandatoryTours|Tour Mode|University|UtilityAuto"
 	
-        Args.UnivModeUtility = {
+        Args.UnivModeUtilityAuto = {
             "Type":"array",
-            "Caption":"University Mode Utility",
-            "Style":"MandModeUtility",
+            "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",2.5699,1,0,0,0,0,0,0},
-                {"ASC (Carpool)","Constant",2.6821,0,1,0,0,0,0,0},
-                {"ASC (Walk)","Constant",4.5298,0,0,1,0,0,0,0},
-                {"ASC (Bike)","Constant",3.2591,0,0,0,1,0,0,0},
-                {"ASC (PTWalk)","Constant",-2.1653,0,0,0,0,1,0,0},
-                {"ASC (PTDrive)","Constant",-2.1653,0,0,0,0,0,1,0},
-                {"ASC (Other)","Constant",-5.8752,0,0,0,0,0,0,1},
-                {"Intrazonal","Intrazonal.IZ",1.35606,0,0,1,1,0,0,0},
-                {"Distance Walk","WalkSkim.Distance",-0.717263,0,0,1,0,0,0,0},
-                {"Distance Bike","BikeSkim.Distance",-0.244596,0,0,0,1,0,0,0},
-                {"Female","PersonHH.Gender = 2",0.621224,1,1,0,0,0,0,0},
-                {"Age 20 Plus","PersonHH.Age >= 20",0.385404,1,0,0,0,0,0,0},
-                {"Low Income","PersonHH.IncomeLevel = 1",0.534083,0,0,1,1,1,1,0},
-                {"Auto Time","AutoSkim.Time",-0.002254,1,1,0,0,0,0,0},
-                {"PT IVTT (Walk)","PTWalkSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,1,0,0},
-                {"PT IVTT (Drive)","PTDriveSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,0,1,0}}
+                {"ASC (DriveAlone)","Constant",2.5699,1,0,0},
+                {"ASC (Carpool)","Constant",2.6821,0,1,0},
+                {"ASC (Other)","Constant",-5.8752,0,0,1},
+                {"Female","PersonHH.Gender = 2",0.621224,1,1,0},
+                {"Age 20 Plus","PersonHH.Age >= 20",0.385404,1,0,0},
+                {"Auto Time","AutoSkim.Time",-0.002254,1,1,0}}
         }
 	
-	Section = "MandatoryTours|Tour Mode|School|Modes"
+	Section = "MandatoryTours|Tour Mode|University|UtilityNM"
+        
+        Args.UnivModeUtilityNM = {
+            "Type":"array",
+            "Caption":"University Mode Utility",
+            "Style":"MandModeUtilityNM",
+            "Value":{
+                {"ASC (Walk)","Constant",4.5298,1,0},
+                {"ASC (Bike)","Constant",3.2591,0,1},
+                {"Intrazonal","Intrazonal.IZ",1.35606,1,1},
+                {"Distance Walk","WalkSkim.Distance",-0.717263,1,0},
+                {"Distance Bike","BikeSkim.Distance",-0.244596,0,1},
+                {"Low Income","PersonHH.IncomeLevel = 1",0.534083,1,1}}
+        }
+
+    Section = "MandatoryTours|Tour Mode|University|UtilityPT"
+        
+        Args.UnivModeUtilityPT = {
+            "Type":"array",
+            "Caption":"University Mode Utility",
+            "Style":"MandModeUtilityPT",
+            "Value":{
+                {"ASC (PT_Walk)","Constant",-2.1653,1,1,0,0,0,0},
+                {"ASC (PT_PNR)","Constant",-2.1653,0,0,1,1,0,0},
+                {"ASC (PT_KNR)","Constant",-2.1653,0,0,0,0,1,1},
+                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.002254,1,0,0,0,0,0},
+                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.002254,0,1,0,0,0,0},
+                {"PNR Bus IVTT","PNR_BusSkim.[In-Vehicle Time]",-0.002254,0,0,1,0,0,0},
+                {"PNR Rail IVTT","PNR_RailSkim.[In-Vehicle Time]",-0.002254,0,0,0,1,0,0},
+                {"KNR Bus IVTT","KNR_BusSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,1,0},
+                {"KNR Rail IVTT","KNR_RailSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,0,1},
+                {"Low Income","PersonHH.IncomeLevel = 1",0.534083,1,1,1,1,1,1}}
+        }
+
+    Section = "MandatoryTours|Tour Mode|School|Modes"
 	
         Args.SchoolModes = {
             "Type":"array",
             "Caption":"School Modes",
             "Style":"Nesting Structure",
             "Value":{
-                {"Root","Drive, NonMotorized, PTWalk, SchoolBus",null},
+                {"Root","Drive, NonMotorized, W_Bus, SchoolBus",null},
                 {"Drive","DriveAlone, Carpool",0.594793},
                 {"NonMotorized","Walk, Bike",0.27862}}
         }
@@ -1288,7 +1360,7 @@
                 {"Carpool","PersonHH.DropoffPersonID <> null"},
                 {"Walk","WalkSkim.Distance <= 1.5"},
                 {"Bike","BikeSkim.Distance <= 4"},
-                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 30"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
         Args.SchModeRAvailability = {
             "Type":"array",
@@ -1299,7 +1371,7 @@
                 {"Carpool","PersonHH.PickupPersonID <> null"},
                 {"Walk","WalkSkim.Distance <= 1.5"},
                 {"Bike","PersonHH.PersonID < 0"},
-                {"PTWalk","PTWalkSkim.[In-Vehicle Time] <= 30"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|School|Utility"
@@ -1313,7 +1385,7 @@
                 {"ASC (Carpool)","Constant",2.7729,0,1,0,0,0,0},
                 {"ASC (Walk)","Constant",9.744,0,0,1,0,0,0},
                 {"ASC (Bike)","Constant",2.5115,0,0,0,1,0,0},
-                {"ASC (PTWalk)","Constant",-4.3583,0,0,0,0,1,0},
+                {"ASC (W_Bus)","Constant",-4.3583,0,0,0,0,1,0},
                 {"ASC (SchoolBus)","Constant",-3.4847,0,0,0,0,0,1},
                 {"Walk Distance","WalkSkim.Distance",-0.438848,0,0,1,0,0,0},
                 {"Bike Distance","BikeSkim.Distance",-0.438848,0,0,0,1,0,0},
@@ -1321,7 +1393,7 @@
                 {"Middle Sch Age","PersonHH.Age = 13 or PersonHH.Age = 14",0.898527,0,0,0,0,0,1},
                 {"Age 17 or 18","PersonHH.Age = 17 or PersonHH.Age = 18",2.19926,1,0,0,0,0,0},
                 {"Auto Time","AutoSkim.Time",-0.007018,1,1,0,0,0,0},
-                {"Bus IVTT","PTWalkSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
+                {"Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
         }
         Args.SchModeRUtility = {
             "Type":"array",
@@ -1332,7 +1404,7 @@
                 {"ASC (Carpool)","Constant",2.7729,0,1,0,0,0,0},
                 {"ASC (Walk)","Constant",9.744,0,0,1,0,0,0},
                 {"ASC (Bike)","Constant",2.5115,0,0,0,1,0,0},
-                {"ASC (PTWalk)","Constant",-4.3583,0,0,0,0,1,0},
+                {"ASC (W_Bus)","Constant",-4.3583,0,0,0,0,1,0},
                 {"ASC (SchoolBus)","Constant",-3.4847,0,0,0,0,0,1},
                 {"Walk Distance","WalkSkim.Distance",-0.438848,0,0,1,0,0,0},
                 {"Bike Distance","BikeSkim.Distance",-0.438848,0,0,0,1,0,0},
@@ -1340,7 +1412,7 @@
                 {"Middle Sch Age","PersonHH.Age = 13 or PersonHH.Age = 14",0.898527,0,0,0,0,0,1},
                 {"Age 17 or 18","PersonHH.Age = 17 or PersonHH.Age = 18",2.19926,1,0,0,0,0,0},
                 {"Auto Time","AutoSkim.Time",-0.007018,1,1,0,0,0,0},
-                {"Bus IVTT","PTWalkSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
+                {"Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
         }
 	
 	Section = "MandatoryStops|Frequency|Work Tours"
@@ -1370,8 +1442,8 @@
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.4447,null,1,null,null},
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.914,null,null,null,1},
                 {"Non Auto Work Mode","TourData.ForwardModeCode > 2 and TourData.ReturnModeCode > 2",0.5536,1,null,null,null},
-                {"PT Work Mode Forward","TourData.ForwardModeCode = 5 or TourData.ForwardModeCode = 6",-99,0,1,0,1},
-                {"PT Work Mode Return","TourData.ReturnModeCode = 5 or TourData.ReturnModeCode = 6",-99,0,0,1,1}}
+                {"PT Work Mode Forward","TourData.ForwardModeCode > 20 and TourData.ForwardModeCode < 50",-99,0,1,0,1},
+                {"PT Work Mode Return","TourData.ReturnModeCode > 20 and TourData.ReturnModeCode < 50",-99,0,0,1,1}}
         }
         Args.StopBeforeDropoffsProb = {
             "Type":"double",
@@ -1411,8 +1483,8 @@
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.4447,null,1,null,null},
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.914,null,null,null,1},
                 {"Non Auto Work Mode","TourData.ForwardModeCode > 2 and TourData.ReturnModeCode > 2",0.5536,1,null,null,null},
-                {"PT Work Mode Forward","TourData.ForwardModeCode = 5 or TourData.ForwardModeCode = 6",-99,0,1,0,1},
-                {"PT Work Mode Return","TourData.ReturnModeCode = 5 or TourData.ReturnModeCode = 6",-99,0,0,1,1}}
+                {"PT Work Mode Forward","TourData.ForwardModeCode > 20 and TourData.ForwardModeCode < 50",-99,0,1,0,1},
+                {"PT Work Mode Return","TourData.ReturnModeCode > 20 and TourData.ReturnModeCode < 50",-99,0,0,1,1}}
         }
 	
 	Section = "MandatoryStops|Destination|Size Variable"
@@ -1842,7 +1914,7 @@
                 {"ASC (Auto)","Constant",2.058,1,0,0,0},
                 {"ASC (Walk)","Constant",0.6198,0,1,0,0},
                 {"ASC (Bike)","Constant",-0.9233,0,0,1,0},
-                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.2564,0,0,0,1},
+                {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.2564,0,0,0,1},
                 {"IntraTAZ Tour","Intrazonal.IZ",2.344,0,1,0,0},
                 {"Walk Skim Length","WalkSkim.Distance",-0.6549,0,1,0,0},
                 {"Bike Skim Length","BikeSkim.Distance",-1.614,0,0,1,0}}
@@ -2051,9 +2123,9 @@
             "Value":{
                 {"ASC (Auto)","Constant",4.09962,1,0,0,0,0},
                 {"ASC (Walk)","Constant",3.49733,0,1,0,0,0},
-                {"ASC (PTWalk)","Constant",2.28673,0,0,0,1,0},
+                {"ASC (W_Bus)","Constant",2.28673,0,0,0,1,0},
                 {"ASC (Other)","Constant",-1.69427,0,0,0,0,1},
-                {"IVTT PTWalk","PTSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0},
+                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0},
                 {"IntraTAZ Tour","HH.TAZID = HH.Joint_<purp>_Destination",2.774,0,1,0,0,0},
                 {"Auto Distance > 5 miles","AutoSkim.Distance > 5",2.148,1,0,0,0,0},
                 {"HH Income Mid","HH.IncomeLevel = 2",-0.8002,1,0,0,0,0},
@@ -2070,7 +2142,7 @@
             "Value":{
                 {"Walk","WalkSkim.Distance <= 2"},
                 {"Bike","BikeSkim.Distance <= 5"},
-                {"PTWalk","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
         }
 	
 	Section = "JointTours|Mode|Shop"
@@ -2291,7 +2363,7 @@
                 {"ASC (Bike)","Constant",3.67,0,0,0,1,0},
                 {"Auto Time","AutoSkim.Time",-0.3,1,1,0,0,0},
                 {"Auto Distance > 5 miles","AutoSkim.Distance > 5",0.2309,1,0,0,0,0},
-                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.2766,0,0,0,0,1},
+                {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.2766,0,0,0,0,1},
                 {"IntraTAZ Tour (Walk)","Intrazonal.IZ",1.733,0,0,1,0,0},
                 {"IntraTAZ Tour (Bike)","Intrazonal.IZ",0.5816,0,0,0,1,0},
                 {"Walk Skim Length","WalkSkim.Distance",-1.394,0,0,1,0,0},
@@ -2379,7 +2451,7 @@
                 {"ASC (Walk)","Constant",4.036,0,0,1,0,0},
                 {"ASC (Bike)","Constant",2.012,0,0,0,1,0},
                 {"Auto Time","AutoSkim.Time",-0.16178,1,1,0,0,0},
-                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.05554,0,0,0,0,1},
+                {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.05554,0,0,0,0,1},
                 {"IntraTAZ Tour","Intrazonal.IZ",1.838,0,0,1,0,0},
                 {"Walk Length","WalkSkim.Distance",-1.867,0,0,1,0,0},
                 {"Bike Length","BikeSkim.Distance",-1.139,0,0,0,1,0}}
@@ -2593,7 +2665,7 @@
                 {"ASC (Driver)","Constant",1.55479,1,0,0,0,0,0},
                 {"ASC (Passenger)","Constant",-1.79882,0,1,0,0,0,0},
                 {"ASC (Walk)","Constant",2.66567,0,0,1,0,0,0},
-                {"ASC (PTWalk)","Constant",-2.59261,0,0,0,0,1,0},
+                {"ASC (W_Bus)","Constant",-2.59261,0,0,0,0,1,0},
                 {"ASC (Other)","Constant",-1.44258,0,0,0,0,0,1},
                 {"HHVehicles >= 2","PersonHH.Vehicles >= 2",0.495923,1,0,0,0,0,0},
                 {"HHVehicles >= 3 (Driver)","PersonHH.Vehicles >= 3",0.471255,1,0,0,0,0,0},
@@ -2617,7 +2689,7 @@
                 {"ActivityDuration (0-60) min","PersonHH.Solo_Other<tourno>_Duration > 0 and PersonHH.Solo_Other<tourno>_Duration < 60",0.319788,0,0,1,0,0,0},
                 {"ActivityDuration (2- 3) hrs","(PersonHH.Solo_Other<tourno>_Duration > 120) and (PersonHH.Solo_Other<tourno>_Duration < 180)",1.34574,0,1,0,0,0,0},
                 {"ActivityDuration > 3 hrs","PersonHH.Solo_Other<tourno>_Duration > 180",1.05107,0,1,0,0,0,0},
-                {"IVTT Transit","PTSkim.[In-Vehicle Time]",-0.008984,0,0,0,0,1,0}}
+                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.008984,0,0,0,0,1,0}}
         }
         Args.SoloTourModeOtherAvail = {
             "Type":"array",
@@ -2626,7 +2698,7 @@
             "Value":{
                 {"Walk","WalkSkim.Distance <= 2"},
                 {"Bike","BikeSkim.Distance <= 5"},
-                {"PTWalk","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
         }
 	
 	Section = "SoloTours|Mode|Shop"
@@ -2639,7 +2711,7 @@
                 {"ASC (Driver)","Constant",1.00082,1,0,0,0,0,0},
                 {"ASC (Passenger)","Constant",-0.984994,0,1,0,0,0,0},
                 {"ASC (Walk)","Constant",1.50896,0,0,1,0,0,0},
-                {"ASC (PTWalk)","Constant",-2.00026,0,0,0,0,1,0},
+                {"ASC (W_Bus)","Constant",-2.00026,0,0,0,0,1,0},
                 {"ASC (Other)","Constant",-2.70515,0,0,0,0,0,1},
                 {"HHVehicles >= 2 (Driver)","PersonHH.Vehicles >= 2",1.14661,1,0,0,0,0,0},
                 {"HHVehicles >= 2 (Passenger)","PersonHH.Vehicles >= 2",-0.815669,0,1,0,0,0,0},
@@ -2656,7 +2728,7 @@
                 {"Walk Distance if greater than 0.75 mile","(WalkSkim.Distance > 0.75) * WalkSkim.Distance",-0.385005,0,0,1,0,0,0},
                 {"OD same TAZ","PersonHH.TAZID = PersonHH.Solo_Shop<tourno>_Destination",1.5251,0,0,1,0,0,0},
                 {"ActivityDuration (0-30) min","PersonHH.Solo_Shop<tourno>_Duration > 0 and PersonHH.Solo_Shop<tourno>_Duration < 30",0.737733,0,0,1,0,0,0},
-                {"IVT Transit","PTSkim.[In-Vehicle Time]",-0.003704,0,0,0,0,1,0}}
+                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.003704,0,0,0,0,1,0}}
         }
         Args.SoloTourModeShopAvail = {
             "Type":"array",
@@ -2665,7 +2737,7 @@
             "Value":{
                 {"Walk","WalkSkim.Distance <= 1.5"},
                 {"Bike","BikeSkim.Distance <= 5"},
-                {"PTWalk","PTSkim.[In-Vehicle Time] <= 60 and PTSkim.[Total Time] <= 90"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
         }
 	
     Section = "SoloTourStops|Frequency|Other"

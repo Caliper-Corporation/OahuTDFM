@@ -8,11 +8,25 @@ endmacro
 /*
 
 */
-
-macro "GenerateTransitOD" (Args)
+Macro "GenerateTransitOD" (Args)
     ret_value = 1
     periods = {"AM", "PM", "OP"}
-    cores = {"AMWalkTransitTrips", "AMDriveTransitTrips", "PMWalkTransitTrips", "PMDriveTransitTrips", "OPWalkTransitTrips", "OPDriveTransitTrips", "DAYWalkTransitTrips", "DAYDriveTransitTrips", "DAYAllTransitTrips"}
+    accessModes = {"w", "pnr", "knr"}
+    transit_modes = RunMacro("Get Transit Net Def Col Names", Args.TransitModeTable)
+    transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
+    
+    // Create output cores
+    cores = null
+    for access in accessModes do
+        for mode in transit_modes do
+            for per in periods do
+                core = per + "_" + access + "_" + mode + "_Trips"   // e.g. AM_pnr_bus_Trips
+                cores = cores + {core}
+            end
+            cores = cores + {"DAY_" + access + "_" + mode + "_Trips"}    // e.g. DAY_pnr_bus_Trips
+        end
+    end
+    
     transitod = Args.Transit_OD
     for i = 1 to periods.length do
         per = periods[i]
@@ -21,18 +35,19 @@ macro "GenerateTransitOD" (Args)
         mODT.SetRowIndex("Rows")
         mODT.SetColIndex("Columns")
         if i = 1 then do
-           o = CreateObject("Matrix")
-            mOut = o.CloneMatrixStructure({MatrixLabel: "TransitTrips", CloneSource: mODT.ptwalk, MatrixFile: transitod, Matrices: cores })
+            o = CreateObject("Matrix")
+            mOut = o.CloneMatrixStructure({MatrixLabel: "TransitTrips", CloneSource: mODT.w_bus, MatrixFile: transitod, Matrices: cores })
             mo = CreateObject("Matrix", mOut)
-            mo.DAYWalkTransitTrips := 0
-            mo.DAYDriveTransitTrips := 0
-            mo.DAYAllTransitTrips := 0
         end
-        mo.(per + "WalkTransitTrips") := mODT.ptwalk
-        mo.(per + "DriveTransitTrips") := mODT.ptdrive
-        mo.DAYWalkTransitTrips := mo.DAYWalkTransitTrips + nz(mODT.ptwalk)
-        mo.DAYDriveTransitTrips := mo.DAYDriveTransitTrips + nz(mODT.ptdrive)
-        mo.DAYAllTransitTrips := mo.DAYAllTransitTrips + nz(mODT.ptdrive) + nz(mODT.ptwalk)
+
+        for access in accessModes do
+            for mode in transit_modes do
+                acc_mode = access + "_" + mode
+                mc = mODT.(acc_mode)
+                mo.(per + "_" + acc_mode + "_Trips") := mc
+                mo.("DAY_" + acc_mode + "_Trips") := nz(mo.("DAY_" + acc_mode + "_Trips")) + nz(mc)
+            end
+        end
     end
     quit:
     Return(ret_value)
@@ -41,7 +56,6 @@ endmacro
 /*
 
 */
-
 macro "PTAssign" (Args)
     ret_value = 1
     LineDB = Args.HighwayDatabase
@@ -49,17 +63,12 @@ macro "PTAssign" (Args)
     net_dir = Args.[Output Folder] + "/skims/transit"
     assn_dir = Args.[Output Folder] + "/Assignment/Transit"
     RunMacro("Create Directory", assn_dir)
-    access_modes = Args.AccessModes
-    periods = {"AM", "PM", "OP"}
-    modeTable = Args.TransitModeTable
 
-    // Get the main transit modes from the mode table. Exclude the all-transit
-    // network from assignment.
-    transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
+    // Get the main transit modes from the mode table. Exclude the all-transit network from assignment.
+    transit_modes = RunMacro("Get Transit Net Def Col Names", Args.TransitModeTable)
     transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
-
-    // TODO: remove this line to assign pnr after creating separate matrix cores
-    access_modes = {"w", "knr"}
+    access_modes = {"w", "pnr", "knr"}
+    periods = {"AM", "PM", "OP"}
 
     for period in periods do
         for access in access_modes do
@@ -74,11 +83,7 @@ macro "PTAssign" (Args)
                 obj.OnOffTable = assn_dir + "/" + access + "_" + transit_mode + "_" + period + "_onoff.bin"
                 obj.TransitLinkFlowsTable = assn_dir + "/" + access + "_" + transit_mode + "_" + period + "_agg.bin"
                 class_name = period + "-" + access + "-" + transit_mode
-                // TODO: update this once OD cores are updated
-                access2 = if access = "w"
-                    then "Walk"
-                    else "Drive"
-                mopts = {MatrixFile: Args.Transit_OD, Matrix: period + access2 + "TransitTrips"}
+                mopts = {MatrixFile: Args.Transit_OD, Matrix: period + "_" + access + "_" + transit_mode + "_Trips"}
                 obj.AddDemandMatrix({Class: class_name, Matrix: mopts})
                 ok = obj.Run()
                 results = obj.GetResults()
