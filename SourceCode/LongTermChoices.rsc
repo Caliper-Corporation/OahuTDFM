@@ -288,6 +288,7 @@ Macro "Work Location"(Args)
         opt.NewOutputField = size_field
         opt.ExponentiateCoeffs = 1
         RunMacro("Compute Size Variable", opt)
+        opt = null
         // if doing service employment, must add in hotel employment
         if Lower(description) = "service" then do
             se.(size_field) = se.(size_field) + (exp(size_coef) * se.Emp_Hotel)
@@ -372,6 +373,7 @@ Macro "Univ Location"(Args)
     opt.NewOutputField = size_field
     opt.ExponentiateCoeffs = 1
     RunMacro("Compute Size Variable", opt)
+    opt = null
 
     ShadowPricesTable = Args.UnivDCShadowPrices
     spFlag = !GetFileInfo(ShadowPricesTable) or Args.UnivSPFlag
@@ -480,6 +482,7 @@ Macro "School Location"(Args)
     opt.NewOutputField = size_field
     opt.ExponentiateCoeffs = 1
     RunMacro("Compute Size Variable", opt)
+    opt = null
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.SchoolDCShadowPrices
