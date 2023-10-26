@@ -225,6 +225,7 @@ id_tours <- split_k12_univ %>%
       "Work" %in% WHYTO ~ "Work",
       "Univ" %in% WHYTO ~ "Univ",
       "K12" %in% WHYTO ~ "K12",
+      "Shopping" %in% WHYTO ~ "Shop",
       TRUE ~ "Other"
     ),
     tour_id = paste(HOUSEID, PERSONID, tour_num, sep = "_")
@@ -338,6 +339,12 @@ tour_file <- id_tour_mode %>%
     primary_mode = first(primary_mode),
     access_mode = first(access_mode),
     secondary_mode = first(secondary_mode)
+  ) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
   )
 ```
 
@@ -386,11 +393,231 @@ per_add_tour_counts <- per_wrk_stat %>%
   mutate(across(Other_tours:Univ_tours, ~replace_na(.x, 0)))
 ```
 
+## Calibration Target Creation
+
+```{r}
+# Auto ownership
+auto_own <- hh_add_tours %>%
+  mutate(HHVEHCNT = ifelse(HHVEHCNT > 4, 4, HHVEHCNT)) %>%
+  group_by(HHVEHCNT) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  rename(Alternative = HHVEHCNT) %>%
+  select(-weight)
+
+# driver's license
+drivers <- per_add_tour_counts %>%
+  filter(R_AGE >= 17) %>%
+  group_by(DRIVER) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  rename(Alternative = DRIVER) %>%
+  select(-weight)
+
+# Daycare status
+daycare <- per_add_tour_counts %>%
+  filter(R_AGE <= 5 & SCHOOL1 != "unknown") %>%
+  group_by(SCHOOL1) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  rename(Alternative = SCHOOL1) %>%
+  select(-weight)
+
+# University status
+university <- per_add_tour_counts %>%
+  filter(R_AGE >= 18 & SCHOOL1 != "unknown") %>%
+  group_by(SCHOOL1) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  rename(Alternative = SCHOOL1) %>%
+  select(-weight)
+
+# Full/Part time
+worker_cat <- per_add_tour_counts %>%
+  filter(WORKER %in% c("FullTime", "PartTime")) %>%
+  group_by(WORKER) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  rename(Alternative = WORKER) %>%
+  select(-weight)
+
+# Remote work %
+remote_work <- per_add_tour_counts %>%
+  # mutate(remote_worker = ifelse(WKFMHM22 > 1, 1, 0)) %>%
+  mutate(remote_worker = case_when(
+    WKFMHM22 == 2 ~ 1.5/5, # reported 1-2 days a week
+    WKFMHM22 == 3 ~ 3.5/5, # reported 3-4 days a week
+    WKFMHM22 == 4 ~ 5/5,   # reported 5 days a week
+    TRUE ~ 0
+  )) %>%
+  group_by(OATYP_JOB1, remote_worker) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  rename(Alternative = OATYP_JOB1) %>%
+  filter(remote_worker == 1, Alternative != "skip") %>%
+  select(-weight, -remote_worker)
+
+# Days worked per week not provided. Field "EMPLOYMENT2" gives hours
+# worked per week, but that can't be translated into days. (e.g. 4 10s vs 5 8s)
+
+# mandatory tour frequency
+tour_frequency <- tour_file %>%
+  group_by(HOUSEID, PERSONID, tour_type) %>%
+  summarize(
+    count = n(), 
+    weight = sum(weight, na.rm = TRUE)
+  ) %>%
+  mutate(count = ifelse(count > 2, 2, count)) %>%
+  group_by(tour_type, count) %>%
+  summarize(weight = sum(weight)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  rename(Alternative = count)
+
+# mandatory tour mode shares
+mode_choice <- tour_file %>%
+  # Add worker status
+  left_join(
+    per_add_tour_counts %>%
+      select(HOUSEID, PERSONID, WORKER),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  mutate(
+    tour_type = case_when(
+      tour_type != "Work" ~ tour_type,
+      WORKER == "FullTime" ~ "Work (FT)",
+      TRUE ~ "Work (PT)"
+    ),
+    primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "hov", primary_mode)
+  ) %>%
+  group_by(tour_type, primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(desc(`Work (FT)`)) %>%
+  relocate(`Work (FT)`:`Work (PT)`, .after = primary_mode) %>%
+  relocate(Other, .after = Univ)
+
+# Mandatory time of day
+tod <- tour_file %>%
+  # Add worker status
+  left_join(
+    per_add_tour_counts %>%
+      select(HOUSEID, PERSONID, WORKER),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  mutate(
+    tour_type = case_when(
+      tour_type != "Work" ~ tour_type,
+      WORKER == "FullTime" ~ "Work (FT)",
+      TRUE ~ "Work (PT)"
+    ),
+    hour = anchor_time %/% 100
+  ) %>%
+  group_by(tour_type, hour) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(hour) %>%
+  rename(Alternative = hour)
+
+# Mandatory activity duration
+activity_duration <- tour_file %>%
+  # Add worker status
+  left_join(
+    per_add_tour_counts %>%
+      select(HOUSEID, PERSONID, WORKER),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  mutate(
+    tour_type = case_when(
+      tour_type != "Work" ~ tour_type,
+      WORKER == "FullTime" ~ "Work (FT)",
+      TRUE ~ "Work (PT)"
+    ),
+    anchor_dwell = anchor_dwell %/% 60
+  ) %>%
+  filter(anchor_dwell >= 0) %>%
+  group_by(tour_type, anchor_dwell) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(anchor_dwell) %>%
+  rename(Alternative = anchor_dwell)
+
+# Intermediate stop frequency
+intermediate_freq <- tour_file %>%
+  mutate(
+    int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
+    int_stop_ret = ifelse(int_stop_ret > 1, 1, int_stop_ret),
+    Alternative = paste0(int_stop_fwd, "_", int_stop_ret)
+  ) %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct)
+
+# Intermediate stop duration
+int_stop_duration <- id_tour_mode %>%
+  filter(int_stop == 1, DWELTIME <= 180) %>%
+  mutate(Alternative = case_when(
+    DWELTIME <= 15 ~ "0 to 15",
+    DWELTIME <= 30 ~ "15 to 30",
+    DWELTIME <= 45 ~ "30 to 45",
+    DWELTIME <= 60 ~ "45 to 60",
+    DWELTIME <= 75 ~ "60 to 75",
+    DWELTIME <= 90 ~ "75 to 90",
+    DWELTIME <= 105 ~ "90 to 105",
+    DWELTIME <= 120 ~ "105 to 120",
+    TRUE ~ "120 to 180"
+  )) %>%
+  # add this just to make sorting the table easier
+  mutate(ID = case_when(
+    DWELTIME <= 15 ~ 1,
+    DWELTIME <= 30 ~ 2,
+    DWELTIME <= 45 ~ 3,
+    DWELTIME <= 60 ~ 4,
+    DWELTIME <= 75 ~ 5,
+    DWELTIME <= 90 ~ 6,
+    DWELTIME <= 105 ~ 7,
+    DWELTIME <= 120 ~ 8,
+    TRUE ~ 9
+  )) %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+```
+
+
 ```{r, eval=FALSE}
 # Outputs
 write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv", na = "")
 write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv", na = "")
 write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv", na = "")
 write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv", na = "")
+
+# calibration targets
+write_csv(auto_own, "data/_private/hh_survey/output/calibration_targets/auto_ownership.csv", na = "")
+write_csv(drivers, "data/_private/hh_survey/output/calibration_targets/drivers.csv", na = "")
+write_csv(daycare, "data/_private/hh_survey/output/calibration_targets/daycare.csv", na = "")
+write_csv(university, "data/_private/hh_survey/output/calibration_targets/university.csv", na = "")
+write_csv(worker_cat, "data/_private/hh_survey/output/calibration_targets/worker_cat.csv", na = "")
+write_csv(remote_work, "data/_private/hh_survey/output/calibration_targets/remote_work.csv", na = "")
+write_csv(remote_work, "data/_private/hh_survey/output/calibration_targets/remote_work.csv", na = "")
+write_csv(tour_frequency, "data/_private/hh_survey/output/calibration_targets/tour_frequency.csv", na = "")
+write_csv(mode_choice, "data/_private/hh_survey/output/calibration_targets/mode_choice.csv", na = "")
+write_csv(tod, "data/_private/hh_survey/output/calibration_targets/time_of_day.csv", na = "")
+write_csv(activity_duration, "data/_private/hh_survey/output/calibration_targets/activity_duration.csv", na = "")
+write_csv(intermediate_freq, "data/_private/hh_survey/output/calibration_targets/intermediate_freq.csv", na = "")
+write_csv(int_stop_duration, "data/_private/hh_survey/output/calibration_targets/int_stop_duration.csv", na = "")
 ```
 

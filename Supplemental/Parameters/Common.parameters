@@ -732,33 +732,37 @@
         Args.WorkLocSize = {
             "Type":"array",
             "Caption":"Size Variable and Attractions Fields",
-            "Style":"SizeVar",
+            "Style":"SizeVar2",
             "Value":{
-                {1,"Agriculture","Emp_Agriculture"},
-                {2,"Manufacturing and Mining","Emp_Manufacturing"},
-                {3,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction"},
-                {4,"Wholesale","Emp_Wholesale"},
-                {5,"Retail","Emp_Retail"},
-                {6,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate"},
-                {7,"Education","Emp_Education"},
-                {8,"Health Care","Emp_HealthCare"},
-                {9,"Service","Emp_Services"},
-                {10,"Public Administration","Emp_Public"}}
+                {1,"Agriculture","Emp_Agriculture", 5.4227},
+                {2,"Manufacturing and Mining","Emp_Manufacturing", 5.4227},
+                {3,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction", 5.4227},
+                {4,"Wholesale","Emp_Wholesale", 4.7767},
+                {5,"Retail","Emp_Retail", 3.8709},
+                {6,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate", 3.325},
+                {7,"Education","Emp_Education", 6.2443},
+                {8,"Health Care","Emp_HealthCare", 4.8991},
+                {9,"Service","Emp_Services", 5.4099},
+                {10,"Public Administration","Emp_Public", 5.181},
+                {11,"Military","Emp_Military", 5.4726}
+                }
         }
         Args.WorkLocUtility = {
             "Type":"array",
-            "Caption":"Work Location Utility: IndCode ranges from '1' to '10'",
+            "Caption":"Work Location Utility: IndCode ranges from '1' to '11'",
             "Style":"DestUtilityWithFilter",
             "Value":{
-                {"Highway Time","AutoSkim.Time",null,-0.02154},
-                {"Excess highway time over 30 min","(AutoSkim.Time - 30)","AutoSkim.Time > 30",0.001368},
-                {"Excess highway time over 60 min","(AutoSkim.Time - 60)","AutoSkim.Time > 60",0.1072},
-                {"Distance > 10 miles","AutoSkim.Distance > 10",null,-0.2658},
-                {"Intrazonal destination","Intrazonal.IZ",null,2.99},
-                {"Number local destinations","TAZ4Ds.NumLocalIntersections.D/1000",null,0.8145},
-                {"Non Motorized mode logsums (Dist > 2 mi)","ModeAccessibility.NM","AutoSkim.Distance > 2",0.07368},
-                {"Shadow Prices","WorkDCShadowPrices.Industry<IndCode>.D",null,1},
-                {"Work zone within 20 min for univ dorm resident","AutoSkim.Time > 20","PersonHH.UnivGQStudent = 1",-99}}
+                
+                {"Highway Time","AutoSkim.Time",null,-0.025},
+                {"Excess highway time over 60 min","(AutoSkim.Time - 60)","AutoSkim.Time > 60",0.001368},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",null,0.3112},
+                {"Distance for females","AutoSkim.Distance","PersonHH.gender = 2",-0.0298},
+                {"Distance for <30 year olds","AutoSkim.Distance","PersonHH.Age < 30",-0.0352},
+                {"Intrazonal destination","Intrazonal.IZ",null,2.3823},
+                {"MC logsums","ModeAccessibility.Auto",null,0.4618},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,27.34},
+                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",null,.1998},
+                {"Shadow Prices","WorkDCShadowPrices.Industry<IndCode>.D",null,1}}
         }
         Args.WorkDCShadowPrices = {
             "Type":"File",
@@ -775,12 +779,25 @@
 	
 	Section = "Long Term Choices|Location Models|University"
 	
+        Args.UnivLocSize = {
+            "Type":"array",
+            "Caption":"Size Variable for School Location Destination",
+            "Description":"StopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"UnivEnrollment",6.7586},
+                {"OtherEnrollment",4.8565}
+        }}
+
         Args.UnivLocUtility = {
             "Type":"array",
             "Caption":"University Location Utility",
             "Style":"DestUtility",
             "Value":{
-                {"Highway Time","AutoSkim.Time",-0.058127},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",-0.8874},
+                {"Highway Time","AutoSkim.Time",-0.0917},
+                {"Excess highway time over 30 min","(AutoSkim.Time - 30)*(AutoSkim.Time > 30)",0.0486},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",34.91},
                 {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1}}
         }
         Args.UnivDCShadowPrices = {
@@ -798,16 +815,27 @@
 	
 	Section = "Long Term Choices|Location Models|School"
 	
+        Args.SchoolLocSize = {
+            "Type":"array",
+            "Caption":"Size Variable for School Location Destination",
+            "Description":"StopSizeVar",
+            "Style":"SizeVarUtility",
+            "Value":{
+                {"Emp_Education",4.2965},
+                {"K12Enrollment",5.7177}
+        }}
+
         Args.SchoolLocUtility = {
             "Type":"array",
             "Caption":"School Location Utility: Type is one of 'Elementary', 'Middle' or 'HighSchool'",
             "Style":"DestUtility",
             "Value":{
-                {"Highway Time","AutoSkim.Time",-0.172015},
-                {"Intrazonal","Intrazonal.IZ = 1",0.461716},
-                {"Distance between 1 and 2 miles","AutoSkim.Distance > 1 and AutoSkim.Distance <= 2",-0.643064},
-                {"Distance between 2 and 5 miles","AutoSkim.Distance > 2 and AutoSkim.Distance <= 5",-0.807949},
-                {"Distance between 5 and 20 miles","AutoSkim.Distance > 5 and AutoSkim.Distance <= 20",-0.964687},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",0.4678},
+                {"Highway Time","AutoSkim.Time",-0.0178},
+                {"Intrazonal","Intrazonal.IZ = 1",-0.6326},
+                {"MC logsums","ModeAccessibility.Auto",3.5019},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",4.405},
+                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",0.0022},
                 {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
         }
         Args.SchoolDCShadowPrices = {
