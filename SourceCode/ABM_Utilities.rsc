@@ -226,7 +226,6 @@ Macro "Compute Size Variable"(opt)
             vOut = vOut + nz(vecs[i])*coeff
     end
     SetDataVector(vw + "|", outFld, vOut,)
-    obj = null
 endMacro
 
 

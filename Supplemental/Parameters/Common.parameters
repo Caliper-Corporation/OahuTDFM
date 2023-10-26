@@ -794,10 +794,10 @@
             "Caption":"University Location Utility",
             "Style":"DestUtility",
             "Value":{
-                {"Distance < 2 miles","AutoSkim.Distance < 2",null,-0.8874},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",-0.8874},
                 {"Highway Time","AutoSkim.Time",-0.0917},
-                {"Excess highway time over 30 min","(AutoSkim.Time - 30)","AutoSkim.Time > 30",0.0486},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,34.91},
+                {"Excess highway time over 30 min","(AutoSkim.Time - 30)*(AutoSkim.Time > 30)",0.0486},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",34.91},
                 {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1}}
         }
         Args.UnivDCShadowPrices = {
@@ -830,12 +830,12 @@
             "Caption":"School Location Utility: Type is one of 'Elementary', 'Middle' or 'HighSchool'",
             "Style":"DestUtility",
             "Value":{
-                {"Distance < 2 miles","AutoSkim.Distance < 2",null,0.4678},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",0.4678},
                 {"Highway Time","AutoSkim.Time",-0.0178},
                 {"Intrazonal","Intrazonal.IZ = 1",-0.6326},
-                {"MC logsums","ModeAccessibility.Auto",null,3.5019},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,4.405},
-                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",null,.0022},
+                {"MC logsums","ModeAccessibility.Auto",3.5019},
+                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",4.405},
+                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",0.0022},
                 {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
         }
         Args.SchoolDCShadowPrices = {
