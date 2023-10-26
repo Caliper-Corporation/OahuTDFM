@@ -787,10 +787,10 @@ Macro "Calibrate Mandatory MC"(Args, mSpec)
     mSpec.abmManager = abm
 
     periods = null
-    periods.AM.StartTime = 420 // 7 AM
+    periods.AM.StartTime = 360 // 6 AM
     periods.AM.EndTime = 540   // 9 AM
-    periods.PM.StartTime = 960 // 4 PM
-    periods.PM.EndTime = 1080  // 6 PM
+    periods.PM.StartTime = 900 // 3 PM
+    periods.PM.EndTime = 1140  // 7 PM
     Args.TimePeriods = periods
 
     // First run the mandatory model until the required point
@@ -829,10 +829,10 @@ Macro "Calibrate NonMandatory MC"(Args, mSpec)
     mSpec.abmManager = abm
 
     periods = null
-    periods.AM.StartTime = 420 // 7 AM
+    periods.AM.StartTime = 360 // 6 AM
     periods.AM.EndTime = 540   // 9 AM
-    periods.PM.StartTime = 960 // 4 PM
-    periods.PM.EndTime = 1080  // 6 PM
+    periods.PM.StartTime = 900 // 3 PM
+    periods.PM.EndTime = 1140  // 7 PM
     Args.TimePeriods = periods
 
     // Evaluate mode choice first to get all the model specs
@@ -866,7 +866,7 @@ endMacro
     E. Update ASCs of all three models
 */ 
 Macro "Calibrate MC ASCs"(Args, mSpec, calibrationFile)
-    periods = Args.Periods
+    periods = {"AM", "PM", "OP"}
     type = mSpec.Type
     category = mSpec.Category
     dir = mSpec.Direction
@@ -968,7 +968,7 @@ endMacro
     Loop over periods, run the mandatory MC models and return an option array of output probability files.  
 */ 
 Macro "Evaluate MC Models"(Args, mSpec, outputModels)
-    periods = Args.Periods
+    periods = {"AM", "PM", "OP"}
     type = mSpec.Type
     category = mSpec.Category
     dir = mSpec.Direction

@@ -1367,16 +1367,16 @@
             "Caption":"School Mode Availability (Return)",
             "Style":"Availability",
             "Value":{
-                {"DriveAlone","PersonHH.PersonID < 0"},
+                {"DriveAlone","PersonHH.SchoolForwardModeCode = 1"},
                 {"Carpool","PersonHH.PickupPersonID <> null"},
                 {"Walk","WalkSkim.Distance <= 1.5"},
-                {"Bike","PersonHH.PersonID < 0"},
+                {"Bike","PersonHH.SchoolForwardModeCode = 4"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|School|Utility"
 	
-        Args.SchModeFUtility = {
+        Args.SchoolModeFUtility = {
             "Type":"array",
             "Caption":"School Mode Utility (Forward)",
             "Style":"SchModeUtility",
@@ -1395,7 +1395,7 @@
                 {"Auto Time","AutoSkim.Time",-0.007018,1,1,0,0,0,0},
                 {"Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.007018,0,0,0,0,1,0}}
         }
-        Args.SchModeRUtility = {
+        Args.SchoolModeRUtility = {
             "Type":"array",
             "Caption":"School Mode Utility (Return)",
             "Style":"SchModeUtility",

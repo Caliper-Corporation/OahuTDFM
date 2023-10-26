@@ -123,7 +123,7 @@ endMenu
 menu "MENU_Calibration"
     MenuItem "Long Term Choices" text: "Long Term Choices" menu "LongTermChoices_Menu"
     Separator  
-    MenuItem "Mandatory Tours" text: "Mandatory Tour" menu "MandatoryTours_Menu"  
+    MenuItem "Mandatory Tours" text: "Mandatory Tours" menu "MandatoryTours_Menu"  
     MenuItem "Mandatory Tour Stops" text: "Mandatory Tour Stops" menu "MandatoryStops_Menu"
     MenuItem "Mandatory SubTours" text: "Mandatory SubTours" menu "MandatorySubTours_Menu"
     Separator
@@ -244,12 +244,14 @@ menu "MandatoryTours_Menu"
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         Args.WorkMC_Calibration = 1
+
+        ret = mr.RunCode("Construct MC Spec", Args, {Type: 'Work'})
         spec = {Type: 'Work',
                 Category: 'FullTimeWorker',
                 Filter: 'WorkerCategory = 1 and TravelToWork = 1',
                 Alternatives: Args.WorkModes, 
-                Utility: Args.WorkModeUtility,
-                Availability: Args.WorkModeAvailability,
+                Utility: ret.Utility,
+                Availability: ret.Availability,
                 LocationField: "WorkTAZ",
                 ChoiceField: 'WorkMode',
                 RandomSeed: 3099997}
@@ -261,12 +263,14 @@ menu "MandatoryTours_Menu"
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         Args.UnivMC_Calibration = 1
+
+        ret = mr.RunCode("Construct MC Spec", Args, {Type: 'Univ'})
         spec = {Type: 'Univ',
                 Category: 'Univ',
                 Filter: 'AttendUniv = 1',
                 Alternatives: Args.UnivModes,  
-                Utility: Args.UnivModeUtility,
-                Availability: Args.UnivModeAvailability,
+                Utility: ret.Utility,
+                Availability: ret.Availability,
                 LocationField: "UnivTAZ",
                 ChoiceField: 'UnivMode',
                 RandomSeed: 3299969}
