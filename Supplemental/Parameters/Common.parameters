@@ -1798,9 +1798,11 @@
                 {"No. of Kids","HH.Kids",0.2699,0,1,0,1,0},
                 {"No. of Kids (O2S1)","HH.Kids",-0.9818,0,0,0,0,1},
                 {"No. of Pre School Kids","HH.PreSchKids",0.565,0,1,0,1,1},
-                {"Destinations Logsum Other (O1 and O1S1)","DCLogsums.Accessibility_JointOther.O",0.4576,1,0,0,1,0},
-                {"Destinations Logsum Other (O2 and O2S1)","DCLogsums.Accessibility_JointOther.O",0.7186,0,1,0,0,1},
-                {"Destinations Logsum Shop","DCLogsums.Accessibility_JointShop.O",0.5008,0,0,1,1,1}}
+                {"Destinations Logsum Other (O1)","DCLogsums.Accessibility_JointOther.O",0.4576,1,0,0,0,0},
+                {"Destinations Logsum Other (O2)","DCLogsums.Accessibility_JointOther.O",0.7186,0,1,0,0,0},
+                {"Destinations Logsum Shop (S1)","DCLogsums.Accessibility_JointShop.O",0.5008,0,0,1,0,0},
+                {"Destinations Logsum Shop (O1S1)","Max(DCLogsums.Accessibility_JointOther.O, DCLogsums.Accessibility_JointShop.O)",0.5008,0,0,0,1,0},
+                {"Destinations Logsum Shop (O1S2)","Max(DCLogsums.Accessibility_JointOther.O, DCLogsums.Accessibility_JointShop.O)",0.7186,0,0,0,0,1}}
         }
 	
 	Section = "JointTours|Composition|Other"
