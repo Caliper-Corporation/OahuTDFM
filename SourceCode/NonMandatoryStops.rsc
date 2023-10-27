@@ -388,7 +388,8 @@ Macro "Discretionary Stops Freq Eval"(Args, FOpts)
     Args.(modelName + " Spec") = CopyArray(ret)
     obj = null
     
-    CloseView(vwJ)
+    if !FOpts.LeaveDataOpen then
+        CloseView(vwJ)
 endMacro
 
 
@@ -613,7 +614,8 @@ Macro "Stops Duration Eval"(Args, opt)
     Args.(modelName + " Spec") = CopyArray(ret)
     obj = null
 
-    CloseView(vwJ)
+    if !opt.LeaveDataOpen then
+        CloseView(vwJ)
 endMacro
 
 

@@ -634,8 +634,10 @@ Macro "JointTours StartTime"(Args, spec)
                 MinimumDuration: 10,
                 RandomSeed: 5502175 + 6*id}
     RunMacro("NonMandatory Activity Time", Args, JtOpts)
-    CloseView(vwJ)
-    objA = null
+    if !spec.LeaveDataOpen then do
+        CloseView(vwJ)
+        objA = null
+    end
 
     // Fill Activity end time (used in setting avails)
     setInfo = abm.CreateHHSet({Filter: HHFilter, Activate: 1})
@@ -695,12 +697,12 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     purpose = MCOpts.Purpose
     tod = MCOpts.TimePeriod
     abm = MCOpts.abmManager
-    modelName = "Joint Tours Mode " + purpose
+    modelName = "Joint_" + purpose + "_" + tod + "_Mode"
     ptSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
     
     obj = null
-    obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: modelName})
-    obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursMode" + purpose + ".mdl"
+    obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
+    obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursMode" + purpose + tod + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "W_BusSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})

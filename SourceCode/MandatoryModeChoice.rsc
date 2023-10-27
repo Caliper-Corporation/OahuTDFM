@@ -56,7 +56,7 @@ Macro "Mandatory Mode Choice"(Args)
     ret = RunMacro("Construct MC Spec", Args, {Type: 'Univ'})
     spec = {abmManager: abm, 
             Type: 'Univ',
-            Category: 'University student',
+            Category: 'Univ',
             Filter: 'AttendUniv = 1',
             Alternatives: ret.NestingStructure,  
             Utility: ret.Utility,
