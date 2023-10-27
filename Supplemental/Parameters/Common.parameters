@@ -78,14 +78,14 @@
 	
         Args.TimePeriods = {
             "Type":"hidden",
-            "Value": {"AM","PM","OP"}
+            "Value":
+            {"AM","PM","OP"}
         }
         Args.[ABM Manager] = {
             "Type":"hidden",
             "Description":"CC ABM Manager Object",
             "Value":null
         }
-
         Args.AMCapFactor = {
             "Type":"int",
             "Description":"Peak hour to AM period capacity factor",
@@ -101,9 +101,9 @@
             "Description":"Peak hour to NT period capacity factor",
             "Value":7
         }
-
-    Section = "Parameters|ABM"
-
+	
+	Section = "Parameters|ABM"
+	
         Args.WorkCarpoolOccupancy = {
             "Type":"double",
             "Caption":"Occupancy factor for work carpool trips",
@@ -144,7 +144,7 @@
             "Description":"SoloStartAvails",
             "Value":"%Output Folder%\\Intermediate\\SoloTourStartTimeAvails.bin"
         }
-
+	
 	Section = "Population Synthesis|Inputs"
 	
         Args.SizeCurves = {
@@ -239,7 +239,7 @@
         }
 	
 	Section = "Population Synthesis|Outputs"
-
+	
         Args.SEDMarginals = {
             "Type":"File",
             "Caption":"Marginals from disaggregate curves",
@@ -315,10 +315,16 @@
             "Description":"Speed and Capacity Lookup by Facility and Area Type Table",
             "Value":"%Input Folder%\\networks\\speed_and_capacity.csv"
         }
-        Args.AreaTypes = { "Type":"array" , "Value":{{"Rural",0,0},
-                                                     {"Suburban",1000,0.5},
-                                                     {"Urban",10000,0.5},
-                                                     {"Downtown",25000,0.25}}, "Caption":"Area Type Densities Definitions", "Style":"AreaType" }
+        Args.AreaTypes = {
+            "Type":"array",
+            "Caption":"Area Type Densities Definitions",
+            "Style":"AreaType",
+            "Value":{
+                {"Rural",0,0},
+                {"Suburban",1000,0.5},
+                {"Urban",10000,0.5},
+                {"Downtown",25000,0.25}}
+        }
         Args.TransitModeTable = {
             "Type":"File",
             "Description":"Transit Mode Table",
@@ -326,9 +332,9 @@
         }
         Args.AccessModes = {
             "Type":"hidden",
-            "Value":{"w", "pnr", "knr"}
+            "Value":
+            {"w","pnr","knr"}
         }
-
         Args.TransitModeTransferTable = {
             "Type":"File",
             "Description":"Transit Mode Transfer Table",
@@ -1173,9 +1179,9 @@
                 {"Drive","DriveAlone, Carpool",0.5},
                 {"NonMotorized","Walk, Bike",0.7},
                 {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
-                {"PT_Walk", "W_Bus, W_Rail", 0.5},
-                {"PT_PNR", "PNR_Bus, PNR_Rail", 0.5},
-                {"PT_KNR", "KNR_Bus, KNR_Rail", 0.5}}
+                {"PT_Walk","W_Bus, W_Rail",0.5},
+                {"PT_PNR","PNR_Bus, PNR_Rail",0.5},
+                {"PT_KNR","KNR_Bus, KNR_Rail",0.5}}
         }
         Args.WorkModeAvailability = {
             "Type":"array",
@@ -1196,7 +1202,7 @@
         }
 	
 	Section = "MandatoryTours|Tour Mode|Work|UtilityAuto"
-        
+	
         Args.WorkModeUtilityAuto = {
             "Type":"array",
             "Caption":"Work Mode Utility",
@@ -1214,7 +1220,7 @@
         }
 	
 	Section = "MandatoryTours|Tour Mode|Work|UtilityNM"
-        
+	
         Args.WorkModeUtilityNM = {
             "Type":"array",
             "Caption":"Work Mode Utility",
@@ -1226,9 +1232,9 @@
                 {"Senior","PersonHH.Age >= 65",0.110876,1,0},
                 {"Female","PersonHH.Gender = 2",0.219183,1,0}}
         }
-
-    Section = "MandatoryTours|Tour Mode|Work|UtilityPT"
-        
+	
+	Section = "MandatoryTours|Tour Mode|Work|UtilityPT"
+	
         Args.WorkModeUtilityPT = {
             "Type":"array",
             "Caption":"Work Mode Utility",
@@ -1259,8 +1265,8 @@
                 {"Female","PersonHH.Gender = 2",0.219183,1,1,1,1,1,1},
                 {"Low Income HH","PersonHH.IncomeLevel = 1",0.037969,1,1,1,1,1,1}}
         }
-
-    Section = "MandatoryTours|Tour Mode|University|Modes"
+	
+	Section = "MandatoryTours|Tour Mode|University|Modes"
 	
         Args.UnivModes = {
             "Type":"array",
@@ -1271,9 +1277,9 @@
                 {"Drive","DriveAlone, Carpool",0.5},
                 {"NonMotorized","Walk, Bike",0.7},
                 {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
-                {"PT_Walk", "W_Bus, W_Rail", 0.5},
-                {"PT_PNR", "PNR_Bus, PNR_Rail", 0.5},
-                {"PT_KNR", "KNR_Bus, KNR_Rail", 0.5}}
+                {"PT_Walk","W_Bus, W_Rail",0.5},
+                {"PT_PNR","PNR_Bus, PNR_Rail",0.5},
+                {"PT_KNR","KNR_Bus, KNR_Rail",0.5}}
         }
         Args.UnivModeAvailability = {
             "Type":"array",
@@ -1307,7 +1313,7 @@
         }
 	
 	Section = "MandatoryTours|Tour Mode|University|UtilityNM"
-        
+	
         Args.UnivModeUtilityNM = {
             "Type":"array",
             "Caption":"University Mode Utility",
@@ -1320,9 +1326,9 @@
                 {"Distance Bike","BikeSkim.Distance",-0.244596,0,1},
                 {"Low Income","PersonHH.IncomeLevel = 1",0.534083,1,1}}
         }
-
-    Section = "MandatoryTours|Tour Mode|University|UtilityPT"
-        
+	
+	Section = "MandatoryTours|Tour Mode|University|UtilityPT"
+	
         Args.UnivModeUtilityPT = {
             "Type":"array",
             "Caption":"University Mode Utility",
@@ -1339,8 +1345,8 @@
                 {"KNR Rail IVTT","KNR_RailSkim.[In-Vehicle Time]",-0.002254,0,0,0,0,0,1},
                 {"Low Income","PersonHH.IncomeLevel = 1",0.534083,1,1,1,1,1,1}}
         }
-
-    Section = "MandatoryTours|Tour Mode|School|Modes"
+	
+	Section = "MandatoryTours|Tour Mode|School|Modes"
 	
         Args.SchoolModes = {
             "Type":"array",
@@ -1731,7 +1737,6 @@
                 {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99,0,0,1,0,0},
                 {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99,0,0,0,1,0}}
         }
-	
         Args.SubTourDAPct = {
             "Type":"double",
             "Caption":"Percentage of SubTour AutoDriver trips that are drive alone",
@@ -1739,7 +1744,7 @@
             "Style":"PctSlider",
             "Value":80
         }
-
+	
 	Section = "PatternChoice"
 	
         Args.SubPatternChoiceAvail = {
@@ -1788,7 +1793,7 @@
                 {"ASC (O1S1)","Constant",-1.96897,0,0,0,1,0},
                 {"ASC (O2S1)","Constant",-2.43859,0,0,0,0,1},
                 {"Avg Free Time <= 3 hours","HH.HHAvgFreeTime_09to18 - 10 <= 3",-1.466,0,1,0,1,1},
-                {"Avg Free Time <= 8 hours","HH.HHAvgFreeTime_09to18 - 10 <= 8",0.5207,1,0,1,0,0,},
+                {"Avg Free Time <= 8 hours","HH.HHAvgFreeTime_09to18 - 10 <= 8",0.5207,1,0,1,0,0,null},
                 {"KidsPerNonWorkingAdult (O2)","HH.KidsPerNonWorkingAdult",0.5827,0,1,0,0,0},
                 {"KidsPerNonWorkingAdult (O2S1)","HH.KidsPerNonWorkingAdult",1.35,0,0,0,0,1},
                 {"No. of Adult Non-Workers (O1S1)","HH.Adults - HH.Workers",0.2332,0,0,0,1,0},
@@ -1916,6 +1921,7 @@
                 {"ASC (Auto)","Constant",2.058,1,0,0,0},
                 {"ASC (Walk)","Constant",0.6198,0,1,0,0},
                 {"ASC (Bike)","Constant",-0.9233,0,0,1,0},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.4958,1,0,0,0},
                 {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.2564,0,0,0,1},
                 {"IntraTAZ Tour","Intrazonal.IZ",2.344,0,1,0,0},
                 {"Walk Skim Length","WalkSkim.Distance",-0.6549,0,1,0,0},
@@ -1955,7 +1961,7 @@
                 {"Total Employment Density at Dest","TAZ4Ds.TotalEmploymentDensity.D/1000",-0.018},
                 {"NM Mode Logsums for short distance tours","ModeAccessibility.NM * (WalkSkim.Distance < 5)",0.5298},
                 {"Distance less than 2 miles","AutoSkim.Distance < 2",0.2082},
-                {"Auto Travel Distance more than 40 miles","AutoSkim.Distance > 40",-99.0}}
+                {"Auto Travel Distance more than 40 miles","AutoSkim.Distance > 40",-99}}
         }
 	
 	Section = "JointTours|Destination|Shop|Size Variable"
@@ -2029,8 +2035,7 @@
         }
 	
 	Section = "JointTours|StartTime|Other|Alternatives"
-        
-
+	
         Args.JointTourStartOtherAlts = {
             "Type":"array",
             "Caption":"Joint Tour StartTime Other Alternatives",
@@ -2097,7 +2102,7 @@
         }
 	
 	Section = "JointTours|StartTime|Shop|Utility"
-
+	
         Args.JointTourStartShopUtility = {
             "Type":"array",
             "Caption":"Joint Tour StartTime Shop Utility",
@@ -2128,6 +2133,7 @@
                 {"ASC (W_Bus)","Constant",2.28673,0,0,0,1,0},
                 {"ASC (Other)","Constant",-1.69427,0,0,0,0,1},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0,0,0,0},
                 {"IntraTAZ Tour","HH.TAZID = HH.Joint_<purp>_Destination",2.774,0,1,0,0,0},
                 {"Auto Distance > 5 miles","AutoSkim.Distance > 5",2.148,1,0,0,0,0},
                 {"HH Income Mid","HH.IncomeLevel = 2",-0.8002,1,0,0,0,0},
@@ -2159,7 +2165,8 @@
                 {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",4.269,1,0},
                 {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",1.738,1,0},
                 {"Walk Distance","WalkSkim.Distance",-7.928,0,1},
-                {"Walk Distance > 2 miles","WalkSkim.Distance > 2",-99,0,1}}
+                {"Walk Distance > 2 miles","WalkSkim.Distance > 2",-99,0,1},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0}}
         }
         Args.JointTourModeShopAvail = {
             "Type":"array",
@@ -2169,7 +2176,7 @@
                 {"Walk","WalkSkim.Distance <= 2"}}
         }
 	
-    Section = "JointTourStops|Frequency|Other"
+	Section = "JointTourStops|Frequency|Other"
 	
         Args.JointStopFreqOtherUtility = {
             "Type":"array",
@@ -2307,8 +2314,8 @@
                 {"Activity Duration >= 240 min","ToursData.ActivityDuration >= 240",null,null,null,-1.999,-1.999,null},
                 {"Excess TT to stop >= 10 min","ToursData.<dir>StopDeltaTT >= 10",null,null,0.7306,1.47,0.7378,null}}
         }
-
-    Section = "SoloTours|Frequency"
+	
+	Section = "SoloTours|Frequency"
 	
         Args.SoloTourFrequencyUtility = {
             "Type":"array",
@@ -2363,6 +2370,7 @@
                 {"ASC (Passenger)","Constant",3.188,0,1,0,0,0},
                 {"ASC (Walk)","Constant",5.967,0,0,1,0,0},
                 {"ASC (Bike)","Constant",3.67,0,0,0,1,0},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.7501,1,0,0,0,0},
                 {"Auto Time","AutoSkim.Time",-0.3,1,1,0,0,0},
                 {"Auto Distance > 5 miles","AutoSkim.Distance > 5",0.2309,1,0,0,0,0},
                 {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.2766,0,0,0,0,1},
@@ -2416,8 +2424,8 @@
                 {"Mode Logsums Non-Motorized","ModeAccessibility.NM * (WalkSkim.Distance < 2)","NoLicense",0.1182},
                 {"Mode Logsums Non-Drive Alone","ModeAccessibility.NoDA * (AutoSkim.Distance < 5)","NoLicense",0.1292}}
         }
-
-    Section = "SoloTours|Destination|Other|Utility"
+	
+	Section = "SoloTours|Destination|Other|Utility"
 	
         Args.SoloTourDestOtherUtility = {
             "Type":"array",
@@ -2452,8 +2460,9 @@
                 {"ASC (Passenger)","Constant",0.9137,0,1,0,0,0},
                 {"ASC (Walk)","Constant",4.036,0,0,1,0,0},
                 {"ASC (Bike)","Constant",2.012,0,0,0,1,0},
-                {"Auto Time","AutoSkim.Time",-0.16178,1,1,0,0,0},
-                {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.05554,0,0,0,0,1},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-0.9438,1,0,0,0,0},
+                {"Auto Time","AutoSkim.Time",-0.1618,1,1,0,0,0},
+                {"IVTT Transit","W_BusSkim.[In-Vehicle Time]",-0.0555,0,0,0,0,1},
                 {"IntraTAZ Tour","Intrazonal.IZ",1.838,0,0,1,0,0},
                 {"Walk Length","WalkSkim.Distance",-1.867,0,0,1,0,0},
                 {"Bike Length","BikeSkim.Distance",-1.139,0,0,0,1,0}}
@@ -2500,8 +2509,8 @@
                 {"Mode Logsums Non-Motorized","ModeAccessibility.NM * (WalkSkim.Distance < 2)","NoLicense",0.09974},
                 {"Mode Logsums Non-DriveAlone","ModeAccessibility.NoDA * (AutoSkim.Distance < 5)","NoLicense",0.2549}}
         }
-
-    Section = "SoloTours|Destination|Shop|Utility"
+	
+	Section = "SoloTours|Destination|Shop|Utility"
 	
         Args.SoloTourDestShopUtility = {
             "Type":"array",
@@ -2567,7 +2576,7 @@
         }
 	
 	Section = "SoloTours|StartTime|Other|Alternatives"
-
+	
         Args.SoloTourStartOtherAlts = {
             "Type":"array",
             "Caption":"Solo Tour StartTime Other Alternatives",
@@ -2691,6 +2700,7 @@
                 {"ActivityDuration (0-60) min","PersonHH.Solo_Other<tourno>_Duration > 0 and PersonHH.Solo_Other<tourno>_Duration < 60",0.319788,0,0,1,0,0,0},
                 {"ActivityDuration (2- 3) hrs","(PersonHH.Solo_Other<tourno>_Duration > 120) and (PersonHH.Solo_Other<tourno>_Duration < 180)",1.34574,0,1,0,0,0,0},
                 {"ActivityDuration > 3 hrs","PersonHH.Solo_Other<tourno>_Duration > 180",1.05107,0,1,0,0,0,0},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-0.0525,1,0,0,0,0,0},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.008984,0,0,0,0,1,0}}
         }
         Args.SoloTourModeOtherAvail = {
@@ -2730,6 +2740,7 @@
                 {"Walk Distance if greater than 0.75 mile","(WalkSkim.Distance > 0.75) * WalkSkim.Distance",-0.385005,0,0,1,0,0,0},
                 {"OD same TAZ","PersonHH.TAZID = PersonHH.Solo_Shop<tourno>_Destination",1.5251,0,0,1,0,0,0},
                 {"ActivityDuration (0-30) min","PersonHH.Solo_Shop<tourno>_Duration > 0 and PersonHH.Solo_Shop<tourno>_Duration < 30",0.737733,0,0,1,0,0,0},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-0.0216,1,0,0,0,0,0},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.003704,0,0,0,0,1,0}}
         }
         Args.SoloTourModeShopAvail = {
@@ -2742,7 +2753,7 @@
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
         }
 	
-    Section = "SoloTourStops|Frequency|Other"
+	Section = "SoloTourStops|Frequency|Other"
 	
         Args.SoloStopFreqOtherUtility = {
             "Type":"array",
@@ -2895,8 +2906,9 @@
                 {"Excess TT to stop >= 5 min","ToursData.<dir>StopDeltaTT >= 5",null,-0.393647,-0.409196,null,null,null},
                 {"Excess TT to stop >= 10 min","ToursData.<dir>StopDeltaTT >= 10",null,null,null,null,0.582641,null}}
         }
-
-    Section = "Tours and Trips#Tour Files"
+	
+	Section = "Tours and Trips#Tour Files"
+	
         Args.MandatoryTours = {
             "Type":"File",
             "Caption":"Mandatory Tours Table",
@@ -2912,8 +2924,9 @@
             "Caption":"NonMandatory Solo Tours Table",
             "Value":"%Output Folder%\\ToursAndTrips\\NonMandatory_Solo_Tours.bin"
         }
-        
-    Section = "Tours and Trips#Trip Files"
+	
+	Section = "Tours and Trips#Trip Files"
+	
         Args.MandatoryTrips = {
             "Type":"File",
             "Caption":"Mandatory Trips Table",
@@ -2934,8 +2947,9 @@
             "Caption":"Final ABM Trip Table",
             "Value":"%Output Folder%\\ToursAndTrips\\ABM_Trips.bin"
         }
-        
-    Section = "Tours and Trips#Matrices"
+	
+	Section = "Tours and Trips#Matrices"
+	
         Args.PersonTripsMtx = {
             "Type":"File",
             "Caption":"Person Trips Matrix (Internal)",
@@ -2975,39 +2989,38 @@
             "Caption":"Transit OD Matrix",
             "Value":"%Output Folder%\\OD\\Transit_OD.mtx"
         }
-
-
+	
 	Section = "Visitor Model"
 	
         Args.[Vis Hotel Occ Rate] = {
             "Type":"double",
             "Caption":"Occupancy rate",
-            "Value":.846
+            "Value":0.846
         }
         Args.[Vis Condo Occ Rate] = {
             "Type":"double",
             "Caption":"Occupancy rate",
-            "Value":.846
+            "Value":0.846
         }
         Args.[Vis HH Occ Rate] = {
             "Type":"double",
             "Caption":"Occupancy rate",
-            "Value":.022
+            "Value":0.022
         }
         Args.[Vis Hotel Business Ratio] = {
             "Type":"double",
             "Caption":"The ratio of visitors in hotels that are on island for business",
-            "Value":.088
+            "Value":0.088
         }
         Args.[Vis Condo Business Ratio] = {
             "Type":"double",
             "Caption":"The ratio of visitors in condos that are on island for business",
-            "Value":.063
+            "Value":0.063
         }
         Args.[Vis HH Business Ratio] = {
             "Type":"double",
             "Caption":"The ratio of visitors in households that are on island for business",
-            "Value":.012
+            "Value":0.012
         }
         Args.[Vis Personal Party Size] = {
             "Type":"double",
@@ -3029,7 +3042,6 @@
             "Caption":"Visitor trip rates",
             "Value":"%Input Folder%\\visitors\\vis_generation.csv"
         }
-        
         Args.VisDirectionFactors = {
             "Type":"File",
             "Caption":"Visitor trip rates",
@@ -3040,34 +3052,30 @@
             "Caption":"Visitor trip rates",
             "Value":"%Input Folder%\\visitors\\vis_occupancy.csv"
         }
-
-    Section = "Airport"
-
-    Args.[Airport Attraction Rates] = {
+	
+	Section = "Airport"
+	
+        Args.[Airport Attraction Rates] = {
             "Type":"File",
             "Caption":"Airport Attraction Rates",
             "Value":"%Input Folder%\\airport\\air_attr_rates.csv"
         }
-
-    Args.[Airport Vis Ratio] = {
+        Args.[Airport Vis Ratio] = {
             "Type":"double",
             "Caption":"Ratio of visitor trips to total.",
             "Value":0.481
         }
-
-    Args.[Airport Vis Occupancy] = {
+        Args.[Airport Vis Occupancy] = {
             "Type":"double",
             "Caption":"Average vehicle occupancy for visitor airport trips",
             "Value":1.88
         }
-
-    Args.[Airport Res Occupancy] = {
+        Args.[Airport Res Occupancy] = {
             "Type":"double",
             "Caption":"Average vehicle occupancy for resident airport trips",
             "Value":2
         }
-
-    Args.[Airport TOD Rates] = {
+        Args.[Airport TOD Rates] = {
             "Type":"File",
             "Caption":"Airport Time of Day Factors",
             "Value":"%Input Folder%\\airport\\air_tod.csv"
@@ -3162,4 +3170,3 @@
             "Caption":"Public Transport Summaries",
             "Value":"%Output Folder%\\PTAssignment\\PT_Summary.bin"
         }
-      

@@ -165,6 +165,7 @@ Macro "MC Accessibility"(Args, spec)
         obj = CreateObject("PMEChoiceModel", {ModelName: tag})
         obj.OutputModelFile = printf("%s\\Intermediate\\%s.mdl", {Args.[Output Folder], tag})
         obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
+        obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         w_t_skim = Args.[Output Folder] + "\\skims\\transit\\AM_w_bus.mtx"
         obj.AddMatrixSource({SourceName: "W_BusSkim", File: w_t_skim, RowIndex: "RCIndex", ColIndex: "RCIndex"})
