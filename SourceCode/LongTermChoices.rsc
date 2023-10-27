@@ -248,8 +248,10 @@ endMacro
 Macro "Work Location"(Args)
     // Run in a loop for the various industries
     sizeVars = Args.WorkLocSize
-    sizeFlds = sizeVars.[Attractions Field]
     indCodes = sizeVars.Industry
+    descriptions = sizeVars.Description
+    empFlds = sizeVars.[Attractions Field]
+    size_coefs = sizeVars.Coefficient
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.WorkDCShadowPrices
@@ -264,19 +266,45 @@ Macro "Work Location"(Args)
 
     abm = RunMacro("Get ABM Manager", Args)
     pbar = CreateObject("G30 Progress Bar", "Running Work Location Model by Industry", true, indCodes.length)
+    se = CreateObject("Table", {FileName: Args.DemographicOutputs, View: "TAZData"})
+
     for i = 1 to indCodes.length do
         indCode = String(indCodes[i])
+        size_coef = size_coefs[i]
+        empFld = empFlds[i]
+        description = descriptions[i]
+
+        // Availability is restricted to only zones with relevant employment
+        availExpressions = null
+        availExpressions.Alternative = {"Destinations"}
+        availExpressions.Expression = {"TAZData." + empFld + ".D > 0"}    
         
+        // Compute the size term for the current industry and fill a column in the se data.
+        size_field = "WorkLocSize_" + indCode
+
+        opt = null
+        opt.TableObject = se
+        opt.Equation = {Variable: {empFld}, Coefficient: {size_coef}}
+        opt.NewOutputField = size_field
+        opt.ExponentiateCoeffs = 1
+        RunMacro("Compute Size Variable", opt)
+        opt = null
+        // if doing service employment, must add in hotel employment
+        if Lower(description) = "service" then do
+            se.(size_field) = se.(size_field) + (exp(size_coef) * se.Emp_Hotel)
+        end
+
         utilSpec = null
+        utilSpec.AvailabilityExpressions = availExpressions
         utilSpec.UtilityFunction = Args.WorkLocUtility
         utilSpec.SubstituteStrings = {{"<IndCode>", indCode}}
         
-        // Find BG Location
+        // Find Work Location
         obj = CreateObject("PMEChoiceModel", {ModelName: "Work Location: Industry " + indCode})
         obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\WorkLocation_Ind" + indCode + ".dcm"
         obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
         obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
-        obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
+        obj.AddTableSource({SourceName: "TAZData", View: se.GetView(), IDField: "TAZ"})
         obj.AddTableSource({SourceName: "WorkDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
@@ -284,10 +312,10 @@ Macro "Work Location"(Args)
         obj.AddPrimarySpec({Name: "PersonHH", Filter: "WorkIndustry = " + indCode, OField: "TAZID"})
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
-        obj.AddSizeVariable({Name: "TAZData", Field: sizeFlds[i]})
+        obj.AddSizeVariable({Name: "TAZData", Field: size_field})
         if spFlag then do
             tempOutputSP = GetTempPath() + "ShadowPrice_Industry" + indCode + ".bin"
-            obj.AddShadowPrice({TargetName: "TAZData", TargetField: sizeFlds[i], 
+            obj.AddShadowPrice({TargetName: "TAZData", TargetField: empFld, 
                                 Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "WorkTAZ"})
@@ -296,7 +324,7 @@ Macro "Work Location"(Args)
         if !ret then
             Throw("Running 'Work Location' choice model for Industry " + indCode + " failed.")
         obj = null
-        
+
         // Copy values from temporary shadow price table to main shadow price table
         if spFlag then do
             spOpts = null
@@ -308,6 +336,7 @@ Macro "Work Location"(Args)
         if pbar.Step() then
             Return()
     end
+    se = null
     pbar.Destroy()
 
     // Fill home to work times
@@ -327,6 +356,25 @@ Macro "Univ Location"(Args)
     // Create temporary University Enrollment after subtracting dorm population that have been acocunnted for
     enrollmentFld = RunMacro("Adjust University Enrollment", Args.DemographicOutputs)
 
+    // Only TAZs with enrollment data are available
+    availExpressions = null
+    availExpressions.Alternative = {"Destinations"}
+    availExpressions.Expression = {"nz(TAZData.UnivEnrollment.D) + nz(TAZData.OtherEnrollment.D) > 0"}
+    utilSpec = null
+    utilSpec.UtilityFunction = Args.UnivLocUtility
+    utilSpec.AvailabilityExpressions = availExpressions
+
+    // Compute the size term
+    se = CreateObject("Table", {FileName: Args.DemographicOutputs, View: "TAZData"})
+    size_field = "UnivLocSize"
+    opt = null
+    opt.TableObject = se
+    opt.Equation = Args.UnivLocSize
+    opt.NewOutputField = size_field
+    opt.ExponentiateCoeffs = 1
+    RunMacro("Compute Size Variable", opt)
+    opt = null
+
     ShadowPricesTable = Args.UnivDCShadowPrices
     spFlag = !GetFileInfo(ShadowPricesTable) or Args.UnivSPFlag
     if spFlag then do
@@ -342,16 +390,17 @@ Macro "Univ Location"(Args)
     obj = CreateObject("PMEChoiceModel", {ModelName: "University TAZ Location"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\UniversityLocation.dcm"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
+    obj.AddTableSource({SourceName: "TAZData", View: se.GetView(), IDField: "TAZ"})
+    obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
     obj.AddTableSource({SourceName: "UnivDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "AttendUniv = 1 and UnivGQStudent <> 1", OField: "TAZID"})
-    obj.AddUtility({UtilityFunction: Args.UnivLocUtility})
+    obj.AddUtility(utilSpec)
     obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
-    obj.AddSizeVariable({Name: "TAZData", Field: enrollmentFld})
+    obj.AddSizeVariable({Name: "TAZData", Field: size_field})
     if spFlag then do // Perform shadow pricing only if shadow price table does not already exist
         tempOutputSP = GetTempPath() + "ShadowPrice_University.bin"
-        obj.AddShadowPrice({TargetName: "TAZData", TargetField: enrollmentFld, 
+        obj.AddShadowPrice({TargetName: "TAZData", TargetField: size_field, 
                             Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
     end
     obj.AddOutputSpec({ChoicesField: "UnivTAZ"})
@@ -376,6 +425,7 @@ Macro "Univ Location"(Args)
             Filter: "AttendUniv = 1",
             Matrix: {Name: Args.HighwaySkimAM, Core: "Time"}}
     RunMacro("Fill from matrix", spec)
+    se = null
 
     Return(true)
 endMacro
@@ -421,7 +471,18 @@ Macro "School Location"(Args)
 
     availExpressions = null
     availExpressions.Alternative = {"Destinations"}
-    availExpressions.Expression = {"AutoSkim.Time <= 60"}
+    availExpressions.Expression = {"AutoSkim.Time <= 60 and TAZData.K12Enrollment.D > 0"}
+
+    // Compute the size term
+    se = CreateObject("Table", {FileName: Args.DemographicOutputs, View: "TAZData"})
+    size_field = "SchoolLocSize"
+    opt = null
+    opt.TableObject = se
+    opt.Equation = Args.SchoolLocSize
+    opt.NewOutputField = size_field
+    opt.ExponentiateCoeffs = 1
+    RunMacro("Compute Size Variable", opt)
+    opt = null
 
     // Check if shadow price table already exists. If not, create an table with ID field and zero fields to store shadow prices
     ShadowPricesTable = Args.SchoolDCShadowPrices
@@ -449,16 +510,18 @@ Macro "School Location"(Args)
         obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SchoolLocation_" + type + ".dcm"
         obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
         obj.AddTableSource({SourceName: "SchoolDCShadowPrices", File: ShadowPricesTable, IDField: "TAZ"})
-        obj.AddTableSource({SourceName: "TAZData", File: Args.DemographicOutputs, IDField: "TAZ"})
+        obj.AddTableSource({SourceName: "TAZData", View: se.GetView(), IDField: "TAZ"})
+        obj.AddTableSource({SourceName: "TAZ4Ds", File: Args.AccessibilitiesOutputs, IDField: "TAZID"})
         obj.AddMatrixSource({SourceName: "Intrazonal", File: Args.IZMatrix, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.HighwaySkimAM, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        obj.AddMatrixSource({SourceName: "ModeAccessibility", File: Args.MandatoryModeAccessibility, RowIndex: "TAZ", ColIndex: "TAZ"})
         obj.AddPrimarySpec({Name: "PersonHH", Filter: filters[i], OField: "TAZID"})
         obj.AddUtility(utilSpec)
         obj.AddDestinations({DestinationsSource: "AutoSkim", DestinationsIndex: "InternalTAZ"})
-        obj.AddSizeVariable({Name: "TAZData", Field: type + "Enrollment"})
+        obj.AddSizeVariable({Name: "TAZData", Field: size_field})
         if spFlag then do // Perform shadow pricing only if shadow price table does not already exist
             tempOutputSP = GetTempPath() + "ShadowPrice_" + type + ".bin"
-            obj.AddShadowPrice({TargetName: "TAZData", TargetField: type + "Enrollment", 
+            obj.AddShadowPrice({TargetName: "TAZData", TargetField: size_field, 
                                 Iterations: 5, Tolerance: 0.01, OutputShadowPriceTable: tempOutputSP})
         end
         obj.AddOutputSpec({ChoicesField: "SchoolTAZ"})
@@ -488,7 +551,8 @@ Macro "School Location"(Args)
             Filter: "AttendSchool = 1",
             Matrix: {Name: Args.HighwaySkimAM, Core: "Time"}}
     RunMacro("Fill from matrix", spec)
-
+    
+    se = null
     Return(true)
 endMacro
 

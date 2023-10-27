@@ -55,9 +55,10 @@ Macro "Highway Assignment" (Args, periods)
         o.AddClass({
             Demand: "drivealone",
             PCE: 1,
-            VOI: voi
+            VOI: voi,
+            ExclusionFilter: "HOV = 'HOV'"
         })
-        // hov2
+        // hov
         o.AddClass({
             Demand: "carpool",
             PCE: 1,
