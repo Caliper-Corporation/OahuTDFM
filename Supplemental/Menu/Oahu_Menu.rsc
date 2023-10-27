@@ -470,27 +470,27 @@ endMenu
 
 
 menu "JointTourStops_Menu"
-    MenuItem "Joint Stops Frequency Other" text: "Other: Stops Frequency" do
+    MenuItem "Joint Stops Frequency Other" text: "Stops Frequency: Other" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate NM StopFrequency", Args, {Type: 'Joint', Purpose: 'Other'})
     endItem
 
-    MenuItem "Joint Stops Duration Other" text: "Other: Stops Duration" do
-        mr = CreateObject("Model.Runtime")
-        Args = mr.GetValues()
-        mr.RunCode("Calibrate NM StopDuration", Args, {Type: 'Joint', Purpose: 'Other'})
-    endItem
-
-    Separator
-
-    MenuItem "Joint Stops Frequency Shop" text: "Shop: Stops Frequency" do
+    MenuItem "Joint Stops Frequency Shop" text: "Stops Frequency: Shop" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate NM StopFrequency", Args, {Type: 'Joint', Purpose: 'Shop'})
     endItem
 
-    MenuItem "Joint Stops Duration Shop" text: "Shop: Stops Duration" do
+    Separator
+
+    MenuItem "Joint Stops Duration Other" text: "Stops Duration: Other" do
+        mr = CreateObject("Model.Runtime")
+        Args = mr.GetValues()
+        mr.RunCode("Calibrate NM StopDuration", Args, {Type: 'Joint', Purpose: 'Other'})
+    endItem
+
+    MenuItem "Joint Stops Duration Shop" text: "Stops Duration: Shop" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate NM StopDuration", Args, {Type: 'Joint', Purpose: 'Shop'})
@@ -548,27 +548,27 @@ endMenu
 
 
 menu "SoloTourStops_Menu"
-    MenuItem "Solo Stops Frequency Other" text: "Other: Stops Frequency" do
+    MenuItem "Solo Stops Frequency Other" text: "Stops Frequency: Other" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate NM StopFrequency", Args, {Type: 'Solo', Purpose: 'Other'})
     endItem
 
-    MenuItem "Solo Stops Duration Other" text: "Other: Stops Duration" do
-        mr = CreateObject("Model.Runtime")
-        Args = mr.GetValues()
-        mr.RunCode("Calibrate NM StopDuration", Args, {Type: 'Solo', Purpose: 'Other'})
-    endItem
-
-    Separator
-
-    MenuItem "Solo Stops Frequency Shop" text: "Shop: Stops Frequency" do
+    MenuItem "Solo Stops Frequency Shop" text: "Stops Frequency: Shop" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate NM StopFrequency", Args, {Type: 'Solo', Purpose: 'Shop'})
     endItem
 
-    MenuItem "Solo Stops Duration Shop" text: "Shop: Stops Duration" do
+    Separator
+    
+    MenuItem "Solo Stops Duration Other" text: "Stops Duration: Other" do
+        mr = CreateObject("Model.Runtime")
+        Args = mr.GetValues()
+        mr.RunCode("Calibrate NM StopDuration", Args, {Type: 'Solo', Purpose: 'Other'})
+    endItem
+
+    MenuItem "Solo Stops Duration Shop" text: "Stops Duration: Shop" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate NM StopDuration", Args, {Type: 'Solo', Purpose: 'Shop'})
