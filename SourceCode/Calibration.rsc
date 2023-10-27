@@ -646,6 +646,14 @@ Macro "Calibrate Model"(Args, Opts)
 
     RunMacro("ReleaseSingleton", "ABM_Manager")
     RunMacro("ReleaseSingleton", "ABM.TimeManager")
+
+    // Close all other views
+    vws = GetViews()
+    if vws <> null then do
+        for vw in vws[1] do
+            CloseView(vw)
+        end
+    end
     
     // Open calibration file in an editor
     shared d_edit_options
