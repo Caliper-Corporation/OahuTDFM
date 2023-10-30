@@ -407,7 +407,8 @@ auto_own <- hh_add_tours %>%
 
 # driver's license
 drivers <- per_add_tour_counts %>%
-  filter(R_AGE >= 17) %>%
+  # don't filter bc the choice model is applied to the full pop
+  # filter(R_AGE >= 17) %>%
   group_by(DRIVER) %>%
   summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
@@ -477,27 +478,33 @@ tour_frequency <- tour_file %>%
 
 # mandatory tour mode shares
 mode_choice <- tour_file %>%
-  # Add worker status
-  left_join(
-    per_add_tour_counts %>%
-      select(HOUSEID, PERSONID, WORKER),
-    by = c("HOUSEID", "PERSONID")
-  ) %>%
+  # # Add worker status
+  # left_join(
+  #   per_add_tour_counts %>%
+  #     select(HOUSEID, PERSONID, WORKER),
+  #   by = c("HOUSEID", "PERSONID")
+  # ) %>%
   mutate(
-    tour_type = case_when(
-      tour_type != "Work" ~ tour_type,
-      WORKER == "FullTime" ~ "Work (FT)",
-      TRUE ~ "Work (PT)"
-    ),
-    primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "hov", primary_mode)
+    # tour_type = case_when(
+    #   tour_type != "Work" ~ tour_type,
+    #   WORKER == "FullTime" ~ "Work (FT)",
+    #   TRUE ~ "Work (PT)"
+    # ),
+    primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "hov", primary_mode),
+    primary_mode = ifelse(
+      access_mode != "",
+      paste0(access_mode, "_", primary_mode),
+      primary_mode
+    )
   ) %>%
   group_by(tour_type, primary_mode) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
   select(-weight) %>%
   pivot_wider(names_from = tour_type, values_from = target_pct) %>%
-  arrange(desc(`Work (FT)`)) %>%
-  relocate(`Work (FT)`:`Work (PT)`, .after = primary_mode) %>%
+  # arrange(desc(`Work (FT)`)) %>%
+  arrange(desc(Work)) %>%
+  # relocate(`Work (FT)`:`Work (PT)`, .after = primary_mode) %>%
   relocate(Other, .after = Univ)
 
 # Mandatory time of day
@@ -538,12 +545,13 @@ activity_duration <- tour_file %>%
       WORKER == "FullTime" ~ "Work (FT)",
       TRUE ~ "Work (PT)"
     ),
-    anchor_dwell = anchor_dwell %/% 60
+    anchor_dwell = anchor_dwell %/% 60,
+    anchor_dwell = ifelse(anchor_dwell > 15, 15, anchor_dwell)
   ) %>%
   filter(anchor_dwell >= 0) %>%
   group_by(tour_type, anchor_dwell) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
-  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 2)) %>%
   select(-weight) %>%
   pivot_wider(names_from = tour_type, values_from = target_pct) %>%
   arrange(anchor_dwell) %>%
