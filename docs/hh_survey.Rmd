@@ -137,7 +137,8 @@ trip_with_taz <- translate_trip %>%
   mutate(unique_id = paste(DESTINATION_LON, DESTINATION_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(DestinationTAZ = TAZ) %>%
-  select(-unique_id)
+  select(-unique_id) %>%
+  arrange(HOUSEID, PERSONID, TRIPID)
 ```
 
 # Household Structure
@@ -174,6 +175,7 @@ hh_with_structure <- hh_with_tazs %>%
 # Convert to model modes
 
 ```{r}
+# create start/end time fields that can be subtracted
 convert_modes <- trip_with_taz %>%
   mutate(
     mode_model = case_when(
@@ -181,7 +183,9 @@ convert_modes <- trip_with_taz %>%
       TRPTRANS == "auto" & NUMONTRP == 2 ~ "hov2",
       TRPTRANS == "auto" & NUMONTRP >= 3 ~ "hov3",
       TRUE ~ TRPTRANS
-    )
+    ),
+    start_mins = (STRTTIME %/% 100 * 60) + STRTTIME %% 100,
+    end_mins = (ENDTIME %/% 100 * 60) + ENDTIME %% 100
   )
 ```
 
@@ -347,6 +351,56 @@ tour_file <- id_tour_mode %>%
     by = "HOUSEID"
   )
 ```
+
+# ID Subtours
+When someone on a work tour leaves work and returns to work
+
+```{r}
+work_address <- id_tour_mode %>%
+  filter(tour_type == "Work" & anchor == 1) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  summarize(work_address = first(DESTINATION_STREETADDR))
+  
+id_subtours <- id_tour_mode %>%
+  # subtours are only counted on work tours
+  filter(tour_type == "Work") %>%
+  left_join(work_address, by = c("HOUSEID", "PERSONID", "tour_num")) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  mutate(
+    is_work = ifelse(work_address == DESTINATION_STREETADDR & WHYTO == "Work", 1, 0),
+    is_work_cume = cumsum(is_work),
+    subtour_start = ifelse(is_work == 1 & max(is_work_cume) > is_work_cume, 1, 0),
+    subtour_start = lag(subtour_start),
+    subtour_start = ifelse(is.na(subtour_start), 0, subtour_start),
+    subtour_end = ifelse(is_work == 1 & is_work_cume > 1, 1, 0),
+    start_cume = cumsum(subtour_start),
+    end_cume = cumsum(subtour_end),
+    start_cume = ifelse(start_cume == end_cume & start_cume == lag(end_cume), 0 , start_cume),
+    start_cume = ifelse(is.na(start_cume), 0, start_cume),
+    subtour_num = start_cume
+  )
+
+subtours <- id_subtours %>%
+  filter(subtour_num > 0) %>%
+  group_by(tour_id, HOUSEID, subtour_num) %>%
+  # # Subtours that go to other work locations or university are not considered
+  # mutate(subtour_purp = nth(DESTINATION_LOCTYPE, 1)) %>%
+  # filter(subtour_purp == "Other") %>%
+  summarize(
+    subtour_duration = max(end_mins) - min(start_mins),
+    subtour_start_hr = min(STRTTIME %/% 100),
+    # subtour_purp = first(subtour_purp),
+    primary_mode = first(primary_mode)
+  ) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) %>%
+  select(-HOUSEID)
+```
+
 
 ```{r}
 tours_by_hh <- tour_file %>%
@@ -603,6 +657,62 @@ int_stop_duration <- id_tour_mode %>%
   pivot_wider(names_from = tour_type, values_from = target_pct) %>%
   arrange(ID) %>%
   select(-ID)
+
+# subtour frequency
+tour_add_subtour <- tour_file %>%
+  left_join(
+    subtours %>%
+      group_by(tour_id) %>%
+      summarize(subtour_count = n()),
+    by = "tour_id"
+  ) %>%
+  mutate(subtour_count = ifelse(is.na(subtour_count), 0, subtour_count))
+subtour_freq <- tour_add_subtour %>%
+  group_by(subtour_count) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight)
+
+# subtour duration
+subtour_duration <- subtours %>%
+  mutate(
+    Alternative = case_when(
+      subtour_duration < 30 ~ "0 - 30",
+      subtour_duration < 60 ~ "30 - 60",
+      subtour_duration < 90 ~ "60 - 90",
+      subtour_duration < 120 ~ "90 - 120",
+      TRUE < 150 ~ "120 - 150"
+    ),
+    ID = case_when(
+      subtour_duration < 30 ~ 1,
+      subtour_duration < 60 ~ 2,
+      subtour_duration < 90 ~ 3,
+      subtour_duration < 120 ~ 4,
+      TRUE < 150 ~ 5
+    )
+  ) %>%
+  group_by(Alternative, ID) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+# subtour mode
+subtour_mode <- subtours %>%
+  group_by(primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight)
+
+# subtour tod
+subtour_tod <- subtours %>%
+  group_by(subtour_start_hr) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight)
+  
 ```
 
 
@@ -610,8 +720,8 @@ int_stop_duration <- id_tour_mode %>%
 # Outputs
 write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv", na = "")
 write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv", na = "")
-write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv", na = "")
-write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv", na = "")
+write_csv(tour_add_subtour, "data/_private/hh_survey/output/output_tours.csv", na = "")
+write_csv(id_subtours, "data/_private/hh_survey/output/output_trips.csv", na = "")
 
 # calibration targets
 write_csv(auto_own, "data/_private/hh_survey/output/calibration_targets/auto_ownership.csv", na = "")
@@ -627,5 +737,9 @@ write_csv(tod, "data/_private/hh_survey/output/calibration_targets/time_of_day.c
 write_csv(activity_duration, "data/_private/hh_survey/output/calibration_targets/activity_duration.csv", na = "")
 write_csv(intermediate_freq, "data/_private/hh_survey/output/calibration_targets/intermediate_freq.csv", na = "")
 write_csv(int_stop_duration, "data/_private/hh_survey/output/calibration_targets/int_stop_duration.csv", na = "")
+write_csv(subtour_freq, "data/_private/hh_survey/output/calibration_targets/subtour_freq.csv", na = "")
+write_csv(subtour_duration, "data/_private/hh_survey/output/calibration_targets/subtour_duration.csv", na = "")
+write_csv(subtour_mode, "data/_private/hh_survey/output/calibration_targets/subtour_mode.csv", na = "")
+write_csv(subtour_tod, "data/_private/hh_survey/output/calibration_targets/subtour_tod.csv", na = "")
 ```
 
