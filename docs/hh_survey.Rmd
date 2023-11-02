@@ -812,7 +812,7 @@ joint_comp <- trip_add_hh_tour_id %>%
   mutate(Alternative = case_when(
     A + K == HHSIZE ~ "All",
     TRUE ~ paste0("A", A, "K", K)
-  ))%>%
+  )) %>%
   # Add household weight
   left_join(
     hh_with_structure %>%
@@ -828,6 +828,68 @@ joint_comp_other <- joint_comp %>%
 
 joint_comp_shop <- joint_comp %>%
   filter(tour_type == "Shop") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# joint activity duration
+joint_dur <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    anchor_dwell = max(anchor_dwell),
+    tour_type = first(tour_type)
+  ) %>%
+  mutate(Alternative = case_when(
+    anchor_dwell < 30 ~ "0 - 30",
+    anchor_dwell < 60 ~ "30 - 60",
+    anchor_dwell < 90 ~ "60 - 90",
+    anchor_dwell < 120 ~ "90 - 120",
+    anchor_dwell < 150 ~ "120 - 150",
+    anchor_dwell < 180 ~ "150 - 180",
+    anchor_dwell < 210 ~ "180 - 210",
+    anchor_dwell < 240 ~ "210 - 240",
+    anchor_dwell < 270 ~ "240 - 270",
+    anchor_dwell < 300 ~ "270 - 300",
+    TRUE ~ "300 - 330"
+  )) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_dur_other <- joint_dur %>%
+  filter(tour_type == "Other" & anchor_dwell < 330) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_dur_shop <- joint_dur %>%
+  filter(tour_type == "Shop" & anchor_dwell < 180) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+  
+# Join tour frequency
+joint_freq <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(tour_type = first(tour_type)) %>%
+  group_by(HOUSEID, tour_type) %>%
+  summarize(count = n ()) %>%
+  mutate(
+    count = ifelse(count > 2, 2, count),
+    count = ifelse(tour_type == "Shop", min(1, count), count)
+  ) %>%
+  pivot_wider(id_cols = HOUSEID, names_from = tour_type, values_from = count, values_fill = 0) %>%
+  mutate(Alternative = paste0("o", Other, "s", Shop)) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) %>%
   group_by(Alternative) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
@@ -862,5 +924,8 @@ write_csv(subtour_mode, "data/_private/hh_survey/output/calibration_targets/subt
 write_csv(subtour_tod, "data/_private/hh_survey/output/calibration_targets/subtour_tod.csv", na = "")
 write_csv(joint_comp_other, "data/_private/hh_survey/output/calibration_targets/joint_comp_other.csv", na = "")
 write_csv(joint_comp_shop, "data/_private/hh_survey/output/calibration_targets/joint_comp_shop.csv", na = "")
+write_csv(joint_dur_other, "data/_private/hh_survey/output/calibration_targets/joint_dur_other.csv", na = "")
+write_csv(joint_dur_shop, "data/_private/hh_survey/output/calibration_targets/joint_dur_shop.csv", na = "")
+write_csv(joint_freq, "data/_private/hh_survey/output/calibration_targets/joint_freq.csv", na = "")
 ```
 
