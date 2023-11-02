@@ -775,7 +775,7 @@ joint_comp <- trip_add_hh_tour_id %>%
   mutate(across(ONTD_P1:ONTD_P15, ~ ifelse(max(.) > 0, 1, 0))) %>%
   slice(1) %>%
   ungroup() %>%
-  select(HOUSEID, hh_tour_id, ONTD_P1:ONTD_P15) %>%
+  select(HOUSEID, hh_tour_id, tour_type, ONTD_P1:ONTD_P15) %>%
   pivot_longer(cols = ONTD_P1:ONTD_P15, names_to = "PERSONID", values_to = "on_trip") %>%
   mutate(PERSONID = as.double(gsub("ONTD_P", "", PERSONID))) %>%
   filter(on_trip == 1) %>%
@@ -789,11 +789,11 @@ joint_comp <- trip_add_hh_tour_id %>%
     by = c("HOUSEID", "PERSONID")
   ) %>%
   mutate(type = ifelse(R_AGE > 17, "A", "K")) %>%
-  group_by(HOUSEID, hh_tour_id, type) %>%
+  group_by(HOUSEID, hh_tour_id, tour_type, type) %>%
   summarize(count = n()) %>%
   ungroup() %>%
   pivot_wider(
-    id_cols = HOUSEID:hh_tour_id, names_from = type, values_from = count,
+    id_cols = HOUSEID:tour_type, names_from = type, values_from = count,
     values_fill = 0
   ) %>%
   ungroup() %>%
@@ -818,12 +818,19 @@ joint_comp <- trip_add_hh_tour_id %>%
     hh_with_structure %>%
       select(HOUSEID, weight = WTHHFIN5D_HI),
     by = "HOUSEID"
-  ) %>%
-  # # ignore the 
-  # filter(Alternative != "A1K0") %>%
+  ) 
+
+joint_comp_other <- joint_comp %>%
+  filter(tour_type == "Other") %>%
   group_by(Alternative) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
-  mutate(target_share = round(weight / sum(weight), 2))
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_comp_shop <- joint_comp %>%
+  filter(tour_type == "Shop") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
 ```
 
 
@@ -853,7 +860,7 @@ write_csv(subtour_freq, "data/_private/hh_survey/output/calibration_targets/subt
 write_csv(subtour_duration, "data/_private/hh_survey/output/calibration_targets/subtour_duration.csv", na = "")
 write_csv(subtour_mode, "data/_private/hh_survey/output/calibration_targets/subtour_mode.csv", na = "")
 write_csv(subtour_tod, "data/_private/hh_survey/output/calibration_targets/subtour_tod.csv", na = "")
-write_csv(joint_comp, "data/_private/hh_survey/output/calibration_targets/joint_composition.csv", na = "")
-
+write_csv(joint_comp_other, "data/_private/hh_survey/output/calibration_targets/joint_comp_other.csv", na = "")
+write_csv(joint_comp_shop, "data/_private/hh_survey/output/calibration_targets/joint_comp_shop.csv", na = "")
 ```
 
