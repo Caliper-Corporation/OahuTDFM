@@ -55,17 +55,21 @@ translate_table <- function(tbl){
 translate_hh <- translate_table(hh)
 translate_per <- translate_table(per)
 translate_trip <- translate_table(trip)
+
+# also change the ONTD_P fields in the trip table
+trip_fix_ontd <- translate_trip %>%
+  mutate(across(ONTD_P1:ONTD_P15, ~ifelse(. == 1, 1, 0)))
 ```
 
 # Checking the survey
 
 ```{r}
 
-translate_trip %>%
+trip_fix_ontd %>%
   group_by(LOOP_TRIP) %>%
   summarize(count = n())
 
-translate_trip %>%
+trip_fix_ontd %>%
   group_by(TRAVDAY) %>%
   summarize(count = n())
 
@@ -73,7 +77,7 @@ translate_hh %>%
   group_by(FLAG100) %>%
   summarize(count = n())
 
-translate_trip %>%
+trip_fix_ontd %>%
   group_by(HOUSEID, PERSONID) %>%
   mutate(check = ifelse(ORIGIN_LOCTYPE == "Home", 1, 0)) %>%
   summarize(home_count = sum(check))
@@ -130,7 +134,7 @@ per_with_taz <- translate_per %>%
   rename(SchoolTAZ = TAZ) %>%
   select(-unique_id)
 
-trip_with_taz <- translate_trip %>%
+trip_with_taz <- trip_fix_ontd %>%
   mutate(unique_id = paste(ORIGIN_LON, ORIGIN_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(OriginTAZ = TAZ) %>%
@@ -326,7 +330,32 @@ id_tour_mode <- mark_anchor %>%
   ) %>%
   select(-temp, PSGR_FLG_temp)
 
-tour_file <- id_tour_mode %>%
+trip_mark_joint_tours <- id_tour_mode %>%
+  mutate(
+    hhmem_on_tour = NUMONTRP - NONHHCNT,
+    joint_tour = ifelse(max(hhmem_on_tour > 1), 1, 0),
+    joint_tour = max(joint_tour)
+  )
+
+# this table creates a field like "1_2" specifying that hh members 1 and 2
+# were on this tour.
+hh_pers_on_tour <- trip_mark_joint_tours %>%
+  group_by(tour_id) %>%
+  select(tour_id, ONTD_P1:ONTD_P15) %>%
+  # if a HH member was on any trip of the tour, consider them as on the tour
+  mutate(across(ONTD_P1:ONTD_P15, ~ ifelse(max(.) > 0, 1, 0))) %>%
+  pivot_longer(cols = ONTD_P1:ONTD_P15, names_to = "PERSONID", values_to = "on_tour") %>%
+  mutate(person_num = as.numeric(gsub("ONTD_P", "", PERSONID))) %>%
+  filter(on_tour == 1) %>%
+  group_by(tour_id, PERSONID) %>%
+  slice(1) %>%
+  pivot_wider(id_cols = tour_id, names_from = PERSONID, values_from = person_num) %>%
+  unite("hh_perids_on_tour", ONTD_P1:ONTD_P11, na.rm = TRUE)
+
+trip_add_pers_on_tour <- trip_mark_joint_tours %>%
+  left_join(hh_pers_on_tour, by = "tour_id")
+
+tour_file <- trip_add_pers_on_tour %>%
   group_by(tour_id) %>%
   summarize(
     HOUSEID = first(HOUSEID),
@@ -335,6 +364,8 @@ tour_file <- id_tour_mode %>%
     tour_type = first(tour_type),
     tour_num = first(tour_num),
     num_trips = n(),
+    joint_tour = first(joint_tour),
+    hh_perids_on_tour = first(hh_perids_on_tour),
     anchor_taz = max(anchor_taz),
     anchor_dwell = max(anchor_dwell),
     anchor_time = ENDTIME[anchor == 1],
@@ -356,12 +387,12 @@ tour_file <- id_tour_mode %>%
 When someone on a work tour leaves work and returns to work
 
 ```{r}
-work_address <- id_tour_mode %>%
+work_address <- trip_add_pers_on_tour %>%
   filter(tour_type == "Work" & anchor == 1) %>%
   group_by(HOUSEID, PERSONID, tour_num) %>%
   summarize(work_address = first(DESTINATION_STREETADDR))
   
-id_subtours <- id_tour_mode %>%
+id_subtours <- trip_add_pers_on_tour %>%
   # subtours are only counted on work tours
   filter(tour_type == "Work") %>%
   left_join(work_address, by = c("HOUSEID", "PERSONID", "tour_num")) %>%
@@ -625,7 +656,7 @@ intermediate_freq <- tour_file %>%
   pivot_wider(names_from = tour_type, values_from = target_pct)
 
 # Intermediate stop duration
-int_stop_duration <- id_tour_mode %>%
+int_stop_duration <- trip_add_pers_on_tour %>%
   filter(int_stop == 1, DWELTIME <= 180) %>%
   mutate(Alternative = case_when(
     DWELTIME <= 15 ~ "0 to 15",
@@ -715,6 +746,87 @@ subtour_tod <- subtours %>%
   
 ```
 
+# NonMandatory Tours
+
+```{r}
+# While mandatory tours are modeled as personal choices, NM are modeled as
+# household choices. This means repeated tour records (logged in the survey by
+# tour people who traveled together) must be removed.
+
+# create a tour id that is unique to the household.
+
+
+trip_add_hh_tour_id <- trip_add_pers_on_tour %>%
+  mutate(hh_tour_id = paste(
+    HOUSEID,
+    first(ORIGIN_LOC),
+    first(STRTTIME),
+    last(ENDTIME),
+    first(hh_perids_on_tour),
+    sep = "_")
+  )
+
+# Joint tours (nonmandatory)
+joint_comp <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(hh_tour_id) %>%
+  # make sure that everyone on any part of the tour is listed for all trips
+  # in the tour before taking the first trip record.
+  mutate(across(ONTD_P1:ONTD_P15, ~ ifelse(max(.) > 0, 1, 0))) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(HOUSEID, hh_tour_id, ONTD_P1:ONTD_P15) %>%
+  pivot_longer(cols = ONTD_P1:ONTD_P15, names_to = "PERSONID", values_to = "on_trip") %>%
+  mutate(PERSONID = as.double(gsub("ONTD_P", "", PERSONID))) %>%
+  filter(on_trip == 1) %>%
+  # # only keep the first instance of a person appearing on the tour to avoid
+  # # double counting
+  # group_by(tour_id, PERSONID) %>%
+  # slice(1) %>%
+  left_join(
+    translate_per %>%
+      select(HOUSEID, PERSONID, R_AGE),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  mutate(type = ifelse(R_AGE > 17, "A", "K")) %>%
+  group_by(HOUSEID, hh_tour_id, type) %>%
+  summarize(count = n()) %>%
+  ungroup() %>%
+  pivot_wider(
+    id_cols = HOUSEID:hh_tour_id, names_from = type, values_from = count,
+    values_fill = 0
+  ) %>%
+  ungroup() %>%
+  filter(A > 0) %>%
+  mutate(
+    A = ifelse(A > 2, 2, A),
+    K = ifelse(A == 1 & K > 3, 3, K),
+    K = ifelse(A == 2 & K > 1, 1, K)
+  ) %>%
+  # check against total household size and flag those where all HH members
+  # traveled
+  left_join(
+    translate_hh %>% select(HOUSEID, HHSIZE),
+    by = "HOUSEID"
+  ) %>%
+  mutate(Alternative = case_when(
+    A + K == HHSIZE ~ "All",
+    TRUE ~ paste0("A", A, "K", K)
+  ))%>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) %>%
+  # # ignore the 
+  # filter(Alternative != "A1K0") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight), 2))
+```
+
+
 
 ```{r, eval=FALSE}
 # Outputs
@@ -741,5 +853,7 @@ write_csv(subtour_freq, "data/_private/hh_survey/output/calibration_targets/subt
 write_csv(subtour_duration, "data/_private/hh_survey/output/calibration_targets/subtour_duration.csv", na = "")
 write_csv(subtour_mode, "data/_private/hh_survey/output/calibration_targets/subtour_mode.csv", na = "")
 write_csv(subtour_tod, "data/_private/hh_survey/output/calibration_targets/subtour_tod.csv", na = "")
+write_csv(joint_comp, "data/_private/hh_survey/output/calibration_targets/joint_composition.csv", na = "")
+
 ```
 
