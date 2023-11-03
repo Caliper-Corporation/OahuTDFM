@@ -1012,7 +1012,8 @@ nm_tours <- trip_add_hh_tour_id %>%
     tour_type = first(tour_type),
     int_stop_fwd = sum(int_stop_fwd), # this double counts but gets capped at 1
     int_stop_ret = sum(int_stop_ret),
-    joint_tour = first(joint_tour)
+    joint_tour = first(joint_tour),
+    primary_mode = first(primary_mode)
   ) %>%  
   mutate(
     int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
@@ -1145,6 +1146,28 @@ solo_freq <- per_add_tour_counts %>%
   group_by(Alternative) %>%
   summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# solo mode choice
+solo_mc <- nm_tours %>%
+  filter(joint_tour == 0) %>%
+  mutate(primary_mode = case_when(
+    primary_mode %in% c("hov2", "hov3") ~ "carpool",
+    primary_mode == "rail" ~ "other",
+    primary_mode == "school_bus" ~ "other",
+    primary_mode == "taxi" ~ "other",
+    primary_mode == "tnc" ~ "other",
+    TRUE ~ primary_mode
+  )) 
+solo_mc_other <- solo_mc %>%
+  filter(tour_type == "Other") %>%
+  group_by(primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+solo_mc_shop <- solo_mc %>%
+  filter(tour_type == "Shop") %>%
+  group_by(primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
 ```
 
 
@@ -1190,5 +1213,7 @@ write_csv(nm_pattern_choice, "data/_private/hh_survey/output/calibration_targets
 write_csv(solo_dur_other, "data/_private/hh_survey/output/calibration_targets/solo_dur_other.csv", na = "")
 write_csv(solo_dur_shop, "data/_private/hh_survey/output/calibration_targets/solo_dur_shop.csv", na = "")
 write_csv(solo_freq, "data/_private/hh_survey/output/calibration_targets/solo_freq.csv", na = "")
+write_csv(solo_mc_other, "data/_private/hh_survey/output/calibration_targets/solo_mc_other.csv", na = "")
+write_csv(solo_mc_shop, "data/_private/hh_survey/output/calibration_targets/solo_mc_shop.csv", na = "")
 ```
 
