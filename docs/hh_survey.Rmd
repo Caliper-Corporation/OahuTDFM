@@ -1004,24 +1004,29 @@ joint_stop_dur_shop <- joint_stop_dur %>%
   arrange(ID) %>%
   select(-ID)
 
-# joint intermediate stop frequency
-
-joint_stop_freq <- trip_add_hh_tour_id %>%
-  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+# create a nonmandatory tour file
+nm_tours <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12"))) %>%
   group_by(HOUSEID, hh_tour_id) %>%
   summarize(
     tour_type = first(tour_type),
     int_stop_fwd = sum(int_stop_fwd), # this double counts but gets capped at 1
-    int_stop_ret = sum(int_stop_ret)
+    int_stop_ret = sum(int_stop_ret),
+    joint_tour = first(joint_tour)
+  ) %>%  
+  mutate(
+    int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
+    int_stop_ret = ifelse(int_stop_ret > 1, 1, int_stop_ret)
   ) %>%
   left_join(
     hh_with_structure %>%
       select(HOUSEID, weight = WTHHFIN5D_HI),
     by = "HOUSEID"
-  ) %>%
+  )
+
+# joint intermediate stop frequency
+joint_stop_freq <- nm_tours %>%
   mutate(
-    int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
-    int_stop_ret = ifelse(int_stop_ret > 1, 1, int_stop_ret),
     Alternative = paste0(int_stop_fwd, "_", int_stop_ret)
   ) %>%
   group_by(tour_type, Alternative) %>%
@@ -1029,6 +1034,29 @@ joint_stop_freq <- trip_add_hh_tour_id %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
   select(-weight) %>%
   pivot_wider(names_from = tour_type, values_from = target_pct)
+
+# HH nm pattern choice
+summary_tbl <- nm_tours %>%
+  mutate(indiv_tour = ifelse(joint_tour == 0, 1, 0)) %>%
+  group_by(HOUSEID) %>%
+  summarize(
+    joint_tour = sum(joint_tour),
+    indiv_tour = sum(indiv_tour)
+  ) 
+nm_pattern_choice <- hh_with_structure %>%
+  select(HOUSEID, weight = WTHHFIN5D_HI) %>%
+  left_join(summary_tbl, by = "HOUSEID") %>%
+  replace_na(list("joint_tour" = 0, "indiv_tour" = 0)) %>%
+  mutate(pattern = case_when(
+    joint_tour + indiv_tour == 0 ~ "N",
+    joint_tour >= 1 & indiv_tour == 0 ~ "J",
+    joint_tour == 0 & indiv_tour >= 1 ~ "I",
+    TRUE ~ "IJ"
+  )) %>%
+  group_by(pattern) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1))
+  
 ```
 
 
