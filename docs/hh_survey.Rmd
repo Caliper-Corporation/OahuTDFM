@@ -1013,9 +1013,11 @@ nm_tours <- trip_add_hh_tour_id %>%
     int_stop_fwd = sum(int_stop_fwd), # this double counts but gets capped at 1
     int_stop_ret = sum(int_stop_ret),
     joint_tour = first(joint_tour),
-    primary_mode = first(primary_mode)
+    primary_mode = first(primary_mode),
+    anchor_time = first(ENDTIME[anchor == 1]),
   ) %>%  
   mutate(
+    anchor_hr = anchor_time %/% 100,
     int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
     int_stop_ret = ifelse(int_stop_ret > 1, 1, int_stop_ret)
   ) %>%
@@ -1106,8 +1108,6 @@ solo_dur_shop <- joint_dur %>%
 
 # solo tour frequency. these are person level targets and only applicable
 # to people in households that make solo tours (have 'i' in the solo pattern)
-
-
 summary_tbl <- tour_file %>%
   filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 0) %>%
   select(HOUSEID, PERSONID, tour_type) %>%
@@ -1168,6 +1168,18 @@ solo_mc_shop <- solo_mc %>%
   group_by(primary_mode) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# solo tod
+solo_tod_other <- nm_tours %>%
+  filter(joint_tour == 0 & tour_type == "Other") %>%
+  group_by(anchor_hr) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+solo_tod_shop <- nm_tours %>%
+  filter(joint_tour == 0 & tour_type == "Shop") %>%
+  group_by(anchor_hr) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
 ```
 
 
@@ -1215,5 +1227,7 @@ write_csv(solo_dur_shop, "data/_private/hh_survey/output/calibration_targets/sol
 write_csv(solo_freq, "data/_private/hh_survey/output/calibration_targets/solo_freq.csv", na = "")
 write_csv(solo_mc_other, "data/_private/hh_survey/output/calibration_targets/solo_mc_other.csv", na = "")
 write_csv(solo_mc_shop, "data/_private/hh_survey/output/calibration_targets/solo_mc_shop.csv", na = "")
+write_csv(solo_tod_other, "data/_private/hh_survey/output/calibration_targets/solo_tod_other.csv", na = "")
+write_csv(solo_tod_shop, "data/_private/hh_survey/output/calibration_targets/solo_tod_shop.csv", na = "")
 ```
 
