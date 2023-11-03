@@ -223,6 +223,7 @@ id_tours <- split_k12_univ %>%
     tour_start = case_when(
       TRIPID == 1 ~ 1,
       ORIGIN_LOCTYPE == "Home" ~ 1,
+      ORIGIN_LOCTYPE == "Other" & WHYFROM == "Home" ~ 1,
       TRUE ~ 0
     ),
     tour_num = cumsum(tour_start)
@@ -751,11 +752,9 @@ subtour_tod <- subtours %>%
 ```{r}
 # While mandatory tours are modeled as personal choices, NM are modeled as
 # household choices. This means repeated tour records (logged in the survey by
-# tour people who traveled together) must be removed.
+# two+ people who traveled together) must be removed.
 
 # create a tour id that is unique to the household.
-
-
 trip_add_hh_tour_id <- trip_add_pers_on_tour %>%
   mutate(hh_tour_id = paste(
     HOUSEID,
@@ -764,7 +763,13 @@ trip_add_hh_tour_id <- trip_add_pers_on_tour %>%
     last(ENDTIME),
     first(hh_perids_on_tour),
     sep = "_")
-  )
+  ) %>%
+  # remove PUDO tours from the table. These are generally taking kids to school
+  # and are handled separately by the model.
+  group_by(hh_tour_id) %>%
+  mutate(is_pudo = ifelse("PUDO" %in% WHYTO, 1, 0)) %>%
+  filter(is_pudo == 0)
+  
 
 # Joint tours (nonmandatory)
 joint_comp <- trip_add_hh_tour_id %>%
@@ -872,7 +877,7 @@ joint_dur_shop <- joint_dur %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
   
-# Join tour frequency
+# Joint tour frequency
 joint_freq <- trip_add_hh_tour_id %>%
   filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
   group_by(HOUSEID, hh_tour_id) %>%
@@ -890,6 +895,57 @@ joint_freq <- trip_add_hh_tour_id %>%
       select(HOUSEID, weight = WTHHFIN5D_HI),
     by = "HOUSEID"
   ) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour mc
+joint_mc <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  mutate(primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "carpool", primary_mode)) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    Alternative = first(primary_mode),
+    tour_type = first(tour_type)
+  ) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_mc_other <- joint_mc %>%
+  filter(tour_type == "Other") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_mc_shop <- joint_mc %>%
+  filter(tour_type == "Shop") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour start time
+joint_tod <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  mutate(
+    anchor_time = ENDTIME[anchor == 1],
+    anchor_hr = anchor_time %/% 100
+  ) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    Alternative = first(anchor_hr),
+    tour_type = first(tour_type)
+  ) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_tod_other <- joint_tod %>%
+  filter(tour_type == "Other") %>%
   group_by(Alternative) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
@@ -927,5 +983,7 @@ write_csv(joint_comp_shop, "data/_private/hh_survey/output/calibration_targets/j
 write_csv(joint_dur_other, "data/_private/hh_survey/output/calibration_targets/joint_dur_other.csv", na = "")
 write_csv(joint_dur_shop, "data/_private/hh_survey/output/calibration_targets/joint_dur_shop.csv", na = "")
 write_csv(joint_freq, "data/_private/hh_survey/output/calibration_targets/joint_freq.csv", na = "")
+write_csv(joint_mc_other, "data/_private/hh_survey/output/calibration_targets/joint_mc_other.csv", na = "")
+write_csv(joint_mc_shop, "data/_private/hh_survey/output/calibration_targets/joint_mc_shop.csv", na = "")
 ```
 
