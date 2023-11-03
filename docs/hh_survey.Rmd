@@ -926,11 +926,20 @@ joint_mc_shop <- joint_mc %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
 
+
+
+trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  mutate(anchor_count = sum(anchor)) %>%
+  filter(anchor_count > 1) %>%
+  write_csv("test.csv")
+
+
 # Joint tour start time
 joint_tod <- trip_add_hh_tour_id %>%
   filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
   mutate(
-    anchor_time = ENDTIME[anchor == 1],
+    anchor_time = first(ENDTIME[anchor == 1]),
     anchor_hr = anchor_time %/% 100
   ) %>%
   group_by(HOUSEID, hh_tour_id) %>%
@@ -946,6 +955,12 @@ joint_tod <- trip_add_hh_tour_id %>%
 
 joint_tod_other <- joint_tod %>%
   filter(tour_type == "Other") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_tod_shop <- joint_tod %>%
+  filter(tour_type == "Shop") %>%
   group_by(Alternative) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
@@ -985,5 +1000,7 @@ write_csv(joint_dur_shop, "data/_private/hh_survey/output/calibration_targets/jo
 write_csv(joint_freq, "data/_private/hh_survey/output/calibration_targets/joint_freq.csv", na = "")
 write_csv(joint_mc_other, "data/_private/hh_survey/output/calibration_targets/joint_mc_other.csv", na = "")
 write_csv(joint_mc_shop, "data/_private/hh_survey/output/calibration_targets/joint_mc_shop.csv", na = "")
+write_csv(joint_tod_other, "data/_private/hh_survey/output/calibration_targets/joint_tod_other.csv", na = "")
+write_csv(joint_tod_shop, "data/_private/hh_survey/output/calibration_targets/joint_tod_shop.csv", na = "")
 ```
 
