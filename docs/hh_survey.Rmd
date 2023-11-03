@@ -926,15 +926,6 @@ joint_mc_shop <- joint_mc %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
 
-
-
-trip_add_hh_tour_id %>%
-  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
-  mutate(anchor_count = sum(anchor)) %>%
-  filter(anchor_count > 1) %>%
-  write_csv("test.csv")
-
-
 # Joint tour start time
 joint_tod <- trip_add_hh_tour_id %>%
   filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
@@ -964,6 +955,80 @@ joint_tod_shop <- joint_tod %>%
   group_by(Alternative) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour stop duration
+joint_stop_dur <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  filter(int_stop == 1, DWELTIME <= 180) %>%
+  mutate(Alternative = case_when(
+    DWELTIME <= 15 ~ "0 to 15",
+    DWELTIME <= 30 ~ "15 to 30",
+    DWELTIME <= 45 ~ "30 to 45",
+    DWELTIME <= 60 ~ "45 to 60",
+    DWELTIME <= 75 ~ "60 to 75",
+    DWELTIME <= 90 ~ "75 to 90",
+    DWELTIME <= 105 ~ "90 to 105",
+    DWELTIME <= 120 ~ "105 to 120",
+    TRUE ~ "120 to 180"
+  )) %>%
+  # add this just to make sorting the table easier
+  mutate(ID = case_when(
+    DWELTIME <= 15 ~ 1,
+    DWELTIME <= 30 ~ 2,
+    DWELTIME <= 45 ~ 3,
+    DWELTIME <= 60 ~ 4,
+    DWELTIME <= 75 ~ 5,
+    DWELTIME <= 90 ~ 6,
+    DWELTIME <= 105 ~ 7,
+    DWELTIME <= 120 ~ 8,
+    TRUE ~ 9
+  )) 
+
+joint_stop_dur_other <- joint_stop_dur %>%
+  filter(tour_type == "Other") %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+joint_stop_dur_shop <- joint_stop_dur %>%
+  filter(tour_type == "Shop") %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+# joint intermediate stop frequency
+
+joint_stop_freq <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    tour_type = first(tour_type),
+    int_stop_fwd = sum(int_stop_fwd), # this double counts but gets capped at 1
+    int_stop_ret = sum(int_stop_ret)
+  ) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) %>%
+  mutate(
+    int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
+    int_stop_ret = ifelse(int_stop_ret > 1, 1, int_stop_ret),
+    Alternative = paste0(int_stop_fwd, "_", int_stop_ret)
+  ) %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct)
 ```
 
 
@@ -1002,5 +1067,8 @@ write_csv(joint_mc_other, "data/_private/hh_survey/output/calibration_targets/jo
 write_csv(joint_mc_shop, "data/_private/hh_survey/output/calibration_targets/joint_mc_shop.csv", na = "")
 write_csv(joint_tod_other, "data/_private/hh_survey/output/calibration_targets/joint_tod_other.csv", na = "")
 write_csv(joint_tod_shop, "data/_private/hh_survey/output/calibration_targets/joint_tod_shop.csv", na = "")
+write_csv(joint_stop_dur_other, "data/_private/hh_survey/output/calibration_targets/joint_stop_dur_other.csv", na = "")
+write_csv(joint_stop_dur_shop, "data/_private/hh_survey/output/calibration_targets/joint_stop_dur_shop.csv", na = "")
+write_csv(joint_stop_freq, "data/_private/hh_survey/output/calibration_targets/joint_stop_freq.csv", na = "")
 ```
 
