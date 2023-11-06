@@ -385,26 +385,35 @@ tour_file <- trip_add_pers_on_tour %>%
 ```
 
 # ID Subtours
-When someone on a work tour leaves work and returns to work
+When someone on a work tour leaves work/univ and returns
 
 ```{r}
 work_address <- trip_add_pers_on_tour %>%
   filter(tour_type == "Work" & anchor == 1) %>%
   group_by(HOUSEID, PERSONID, tour_num) %>%
   summarize(work_address = first(DESTINATION_STREETADDR))
+univ_address <- trip_add_pers_on_tour %>%
+  filter(tour_type == "Univ" & anchor == 1) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  summarize(univ_address = first(DESTINATION_STREETADDR))
   
 id_subtours <- trip_add_pers_on_tour %>%
-  # subtours are only counted on work tours
-  filter(tour_type == "Work") %>%
+  # subtours are only counted on work and university tours
+  filter(tour_type %in% c("Work", "Univ")) %>%
   left_join(work_address, by = c("HOUSEID", "PERSONID", "tour_num")) %>%
+  left_join(univ_address, by = c("HOUSEID", "PERSONID", "tour_num")) %>%
   group_by(HOUSEID, PERSONID, tour_num) %>%
   mutate(
     is_work = ifelse(work_address == DESTINATION_STREETADDR & WHYTO == "Work", 1, 0),
-    is_work_cume = cumsum(is_work),
-    subtour_start = ifelse(is_work == 1 & max(is_work_cume) > is_work_cume, 1, 0),
+    is_work = ifelse(is.na(is_work), 0, is_work),
+    is_univ = ifelse(univ_address == DESTINATION_STREETADDR & WHYTO == "Univ", 1, 0),
+    is_univ = ifelse(is.na(is_univ), 0, is_univ),
+    is_workuniv = pmax(is_work, is_univ),
+    is_workuniv_cume = cumsum(is_workuniv),
+    subtour_start = ifelse(is_workuniv == 1 & max(is_workuniv_cume) > is_workuniv_cume, 1, 0),
     subtour_start = lag(subtour_start),
     subtour_start = ifelse(is.na(subtour_start), 0, subtour_start),
-    subtour_end = ifelse(is_work == 1 & is_work_cume > 1, 1, 0),
+    subtour_end = ifelse(is_workuniv == 1 & is_workuniv_cume > 1, 1, 0),
     start_cume = cumsum(subtour_start),
     end_cume = cumsum(subtour_end),
     start_cume = ifelse(start_cume == end_cume & start_cume == lag(end_cume), 0 , start_cume),
@@ -415,9 +424,9 @@ id_subtours <- trip_add_pers_on_tour %>%
 subtours <- id_subtours %>%
   filter(subtour_num > 0) %>%
   group_by(tour_id, HOUSEID, subtour_num) %>%
-  # # Subtours that go to other work locations or university are not considered
-  # mutate(subtour_purp = nth(DESTINATION_LOCTYPE, 1)) %>%
-  # filter(subtour_purp == "Other") %>%
+  # Subtours that go to other work locations or university are not considered
+  mutate(subtour_purp = nth(DESTINATION_LOCTYPE, 1)) %>%
+  filter(!(subtour_purp %in% c("Work", "Univ"))) %>%
   summarize(
     subtour_duration = max(end_mins) - min(start_mins),
     subtour_start_hr = min(STRTTIME %/% 100),
@@ -700,6 +709,7 @@ tour_add_subtour <- tour_file %>%
   ) %>%
   mutate(subtour_count = ifelse(is.na(subtour_count), 0, subtour_count))
 subtour_freq <- tour_add_subtour %>%
+  filter(tour_type %in% c("Work", "Univ")) %>%
   group_by(subtour_count) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
