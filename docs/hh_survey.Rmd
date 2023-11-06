@@ -55,17 +55,21 @@ translate_table <- function(tbl){
 translate_hh <- translate_table(hh)
 translate_per <- translate_table(per)
 translate_trip <- translate_table(trip)
+
+# also change the ONTD_P fields in the trip table
+trip_fix_ontd <- translate_trip %>%
+  mutate(across(ONTD_P1:ONTD_P15, ~ifelse(. == 1, 1, 0)))
 ```
 
 # Checking the survey
 
 ```{r}
 
-translate_trip %>%
+trip_fix_ontd %>%
   group_by(LOOP_TRIP) %>%
   summarize(count = n())
 
-translate_trip %>%
+trip_fix_ontd %>%
   group_by(TRAVDAY) %>%
   summarize(count = n())
 
@@ -73,7 +77,7 @@ translate_hh %>%
   group_by(FLAG100) %>%
   summarize(count = n())
 
-translate_trip %>%
+trip_fix_ontd %>%
   group_by(HOUSEID, PERSONID) %>%
   mutate(check = ifelse(ORIGIN_LOCTYPE == "Home", 1, 0)) %>%
   summarize(home_count = sum(check))
@@ -130,14 +134,15 @@ per_with_taz <- translate_per %>%
   rename(SchoolTAZ = TAZ) %>%
   select(-unique_id)
 
-trip_with_taz <- translate_trip %>%
+trip_with_taz <- trip_fix_ontd %>%
   mutate(unique_id = paste(ORIGIN_LON, ORIGIN_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(OriginTAZ = TAZ) %>%
   mutate(unique_id = paste(DESTINATION_LON, DESTINATION_LAT, sep = "_")) %>%
   left_join(geocoded_pts, by = "unique_id") %>%
   rename(DestinationTAZ = TAZ) %>%
-  select(-unique_id)
+  select(-unique_id) %>%
+  arrange(HOUSEID, PERSONID, TRIPID)
 ```
 
 # Household Structure
@@ -174,6 +179,7 @@ hh_with_structure <- hh_with_tazs %>%
 # Convert to model modes
 
 ```{r}
+# create start/end time fields that can be subtracted
 convert_modes <- trip_with_taz %>%
   mutate(
     mode_model = case_when(
@@ -181,7 +187,9 @@ convert_modes <- trip_with_taz %>%
       TRPTRANS == "auto" & NUMONTRP == 2 ~ "hov2",
       TRPTRANS == "auto" & NUMONTRP >= 3 ~ "hov3",
       TRUE ~ TRPTRANS
-    )
+    ),
+    start_mins = (STRTTIME %/% 100 * 60) + STRTTIME %% 100,
+    end_mins = (ENDTIME %/% 100 * 60) + ENDTIME %% 100
   )
 ```
 
@@ -215,6 +223,7 @@ id_tours <- split_k12_univ %>%
     tour_start = case_when(
       TRIPID == 1 ~ 1,
       ORIGIN_LOCTYPE == "Home" ~ 1,
+      ORIGIN_LOCTYPE == "Other" & WHYFROM == "Home" ~ 1,
       TRUE ~ 0
     ),
     tour_num = cumsum(tour_start)
@@ -322,7 +331,32 @@ id_tour_mode <- mark_anchor %>%
   ) %>%
   select(-temp, PSGR_FLG_temp)
 
-tour_file <- id_tour_mode %>%
+trip_mark_joint_tours <- id_tour_mode %>%
+  mutate(
+    hhmem_on_tour = NUMONTRP - NONHHCNT,
+    joint_tour = ifelse(max(hhmem_on_tour > 1), 1, 0),
+    joint_tour = max(joint_tour)
+  )
+
+# this table creates a field like "1_2" specifying that hh members 1 and 2
+# were on this tour.
+hh_pers_on_tour <- trip_mark_joint_tours %>%
+  group_by(tour_id) %>%
+  select(tour_id, ONTD_P1:ONTD_P15) %>%
+  # if a HH member was on any trip of the tour, consider them as on the tour
+  mutate(across(ONTD_P1:ONTD_P15, ~ ifelse(max(.) > 0, 1, 0))) %>%
+  pivot_longer(cols = ONTD_P1:ONTD_P15, names_to = "PERSONID", values_to = "on_tour") %>%
+  mutate(person_num = as.numeric(gsub("ONTD_P", "", PERSONID))) %>%
+  filter(on_tour == 1) %>%
+  group_by(tour_id, PERSONID) %>%
+  slice(1) %>%
+  pivot_wider(id_cols = tour_id, names_from = PERSONID, values_from = person_num) %>%
+  unite("hh_perids_on_tour", ONTD_P1:ONTD_P11, na.rm = TRUE)
+
+trip_add_pers_on_tour <- trip_mark_joint_tours %>%
+  left_join(hh_pers_on_tour, by = "tour_id")
+
+tour_file <- trip_add_pers_on_tour %>%
   group_by(tour_id) %>%
   summarize(
     HOUSEID = first(HOUSEID),
@@ -331,6 +365,8 @@ tour_file <- id_tour_mode %>%
     tour_type = first(tour_type),
     tour_num = first(tour_num),
     num_trips = n(),
+    joint_tour = first(joint_tour),
+    hh_perids_on_tour = first(hh_perids_on_tour),
     anchor_taz = max(anchor_taz),
     anchor_dwell = max(anchor_dwell),
     anchor_time = ENDTIME[anchor == 1],
@@ -347,6 +383,65 @@ tour_file <- id_tour_mode %>%
     by = "HOUSEID"
   )
 ```
+
+# ID Subtours
+When someone on a work tour leaves work/univ and returns
+
+```{r}
+work_address <- trip_add_pers_on_tour %>%
+  filter(tour_type == "Work" & anchor == 1) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  summarize(work_address = first(DESTINATION_STREETADDR))
+univ_address <- trip_add_pers_on_tour %>%
+  filter(tour_type == "Univ" & anchor == 1) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  summarize(univ_address = first(DESTINATION_STREETADDR))
+  
+id_subtours <- trip_add_pers_on_tour %>%
+  # subtours are only counted on work and university tours
+  filter(tour_type %in% c("Work", "Univ")) %>%
+  left_join(work_address, by = c("HOUSEID", "PERSONID", "tour_num")) %>%
+  left_join(univ_address, by = c("HOUSEID", "PERSONID", "tour_num")) %>%
+  group_by(HOUSEID, PERSONID, tour_num) %>%
+  mutate(
+    is_work = ifelse(work_address == DESTINATION_STREETADDR & WHYTO == "Work", 1, 0),
+    is_work = ifelse(is.na(is_work), 0, is_work),
+    is_univ = ifelse(univ_address == DESTINATION_STREETADDR & WHYTO == "Univ", 1, 0),
+    is_univ = ifelse(is.na(is_univ), 0, is_univ),
+    is_workuniv = pmax(is_work, is_univ),
+    is_workuniv_cume = cumsum(is_workuniv),
+    subtour_start = ifelse(is_workuniv == 1 & max(is_workuniv_cume) > is_workuniv_cume, 1, 0),
+    subtour_start = lag(subtour_start),
+    subtour_start = ifelse(is.na(subtour_start), 0, subtour_start),
+    subtour_end = ifelse(is_workuniv == 1 & is_workuniv_cume > 1, 1, 0),
+    start_cume = cumsum(subtour_start),
+    end_cume = cumsum(subtour_end),
+    start_cume = ifelse(start_cume == end_cume & start_cume == lag(end_cume), 0 , start_cume),
+    start_cume = ifelse(is.na(start_cume), 0, start_cume),
+    subtour_num = start_cume
+  )
+
+subtours <- id_subtours %>%
+  filter(subtour_num > 0) %>%
+  group_by(tour_id, HOUSEID, subtour_num) %>%
+  # Subtours that go to other work locations or university are not considered
+  mutate(subtour_purp = nth(DESTINATION_LOCTYPE, 1)) %>%
+  filter(!(subtour_purp %in% c("Work", "Univ"))) %>%
+  summarize(
+    subtour_duration = max(end_mins) - min(start_mins),
+    subtour_start_hr = min(STRTTIME %/% 100),
+    # subtour_purp = first(subtour_purp),
+    primary_mode = first(primary_mode)
+  ) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) %>%
+  select(-HOUSEID)
+```
+
 
 ```{r}
 tours_by_hh <- tour_file %>%
@@ -407,7 +502,8 @@ auto_own <- hh_add_tours %>%
 
 # driver's license
 drivers <- per_add_tour_counts %>%
-  filter(R_AGE >= 17) %>%
+  # don't filter bc the choice model is applied to the full pop
+  # filter(R_AGE >= 17) %>%
   group_by(DRIVER) %>%
   summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
@@ -477,27 +573,33 @@ tour_frequency <- tour_file %>%
 
 # mandatory tour mode shares
 mode_choice <- tour_file %>%
-  # Add worker status
-  left_join(
-    per_add_tour_counts %>%
-      select(HOUSEID, PERSONID, WORKER),
-    by = c("HOUSEID", "PERSONID")
-  ) %>%
+  # # Add worker status
+  # left_join(
+  #   per_add_tour_counts %>%
+  #     select(HOUSEID, PERSONID, WORKER),
+  #   by = c("HOUSEID", "PERSONID")
+  # ) %>%
   mutate(
-    tour_type = case_when(
-      tour_type != "Work" ~ tour_type,
-      WORKER == "FullTime" ~ "Work (FT)",
-      TRUE ~ "Work (PT)"
-    ),
-    primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "hov", primary_mode)
+    # tour_type = case_when(
+    #   tour_type != "Work" ~ tour_type,
+    #   WORKER == "FullTime" ~ "Work (FT)",
+    #   TRUE ~ "Work (PT)"
+    # ),
+    primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "hov", primary_mode),
+    primary_mode = ifelse(
+      access_mode != "",
+      paste0(access_mode, "_", primary_mode),
+      primary_mode
+    )
   ) %>%
   group_by(tour_type, primary_mode) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
   select(-weight) %>%
   pivot_wider(names_from = tour_type, values_from = target_pct) %>%
-  arrange(desc(`Work (FT)`)) %>%
-  relocate(`Work (FT)`:`Work (PT)`, .after = primary_mode) %>%
+  # arrange(desc(`Work (FT)`)) %>%
+  arrange(desc(Work)) %>%
+  # relocate(`Work (FT)`:`Work (PT)`, .after = primary_mode) %>%
   relocate(Other, .after = Univ)
 
 # Mandatory time of day
@@ -538,12 +640,13 @@ activity_duration <- tour_file %>%
       WORKER == "FullTime" ~ "Work (FT)",
       TRUE ~ "Work (PT)"
     ),
-    anchor_dwell = anchor_dwell %/% 60
+    anchor_dwell = anchor_dwell %/% 60,
+    anchor_dwell = ifelse(anchor_dwell > 15, 15, anchor_dwell)
   ) %>%
   filter(anchor_dwell >= 0) %>%
   group_by(tour_type, anchor_dwell) %>%
   summarize(weight = sum(weight, na.rm = TRUE)) %>%
-  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 2)) %>%
   select(-weight) %>%
   pivot_wider(names_from = tour_type, values_from = target_pct) %>%
   arrange(anchor_dwell) %>%
@@ -563,7 +666,7 @@ intermediate_freq <- tour_file %>%
   pivot_wider(names_from = tour_type, values_from = target_pct)
 
 # Intermediate stop duration
-int_stop_duration <- id_tour_mode %>%
+int_stop_duration <- trip_add_pers_on_tour %>%
   filter(int_stop == 1, DWELTIME <= 180) %>%
   mutate(Alternative = case_when(
     DWELTIME <= 15 ~ "0 to 15",
@@ -595,15 +698,569 @@ int_stop_duration <- id_tour_mode %>%
   pivot_wider(names_from = tour_type, values_from = target_pct) %>%
   arrange(ID) %>%
   select(-ID)
+
+# subtour frequency
+tour_add_subtour <- tour_file %>%
+  left_join(
+    subtours %>%
+      group_by(tour_id) %>%
+      summarize(subtour_count = n()),
+    by = "tour_id"
+  ) %>%
+  mutate(subtour_count = ifelse(is.na(subtour_count), 0, subtour_count))
+subtour_freq <- tour_add_subtour %>%
+  filter(tour_type %in% c("Work", "Univ")) %>%
+  group_by(subtour_count) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight)
+
+# subtour duration
+subtour_duration <- subtours %>%
+  mutate(
+    Alternative = case_when(
+      subtour_duration < 30 ~ "0 - 30",
+      subtour_duration < 60 ~ "30 - 60",
+      subtour_duration < 90 ~ "60 - 90",
+      subtour_duration < 120 ~ "90 - 120",
+      TRUE < 150 ~ "120 - 150"
+    ),
+    ID = case_when(
+      subtour_duration < 30 ~ 1,
+      subtour_duration < 60 ~ 2,
+      subtour_duration < 90 ~ 3,
+      subtour_duration < 120 ~ 4,
+      TRUE < 150 ~ 5
+    )
+  ) %>%
+  group_by(Alternative, ID) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+# subtour mode
+subtour_mode <- subtours %>%
+  group_by(primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight)
+
+# subtour tod
+subtour_tod <- subtours %>%
+  group_by(subtour_start_hr) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight)
+  
 ```
+
+# NonMandatory Tours
+
+```{r}
+# While mandatory tours are modeled as personal choices, NM are modeled as
+# household choices. This means repeated tour records (logged in the survey by
+# two+ people who traveled together) must be removed.
+
+# create a tour id that is unique to the household.
+trip_add_hh_tour_id <- trip_add_pers_on_tour %>%
+  mutate(hh_tour_id = paste(
+    HOUSEID,
+    first(ORIGIN_LOC),
+    first(STRTTIME),
+    last(ENDTIME),
+    first(hh_perids_on_tour),
+    sep = "_")
+  ) %>%
+  # remove PUDO tours from the table. These are generally taking kids to school
+  # and are handled separately by the model.
+  group_by(hh_tour_id) %>%
+  mutate(is_pudo = ifelse("PUDO" %in% WHYTO, 1, 0)) %>%
+  filter(is_pudo == 0)
+  
+
+# Joint tours (nonmandatory)
+joint_comp <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(hh_tour_id) %>%
+  # make sure that everyone on any part of the tour is listed for all trips
+  # in the tour before taking the first trip record.
+  mutate(across(ONTD_P1:ONTD_P15, ~ ifelse(max(.) > 0, 1, 0))) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(HOUSEID, hh_tour_id, tour_type, ONTD_P1:ONTD_P15) %>%
+  pivot_longer(cols = ONTD_P1:ONTD_P15, names_to = "PERSONID", values_to = "on_trip") %>%
+  mutate(PERSONID = as.double(gsub("ONTD_P", "", PERSONID))) %>%
+  filter(on_trip == 1) %>%
+  # # only keep the first instance of a person appearing on the tour to avoid
+  # # double counting
+  # group_by(tour_id, PERSONID) %>%
+  # slice(1) %>%
+  left_join(
+    translate_per %>%
+      select(HOUSEID, PERSONID, R_AGE),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  mutate(type = ifelse(R_AGE > 17, "A", "K")) %>%
+  group_by(HOUSEID, hh_tour_id, tour_type, type) %>%
+  summarize(count = n()) %>%
+  ungroup() %>%
+  pivot_wider(
+    id_cols = HOUSEID:tour_type, names_from = type, values_from = count,
+    values_fill = 0
+  ) %>%
+  ungroup() %>%
+  filter(A > 0) %>%
+  mutate(
+    A = ifelse(A > 2, 2, A),
+    K = ifelse(A == 1 & K > 3, 3, K),
+    K = ifelse(A == 2 & K > 1, 1, K)
+  ) %>%
+  # check against total household size and flag those where all HH members
+  # traveled
+  left_join(
+    translate_hh %>% select(HOUSEID, HHSIZE),
+    by = "HOUSEID"
+  ) %>%
+  mutate(Alternative = case_when(
+    A + K == HHSIZE ~ "All",
+    TRUE ~ paste0("A", A, "K", K)
+  )) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_comp_other <- joint_comp %>%
+  filter(tour_type == "Other") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_comp_shop <- joint_comp %>%
+  filter(tour_type == "Shop") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# joint activity duration
+joint_dur <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    anchor_dwell = max(anchor_dwell),
+    tour_type = first(tour_type)
+  ) %>%
+  mutate(Alternative = case_when(
+    anchor_dwell < 30 ~ "0 - 30",
+    anchor_dwell < 60 ~ "30 - 60",
+    anchor_dwell < 90 ~ "60 - 90",
+    anchor_dwell < 120 ~ "90 - 120",
+    anchor_dwell < 150 ~ "120 - 150",
+    anchor_dwell < 180 ~ "150 - 180",
+    anchor_dwell < 210 ~ "180 - 210",
+    anchor_dwell < 240 ~ "210 - 240",
+    anchor_dwell < 270 ~ "240 - 270",
+    anchor_dwell < 300 ~ "270 - 300",
+    TRUE ~ "300 - 330"
+  )) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_dur_other <- joint_dur %>%
+  filter(tour_type == "Other" & anchor_dwell < 330) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_dur_shop <- joint_dur %>%
+  filter(tour_type == "Shop" & anchor_dwell < 180) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+  
+# Joint tour frequency
+joint_freq <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(tour_type = first(tour_type)) %>%
+  group_by(HOUSEID, tour_type) %>%
+  summarize(count = n ()) %>%
+  mutate(
+    count = ifelse(count > 2, 2, count),
+    count = ifelse(tour_type == "Shop", min(1, count), count)
+  ) %>%
+  pivot_wider(id_cols = HOUSEID, names_from = tour_type, values_from = count, values_fill = 0) %>%
+  mutate(Alternative = paste0("o", Other, "s", Shop)) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour mc
+joint_mc <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  mutate(primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "carpool", primary_mode)) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    Alternative = first(primary_mode),
+    tour_type = first(tour_type)
+  ) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_mc_other <- joint_mc %>%
+  filter(tour_type == "Other") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_mc_shop <- joint_mc %>%
+  filter(tour_type == "Shop") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour start time
+joint_tod <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  mutate(
+    anchor_time = first(ENDTIME[anchor == 1]),
+    anchor_hr = anchor_time %/% 100
+  ) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    Alternative = first(anchor_hr),
+    tour_type = first(tour_type)
+  ) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+joint_tod_other <- joint_tod %>%
+  filter(tour_type == "Other") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+joint_tod_shop <- joint_tod %>%
+  filter(tour_type == "Shop") %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour stop duration
+joint_stop_dur <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 1) %>%
+  filter(int_stop == 1, DWELTIME <= 180) %>%
+  mutate(Alternative = case_when(
+    DWELTIME <= 15 ~ "0 to 15",
+    DWELTIME <= 30 ~ "15 to 30",
+    DWELTIME <= 45 ~ "30 to 45",
+    DWELTIME <= 60 ~ "45 to 60",
+    DWELTIME <= 75 ~ "60 to 75",
+    DWELTIME <= 90 ~ "75 to 90",
+    DWELTIME <= 105 ~ "90 to 105",
+    DWELTIME <= 120 ~ "105 to 120",
+    TRUE ~ "120 to 180"
+  )) %>%
+  # add this just to make sorting the table easier
+  mutate(ID = case_when(
+    DWELTIME <= 15 ~ 1,
+    DWELTIME <= 30 ~ 2,
+    DWELTIME <= 45 ~ 3,
+    DWELTIME <= 60 ~ 4,
+    DWELTIME <= 75 ~ 5,
+    DWELTIME <= 90 ~ 6,
+    DWELTIME <= 105 ~ 7,
+    DWELTIME <= 120 ~ 8,
+    TRUE ~ 9
+  )) 
+
+joint_stop_dur_other <- joint_stop_dur %>%
+  filter(tour_type == "Other") %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+joint_stop_dur_shop <- joint_stop_dur %>%
+  filter(tour_type == "Shop") %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+# create a nonmandatory tour file
+nm_tours <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12"))) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    tour_type = first(tour_type),
+    int_stop_fwd = sum(int_stop_fwd), # this double counts but gets capped at 1
+    int_stop_ret = sum(int_stop_ret),
+    joint_tour = first(joint_tour),
+    primary_mode = first(primary_mode),
+    anchor_time = first(ENDTIME[anchor == 1]),
+  ) %>%  
+  mutate(
+    anchor_hr = anchor_time %/% 100,
+    int_stop_fwd = ifelse(int_stop_fwd > 1, 1, int_stop_fwd),
+    int_stop_ret = ifelse(int_stop_ret > 1, 1, int_stop_ret)
+  ) %>%
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  )
+
+# joint intermediate stop frequency
+joint_stop_freq <- nm_tours %>%
+  filter(joint_tour == 1) %>%
+  mutate(
+    Alternative = paste0(int_stop_fwd, "_", int_stop_ret)
+  ) %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct)
+
+# HH nm pattern choice
+summary_tbl <- nm_tours %>%
+  mutate(indiv_tour = ifelse(joint_tour == 0, 1, 0)) %>%
+  group_by(HOUSEID) %>%
+  summarize(
+    joint_tours = sum(joint_tour),
+    indiv_tours = sum(indiv_tour)
+  ) 
+hh_with_nm_pattern <- hh_add_tours %>%
+  left_join(summary_tbl, by = "HOUSEID") %>%
+  replace_na(list("joint_tours" = 0, "indiv_tours" = 0)) %>%
+  mutate(nm_pattern = case_when(
+    joint_tours + indiv_tours == 0 ~ "N",
+    joint_tours >= 1 & indiv_tours == 0 ~ "J",
+    joint_tours == 0 & indiv_tours >= 1 ~ "I",
+    TRUE ~ "IJ"
+  ))
+
+nm_pattern_choice <- hh_with_nm_pattern %>%
+  group_by(nm_pattern) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1))
+  
+```
+
+```{r}
+# Solo tours
+
+# solo activity duration
+solo_dur <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 0) %>%
+  group_by(HOUSEID, hh_tour_id) %>%
+  summarize(
+    anchor_dwell = max(anchor_dwell),
+    tour_type = first(tour_type)
+  ) %>%
+  mutate(Alternative = case_when(
+    anchor_dwell < 30 ~ "0 - 30",
+    anchor_dwell < 60 ~ "30 - 60",
+    anchor_dwell < 90 ~ "60 - 90",
+    anchor_dwell < 120 ~ "90 - 120",
+    anchor_dwell < 150 ~ "120 - 150",
+    anchor_dwell < 180 ~ "150 - 180",
+    anchor_dwell < 210 ~ "180 - 210",
+    anchor_dwell < 240 ~ "210 - 240",
+    anchor_dwell < 270 ~ "240 - 270",
+    anchor_dwell < 300 ~ "270 - 300",
+    TRUE ~ "300 - 330"
+  )) %>%
+  # Add household weight
+  left_join(
+    hh_with_structure %>%
+      select(HOUSEID, weight = WTHHFIN5D_HI),
+    by = "HOUSEID"
+  ) 
+
+solo_dur_other <- joint_dur %>%
+  filter(tour_type == "Other" & anchor_dwell < 330) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+solo_dur_shop <- joint_dur %>%
+  filter(tour_type == "Shop" & anchor_dwell < 180) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# solo tour frequency. these are person level targets and only applicable
+# to people in households that make solo tours (have 'i' in the solo pattern)
+summary_tbl <- tour_file %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 0) %>%
+  select(HOUSEID, PERSONID, tour_type) %>%
+  group_by(HOUSEID, PERSONID, tour_type) %>%
+  summarize(count = n()) %>%
+  pivot_wider(names_from = tour_type, values_from = count, values_fill = 0) %>%
+  mutate(
+    Other = ifelse(Other > 3, 3, Other),
+    Shop = ifelse(Shop > 2, 2, Shop),
+    Shop = ifelse(Other > 0, min(1, Shop), Shop),
+    Alternative = paste0("O", Other, "S", Shop),
+    Alternative = case_when(
+      Alternative == "O0S1" ~ "S1",
+      Alternative == "O0S2" ~ "S2",
+      Alternative == "O1S0" ~ "O1",
+      # Alternative == "O1S1" ~ "S1",
+      Alternative == "O2S0" ~ "O2",
+      Alternative == "O3S0" ~ "O3",
+      Alternative == "O3S1" ~ "O2S1",
+      TRUE ~ Alternative
+    )
+  )
+solo_freq <- per_add_tour_counts %>%
+  left_join(
+    hh_with_nm_pattern %>%
+      select(HOUSEID, hh_nm_pattern = nm_pattern),
+    by = "HOUSEID"
+  ) %>%
+  filter(grepl("I", hh_nm_pattern)) %>%
+  left_join(
+    summary_tbl %>%
+      select(HOUSEID, PERSONID, Alternative),
+    by = c("HOUSEID", "PERSONID")
+  ) %>%
+  replace_na(list("Alternative" = "No Tours")) %>%
+  group_by(Alternative) %>%
+  summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# solo mode choice
+solo_mc <- nm_tours %>%
+  filter(joint_tour == 0) %>%
+  mutate(primary_mode = case_when(
+    primary_mode %in% c("hov2", "hov3") ~ "carpool",
+    primary_mode == "rail" ~ "other",
+    primary_mode == "school_bus" ~ "other",
+    primary_mode == "taxi" ~ "other",
+    primary_mode == "tnc" ~ "other",
+    TRUE ~ primary_mode
+  )) 
+solo_mc_other <- solo_mc %>%
+  filter(tour_type == "Other") %>%
+  group_by(primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+solo_mc_shop <- solo_mc %>%
+  filter(tour_type == "Shop") %>%
+  group_by(primary_mode) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# solo tod
+solo_tod_other <- nm_tours %>%
+  filter(joint_tour == 0 & tour_type == "Other") %>%
+  group_by(anchor_hr) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+solo_tod_shop <- nm_tours %>%
+  filter(joint_tour == 0 & tour_type == "Shop") %>%
+  group_by(anchor_hr) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_share = round(weight / sum(weight) * 100, 1))
+
+# Joint tour stop duration
+solo_stop_dur <- trip_add_hh_tour_id %>%
+  filter(!(tour_type %in% c("Work", "Univ", "K12")), joint_tour == 0) %>%
+  filter(int_stop == 1, DWELTIME <= 180) %>%
+  mutate(Alternative = case_when(
+    DWELTIME <= 15 ~ "0 to 15",
+    DWELTIME <= 30 ~ "15 to 30",
+    DWELTIME <= 45 ~ "30 to 45",
+    DWELTIME <= 60 ~ "45 to 60",
+    DWELTIME <= 75 ~ "60 to 75",
+    DWELTIME <= 90 ~ "75 to 90",
+    DWELTIME <= 105 ~ "90 to 105",
+    DWELTIME <= 120 ~ "105 to 120",
+    TRUE ~ "120 to 180"
+  )) %>%
+  # add this just to make sorting the table easier
+  mutate(ID = case_when(
+    DWELTIME <= 15 ~ 1,
+    DWELTIME <= 30 ~ 2,
+    DWELTIME <= 45 ~ 3,
+    DWELTIME <= 60 ~ 4,
+    DWELTIME <= 75 ~ 5,
+    DWELTIME <= 90 ~ 6,
+    DWELTIME <= 105 ~ 7,
+    DWELTIME <= 120 ~ 8,
+    TRUE ~ 9
+  )) 
+
+solo_stop_dur_other <- solo_stop_dur %>%
+  filter(tour_type == "Other") %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+solo_stop_dur_shop <- solo_stop_dur %>%
+  filter(tour_type == "Shop") %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(ID = first(ID), weight = sum(WTTRDFIN5D_HI, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct) %>%
+  arrange(ID) %>%
+  select(-ID)
+
+# solo int stop frequency
+solo_stop_freq <- nm_tours %>%
+  filter(joint_tour == 0) %>%
+  mutate(
+    Alternative = paste0(int_stop_fwd, "_", int_stop_ret)
+  ) %>%
+  group_by(tour_type, Alternative) %>%
+  summarize(weight = sum(weight, na.rm = TRUE)) %>%
+  mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
+  select(-weight) %>%
+  pivot_wider(names_from = tour_type, values_from = target_pct)
+```
+
 
 
 ```{r, eval=FALSE}
 # Outputs
 write_csv(per_add_tour_counts, "data/_private/hh_survey/output/output_persons.csv", na = "")
-write_csv(hh_add_tours, "data/_private/hh_survey/output/output_households.csv", na = "")
-write_csv(tour_file, "data/_private/hh_survey/output/output_tours.csv", na = "")
-write_csv(id_tour_mode, "data/_private/hh_survey/output/output_trips.csv", na = "")
+write_csv(hh_with_nm_pattern, "data/_private/hh_survey/output/output_households.csv", na = "")
+write_csv(tour_add_subtour, "data/_private/hh_survey/output/output_tours.csv", na = "")
+write_csv(id_subtours, "data/_private/hh_survey/output/output_trips.csv", na = "")
 
 # calibration targets
 write_csv(auto_own, "data/_private/hh_survey/output/calibration_targets/auto_ownership.csv", na = "")
@@ -619,5 +1276,31 @@ write_csv(tod, "data/_private/hh_survey/output/calibration_targets/time_of_day.c
 write_csv(activity_duration, "data/_private/hh_survey/output/calibration_targets/activity_duration.csv", na = "")
 write_csv(intermediate_freq, "data/_private/hh_survey/output/calibration_targets/intermediate_freq.csv", na = "")
 write_csv(int_stop_duration, "data/_private/hh_survey/output/calibration_targets/int_stop_duration.csv", na = "")
+write_csv(subtour_freq, "data/_private/hh_survey/output/calibration_targets/subtour_freq.csv", na = "")
+write_csv(subtour_duration, "data/_private/hh_survey/output/calibration_targets/subtour_duration.csv", na = "")
+write_csv(subtour_mode, "data/_private/hh_survey/output/calibration_targets/subtour_mode.csv", na = "")
+write_csv(subtour_tod, "data/_private/hh_survey/output/calibration_targets/subtour_tod.csv", na = "")
+write_csv(joint_comp_other, "data/_private/hh_survey/output/calibration_targets/joint_comp_other.csv", na = "")
+write_csv(joint_comp_shop, "data/_private/hh_survey/output/calibration_targets/joint_comp_shop.csv", na = "")
+write_csv(joint_dur_other, "data/_private/hh_survey/output/calibration_targets/joint_dur_other.csv", na = "")
+write_csv(joint_dur_shop, "data/_private/hh_survey/output/calibration_targets/joint_dur_shop.csv", na = "")
+write_csv(joint_freq, "data/_private/hh_survey/output/calibration_targets/joint_freq.csv", na = "")
+write_csv(joint_mc_other, "data/_private/hh_survey/output/calibration_targets/joint_mc_other.csv", na = "")
+write_csv(joint_mc_shop, "data/_private/hh_survey/output/calibration_targets/joint_mc_shop.csv", na = "")
+write_csv(joint_tod_other, "data/_private/hh_survey/output/calibration_targets/joint_tod_other.csv", na = "")
+write_csv(joint_tod_shop, "data/_private/hh_survey/output/calibration_targets/joint_tod_shop.csv", na = "")
+write_csv(joint_stop_dur_other, "data/_private/hh_survey/output/calibration_targets/joint_stop_dur_other.csv", na = "")
+write_csv(joint_stop_dur_shop, "data/_private/hh_survey/output/calibration_targets/joint_stop_dur_shop.csv", na = "")
+write_csv(joint_stop_freq, "data/_private/hh_survey/output/calibration_targets/joint_stop_freq.csv", na = "")
+write_csv(nm_pattern_choice, "data/_private/hh_survey/output/calibration_targets/nm_pattern_choice.csv", na = "")
+write_csv(solo_dur_other, "data/_private/hh_survey/output/calibration_targets/solo_dur_other.csv", na = "")
+write_csv(solo_dur_shop, "data/_private/hh_survey/output/calibration_targets/solo_dur_shop.csv", na = "")
+write_csv(solo_freq, "data/_private/hh_survey/output/calibration_targets/solo_freq.csv", na = "")
+write_csv(solo_mc_other, "data/_private/hh_survey/output/calibration_targets/solo_mc_other.csv", na = "")
+write_csv(solo_mc_shop, "data/_private/hh_survey/output/calibration_targets/solo_mc_shop.csv", na = "")
+write_csv(solo_tod_other, "data/_private/hh_survey/output/calibration_targets/solo_tod_other.csv", na = "")
+write_csv(solo_tod_shop, "data/_private/hh_survey/output/calibration_targets/solo_tod_shop.csv", na = "")
+write_csv(solo_stop_dur_other, "data/_private/hh_survey/output/calibration_targets/solo_stop_dur_other.csv", na = "")
+write_csv(solo_stop_dur_shop, "data/_private/hh_survey/output/calibration_targets/solo_stop_dur_shop.csv", na = "")
 ```
 
