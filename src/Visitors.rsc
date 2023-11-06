@@ -1,5 +1,7 @@
 /*
-
+Oahu visitor model. These steps generate the outputs found in the
+output/visitors directory. Before assignment, visitor trips by mode
+are added into the main assignment OD matrices.
 */
 
 Macro "Visitor Model" (Args)
@@ -461,7 +463,7 @@ Macro "Visitor Apply Probabilities" (Args, nhb)
 endmacro
 
 /*
-Convert from PA to OD format for auto modes
+Convert from PA to OD format
 */
 
 Macro "Visitor Directionality" (Args)
@@ -473,7 +475,7 @@ Macro "Visitor Directionality" (Args)
     factors = CreateObject("Table", factor_file)
     fac_vw = factors.GetView()
     rh = GetFirstRecord(fac_vw + "|", )
-    auto_modes = {"auto"}
+    modes = {"auto", "tnc", "bus"}
     while rh <> null do
         trip_type = fac_vw.trip_type
         period = fac_vw.tod
@@ -489,14 +491,16 @@ Macro "Visitor Directionality" (Args)
         mtx = CreateObject("Matrix", od_mtx_file)
         t_mtx = mtx.Transpose()
 
-        for mode in auto_modes do
+        core_names = mtx.GetCoreNames()
+        for mode in modes do
+            if core_names.position(mode) = 0 then continue
             mtx.(mode) := mtx.(mode) * pa_factor + t_mtx.(mode) * (1 - pa_factor)
         end
 
         // Drop non-auto modes (these remain PA format)
         core_names = mtx.GetCoreNames()
         for core_name in core_names do
-            if auto_modes.position(core_name) = 0 then mtx.DropCores({core_name})
+            if modes.position(core_name) = 0 then mtx.DropCores({core_name})
         end
         
         rh = GetNextRecord(fac_vw + "|", rh, )
