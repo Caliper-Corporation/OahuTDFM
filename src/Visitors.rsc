@@ -520,7 +520,6 @@ Macro "Visitor Occupancy" (Args)
     factors = CreateObject("Table", factor_file)
     fac_vw = factors.GetView()
     rh = GetFirstRecord(fac_vw + "|", )
-    auto_modes = {"auto"}
     while rh <> null do
         trip_type = fac_vw.trip_type
         period = fac_vw.tod
