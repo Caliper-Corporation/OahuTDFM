@@ -1,6 +1,7 @@
 
 Macro "Transit Assignment" (Args)
     RunMacro("GenerateTransitOD", Args)
+    Throw()
     RunMacro("PTAssign", Args)
     return(1)
 endmacro
@@ -9,6 +10,8 @@ endmacro
 
 */
 Macro "GenerateTransitOD" (Args)
+    out_dir = Args.[Output Folder]
+    input_dir = Args.[Input Folder]
     ret_value = 1
     periods = {"AM", "PM", "OP"}
     accessModes = {"w", "pnr", "knr"}
@@ -47,6 +50,21 @@ Macro "GenerateTransitOD" (Args)
                 mo.(per + "_" + acc_mode + "_Trips") := mc
                 mo.("DAY_" + acc_mode + "_Trips") := nz(mo.("DAY_" + acc_mode + "_Trips")) + nz(mc)
             end
+        end
+        
+        // Add visitor transit trips
+        vis_dir = out_dir + "/visitors/trip_matrices"
+        tod_file = input_dir + "\\visitors\\vis_tod_factors.csv"
+        fac_tbl = CreateObject("Table", tod_file)
+        v_purp = fac_tbl.trip_purp
+        fac_tbl = null
+        v_purp = SortVector(v_purp, {Unique: True})
+        for vis_purp in v_purp do
+            if vis_purp = "HBW" then continue
+            vis_mtx_file = vis_dir + "/od_veh_trips_" + vis_purp + "_" + per + ".mtx"
+            vis_mtx = CreateObject("Matrix", vis_mtx_file)
+            mo.(per + "_w_bus_Trips") := nz(mo.(per + "_w_bus_Trips")) + nz(vis_mtx.bus)
+            mo.("DAY_w_bus_Trips") := nz(mo.("DAY_w_bus_Trips")) + nz(vis_mtx.bus)
         end
     end
     quit:
