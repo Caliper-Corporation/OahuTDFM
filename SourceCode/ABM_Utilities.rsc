@@ -539,6 +539,7 @@ endMacro
 */
 Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
+    RunMacro("Add Visitor OD", Args)
     //RunMacro("Add External and Truck OD", Args)
     RunMacro("Create Daily OD Matrix", Args)
     Return(true)
@@ -598,6 +599,34 @@ Macro "Write ABM OD"(Args)
     DestroyExpression(GetFieldFullSpec(vwTrips, odPeriod))
     DestroyExpression(GetFieldFullSpec(vwTrips, tripTime))
 endMacro
+
+Macro "Add Visitor OD" (Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    vis_dir = out_dir + "/visitors/trip_matrices"
+    periods = {"AM", "MD", "PM", "NT"}
+
+    // get visitor purposes
+    factor_file = Args.VisOccupancyFactors
+    fac_tbl = CreateObject("Table", tod_file)
+    v_purp = fac_tbl.trip_purp
+    fac_tbl = null
+
+    for period in periods do
+        od_mtx_file = Args.(p + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+
+        for vis_purp in v_purp do
+            vis_mtx_file = vis_dir + "/od_veh_trips_" + vis_purp + "_" + per + ".mtx"
+            vis_mtx = CreateObject("Matrix", vis_mtx_file)
+
+            od_mtx.drivealone := nz(od_mtx.drivealone) + nz(vis_mtx.sov)
+            od_mtx.carpool := nz(od_mtx.carpool) + nz(vis_mtx.hov) + nz(vis_mtx.tnc)
+            if vis_purp <> "HBW"
+                then od_mtx.w_bus := nz(od_mtx.w_bus) + vis_mtx.bus
+        end
+    end
+endmacro
 
 
 Macro "Add External and Truck OD"(Args)
