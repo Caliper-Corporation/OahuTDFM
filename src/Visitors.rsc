@@ -508,7 +508,7 @@ Macro "Visitor Directionality" (Args)
 endmacro
 
 /*
-Split auto core into sov/hov
+Split auto core into sov/hov. Also convert HOV/TNC cores to vehicles.
 */
 
 Macro "Visitor Occupancy" (Args)
@@ -526,12 +526,14 @@ Macro "Visitor Occupancy" (Args)
         period = fac_vw.tod
         pct_sov = fac_vw.pct_sov
         hov_occ = fac_vw.hov_occ
+        tnc_occ = fac_vw.tnc_occ
 
         od_mtx_file = trip_dir + "/od_veh_trips_" + trip_type + "_" + period + ".mtx"
         mtx = CreateObject("Matrix", od_mtx_file)
         mtx.AddCores({"sov", "hov"})
         mtx.sov := mtx.auto * pct_sov
         mtx.hov := (mtx.auto - mtx.sov) / hov_occ
+        mtx.tnc := mtx.tnc / tnc_occ
         
         rh = GetNextRecord(fac_vw + "|", rh, )
     end

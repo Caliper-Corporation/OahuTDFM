@@ -257,13 +257,18 @@ occ_factors <- add_tod %>%
   mutate(
     sov = ifelse(party == 1, 1, 0),
     sov = ifelse(mode != "auto", NA, sov),
-    hov = ifelse(party > 1 & mode == "auto", party, NA)
+    hov = ifelse(party > 1 & mode == "auto", party, NA),
+    tnc = ifelse(mode == "tnc", party, NA)
   ) %>%
   group_by(trip_type = trip_purp, tod) %>%
   summarize(
     samples = n(),
     pct_sov = round(mean(sov, na.rm = TRUE), 2),
-    hov_occ = round(mean(hov, na.rm = TRUE), 2)
+    hov_occ = round(mean(hov, na.rm = TRUE), 2),
+    tnc_occ = round(mean(tnc, na.rm = TRUE), 2),
+    # cap tnc occupancy to hov occupancy. small sample sizes and some charter
+    # busses make some purpose+period combos too high.
+    tnc_occ = min(hov_occ, tnc_occ)
   )
 ```
 
