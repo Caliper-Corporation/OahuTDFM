@@ -541,6 +541,7 @@ Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
     RunMacro("Add Visitor OD", Args)
     RunMacro("Add Truck OD", Args)
+    RunMacro("Add Airport OD", Args)
     RunMacro("Create Daily OD Matrix", Args)
     Return(true)
 endMacro
@@ -644,6 +645,22 @@ Macro "Add Truck OD"(Args)
         od_mtx.LTRK := nz(od_mtx.LTRK) + nz(cv_mtx.CV)
         od_mtx.MTRK := nz(od_mtx.MTRK) + nz(cv_mtx.SUT)
         od_mtx.HTRK := nz(od_mtx.HTRK) + nz(cv_mtx.MUT)
+    end
+endMacro
+
+Macro "Add Airport OD"(Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    air_dir = out_dir + "/airport"
+    periods = {"AM", "PM", "OP"}
+
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+        air_mtx_file = air_dir + "/air_trips_od_veh_" + period + ".mtx"
+        air_mtx = CreateObject("Matrix", air_mtx_file)
+
+        od_mtx.carpool := nz(od_mtx.carpool) + nz(air_mtx.air_vis) + nz(air_mtx.air_res)
     end
 endMacro
 
