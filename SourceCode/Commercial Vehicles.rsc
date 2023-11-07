@@ -5,14 +5,6 @@ Called by flowchart
 Macro "Commercial Vehicles" (Args)
     RunMacro("CV Productions/Attractions", Args)
     RunMacro("CV TOD", Args)
-    return(1)
-endmacro
-
-/*
-Called by flowchart
-*/
-
-Macro "Commercial Vehicles DC" (Args)
     RunMacro("CV Gravity", Args)
     return(1)
 endmacro
@@ -24,7 +16,7 @@ Attractions are the same as productions
 
 Macro "CV Productions/Attractions" (Args)
 
-    se_file = Args.SE
+    se_file = Args.DemographicOutputs
     rate_file = Args.[CV Trip Rates]
 
     se_vw = OpenTable("se", "FFB", {se_file})
@@ -43,7 +35,7 @@ Split CV productions and attractions into time periods
 
 Macro "CV TOD" (Args)
 
-    se_file = Args.SE
+    se_file = Args.DemographicOutputs
     rate_file = Args.[CV TOD Rates]
 
     se_vw = OpenTable("se", "FFB", {se_file})
@@ -64,13 +56,13 @@ Macro "CV Gravity" (Args)
 
     out_dir = Args.[Output Folder]
     cv_dir = Args.[Input Folder] + "/cv"
-    periods = RunMacro("Get Unconverged Periods", Args)
+    periods = {"AM", "PM", "OP"}
 
     for period in periods do
 
         RunMacro("Gravity", {
-            se_file: Args.SE,
-            skim_file: out_dir + "/skims/roadway/skim_sov_" + period + ".mtx",
+            se_file: Args.DemographicOutputs,
+            skim_file: out_dir + "/skims/HighwaySkim" + period + ".mtx",
             param_file: cv_dir + "/cv_gravity_" + period + ".csv",
             output_matrix: out_dir + "/cv/cv_gravity_" + period + ".mtx"
         })
