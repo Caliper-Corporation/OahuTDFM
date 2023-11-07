@@ -540,7 +540,7 @@ endMacro
 Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
     RunMacro("Add Visitor OD", Args)
-    //RunMacro("Add External and Truck OD", Args)
+    RunMacro("Add Truck OD", Args)
     RunMacro("Create Daily OD Matrix", Args)
     Return(true)
 endMacro
@@ -629,34 +629,26 @@ Macro "Add Visitor OD" (Args)
 endmacro
 
 
-Macro "Add External and Truck OD"(Args)
-    LineDB = Args.HighwayDatabase
-    Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
-    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
-    NodeLayer = Node.GetView()
-    
-    periods = {'AM', 'MD', 'PM', 'NT'}
-    for p in periods do
-        mObj = CreateObject("Matrix", Args.(p + "_OD"))
-        mExt = CreateObject("Matrix", Args.(p + "ExternalTrips"))
-        mExt.SetIndex("TAZ")
+Macro "Add Truck OD"(Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    cv_dir = out_dir + "/cv"
+    periods = {"AM", "PM", "OP"}
 
-        mObj.drivealone := nz(mObj.drivealone) + nz(mExt.[DriveAlone VehicleTrips])
-        mObj.carpool := nz(mObj.carpool) + nz(mExt.[Carpool VehicleTrips])
-        mObj.LTRK := mExt.[LTRK Trips]
-        mObj.MTRK := mExt.[MTRK Trips]
-        mObj.HTRK := mExt.[HTRK Trips]
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+        cv_mtx_file = cv_dir + "/cv_gravity_" + period + ".mtx"
+        cv_mtx = CreateObject("Matrix", cv_mtx_file)
 
-        idx = mObj.AddIndex({IndexName: "NodeID", ViewName: NodeLayer, Dimension: "Both",
-                                OriginalID: "Centroid", NewID: "ID", Filter: "Centroid <> null"})
-        mObj = null
-        mExt = null
+        od_mtx.LTRK := nz(od_mtx.LTRK) + nz(cv_mtx.CV)
+        od_mtx.MTRK := nz(od_mtx.MTRK) + nz(cv_mtx.SUT)
+        od_mtx.HTRK := nz(od_mtx.HTRK) + nz(cv_mtx.MUT)
     end
 endMacro
 
 Macro "Create Daily OD Matrix"(Args)
     ret_value = 1
-    // periods = {'AM', 'MD', 'PM', 'NT'}
     periods = {'AM', 'PM', 'OP'}
     CopyFile(Args.AM_OD, Args.DAY_OD)
     day = CreateObject("Matrix", Args.DAY_OD)
