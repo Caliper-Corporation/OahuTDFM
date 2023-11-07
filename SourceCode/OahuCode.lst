@@ -19,6 +19,7 @@ NonMandatoryStops.rsc
 TimeManager.rsc
 NonresidentDistribution.rsc
 HighwayAssignment.rsc
+Commercial Vehicles.rsc
 ../src/utils/utils.rsc
 ../src/utils/RoadwayProjectManagement.rsc
 ../src/utils/TransitProjectManagement.rsc
