@@ -623,8 +623,12 @@ Macro "Add Visitor OD" (Args)
 
             od_mtx.drivealone := nz(od_mtx.drivealone) + nz(vis_mtx.sov)
             od_mtx.carpool := nz(od_mtx.carpool) + nz(vis_mtx.hov) + nz(vis_mtx.tnc)
-            if vis_purp <> "HBW"
-                then od_mtx.w_bus := nz(od_mtx.w_bus) + vis_mtx.bus
+            if vis_purp <> "HBW" then do
+                od_mtx.w_bus := nz(od_mtx.w_bus) + vis_mtx.bus
+                core_names = vis_mtx.GetCoreNames()
+                if core_names.position("rail") > 0
+                    then od_mtx.w_rail := nz(od_mtx.w_rail) + vis_mtx.rail
+            end
         end
     end
 endmacro
