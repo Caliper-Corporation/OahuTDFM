@@ -66,7 +66,7 @@
         Args.MaxIterations = {
             "Type":"int",
             "Description":"Maximum number of iterations that this model can run.",
-            "Value":1
+            "Value":4
         }
         Args.RunInIterations = {
             "Type":"array",
@@ -3053,11 +3053,19 @@
             "Value":"%Input Folder%\\visitors\\vis_occupancy.csv"
         }
 	
-    Section = "Commercial Vehicles/Trucks"
-
-        Args.[CV Trip Rates] = { "Type":"File" , "Value":"%Input Folder%\\cv\\cv_generation.csv", "Description":"CV trip rates" }
-        Args.[CV TOD Rates] = { "Type":"File" , "Value":"%Input Folder%\\cv\\cv_tod.csv", "Description":"CV tod factors" }
-
+	Section = "Commercial Vehicles/Trucks"
+	
+        Args.[CV Trip Rates] = {
+            "Type":"File",
+            "Description":"CV trip rates",
+            "Value":"%Input Folder%\\cv\\cv_generation.csv"
+        }
+        Args.[CV TOD Rates] = {
+            "Type":"File",
+            "Description":"CV tod factors",
+            "Value":"%Input Folder%\\cv\\cv_tod.csv"
+        }
+	
 	Section = "Airport"
 	
         Args.[Airport Attraction Rates] = {

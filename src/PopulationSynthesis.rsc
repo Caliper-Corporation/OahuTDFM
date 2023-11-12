@@ -157,7 +157,7 @@ Macro "Synthesize Population"(Args)
     // Set up and run the synthesis
     o = CreateObject("PopulationSynthesis")
     o.RandomSeed = 314159
-    o.PopulationFactor = 0.1
+    o.PopulationFactor = 1
     
     // Define Seed Data. Specify relationship between HH file and TAZ and between HH and Person file
     o.HouseholdFile({FileName: Args.PUMS_Households, ID: "HHID", MatchingID: "PUMA", WeightField: "WGTP", Filter: "NP > 0 and NP < 9 and WGTP > 0"})
