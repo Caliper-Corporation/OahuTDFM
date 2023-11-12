@@ -3053,6 +3053,11 @@
             "Value":"%Input Folder%\\visitors\\vis_occupancy.csv"
         }
 	
+    Section = "Commercial Vehicles/Trucks"
+
+        Args.[CV Trip Rates] = { "Type":"File" , "Value":"%Input Folder%\\cv\\cv_generation.csv", "Description":"CV trip rates" }
+        Args.[CV TOD Rates] = { "Type":"File" , "Value":"%Input Folder%\\cv\\cv_tod.csv", "Description":"CV tod factors" }
+
 	Section = "Airport"
 	
         Args.[Airport Attraction Rates] = {

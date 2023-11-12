@@ -539,7 +539,9 @@ endMacro
 */
 Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
-    //RunMacro("Add External and Truck OD", Args)
+    RunMacro("Add Visitor OD", Args)
+    RunMacro("Add Truck OD", Args)
+    RunMacro("Add Airport OD", Args)
     RunMacro("Create Daily OD Matrix", Args)
     Return(true)
 endMacro
@@ -599,35 +601,75 @@ Macro "Write ABM OD"(Args)
     DestroyExpression(GetFieldFullSpec(vwTrips, tripTime))
 endMacro
 
+Macro "Add Visitor OD" (Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    vis_dir = out_dir + "/visitors/trip_matrices"
+    periods = {"AM", "PM", "OP"}
 
-Macro "Add External and Truck OD"(Args)
-    LineDB = Args.HighwayDatabase
-    Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
-    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
-    NodeLayer = Node.GetView()
-    
-    periods = {'AM', 'MD', 'PM', 'NT'}
-    for p in periods do
-        mObj = CreateObject("Matrix", Args.(p + "_OD"))
-        mExt = CreateObject("Matrix", Args.(p + "ExternalTrips"))
-        mExt.SetIndex("TAZ")
+    // get visitor purposes
+    factor_file = Args.VisOccupancyFactors
+    fac_tbl = CreateObject("Table", factor_file)
+    v_purp = fac_tbl.trip_type
+    v_purp = SortVector(v_purp, {Unique: "true"})
+    fac_tbl = null
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
 
-        mObj.drivealone := nz(mObj.drivealone) + nz(mExt.[DriveAlone VehicleTrips])
-        mObj.carpool := nz(mObj.carpool) + nz(mExt.[Carpool VehicleTrips])
-        mObj.LTRK := mExt.[LTRK Trips]
-        mObj.MTRK := mExt.[MTRK Trips]
-        mObj.HTRK := mExt.[HTRK Trips]
+        for vis_purp in v_purp do
+            vis_mtx_file = vis_dir + "/od_veh_trips_" + vis_purp + "_" + period + ".mtx"
+            vis_mtx = CreateObject("Matrix", vis_mtx_file)
 
-        idx = mObj.AddIndex({IndexName: "NodeID", ViewName: NodeLayer, Dimension: "Both",
-                                OriginalID: "Centroid", NewID: "ID", Filter: "Centroid <> null"})
-        mObj = null
-        mExt = null
+            od_mtx.drivealone := nz(od_mtx.drivealone) + nz(vis_mtx.sov)
+            od_mtx.carpool := nz(od_mtx.carpool) + nz(vis_mtx.hov) + nz(vis_mtx.tnc)
+            if vis_purp <> "HBW" then do
+                od_mtx.w_bus := nz(od_mtx.w_bus) + vis_mtx.bus
+                core_names = vis_mtx.GetCoreNames()
+                if core_names.position("rail") > 0
+                    then od_mtx.w_rail := nz(od_mtx.w_rail) + vis_mtx.rail
+            end
+        end
+    end
+endmacro
+
+
+Macro "Add Truck OD"(Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    cv_dir = out_dir + "/cv"
+    periods = {"AM", "PM", "OP"}
+
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+        cv_mtx_file = cv_dir + "/cv_gravity_" + period + ".mtx"
+        cv_mtx = CreateObject("Matrix", cv_mtx_file)
+
+        od_mtx.LTRK := nz(od_mtx.LTRK) + nz(cv_mtx.CV)
+        od_mtx.MTRK := nz(od_mtx.MTRK) + nz(cv_mtx.SUT)
+        od_mtx.HTRK := nz(od_mtx.HTRK) + nz(cv_mtx.MUT)
+    end
+endMacro
+
+Macro "Add Airport OD"(Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    air_dir = out_dir + "/airport"
+    periods = {"AM", "PM", "OP"}
+
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+        air_mtx_file = air_dir + "/air_trips_od_veh_" + period + ".mtx"
+        air_mtx = CreateObject("Matrix", air_mtx_file)
+
+        od_mtx.carpool := nz(od_mtx.carpool) + nz(air_mtx.air_vis) + nz(air_mtx.air_res)
     end
 endMacro
 
 Macro "Create Daily OD Matrix"(Args)
     ret_value = 1
-    // periods = {'AM', 'MD', 'PM', 'NT'}
     periods = {'AM', 'PM', 'OP'}
     CopyFile(Args.AM_OD, Args.DAY_OD)
     day = CreateObject("Matrix", Args.DAY_OD)
