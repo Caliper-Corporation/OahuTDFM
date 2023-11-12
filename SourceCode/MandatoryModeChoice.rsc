@@ -243,6 +243,11 @@ Macro "Evaluate Mode Choice"(Args, spec)
     if (Lower(type) = 'work' or Lower(type) = 'univ') then // Use first work or univ tour
         purp = type + "1"
 
+    objT = CreateObject("Table", Args.AccessibilitiesOutputs)
+    vwTAZ4Ds = objT.GetView()
+    objD = CreateObject("Table", Args.DemographicOutputs)
+    vwTAZDems = objD.GetView()
+
     activeTransitModes = RunMacro("Get Active Transit Modes", Args)
 
     // Obtain util spec and include availabilities
@@ -296,6 +301,8 @@ Macro "Evaluate Mode Choice"(Args, spec)
         obj.AddAlternatives({AlternativesTree: spec.Alternatives})
         
         obj.AddTableSource({SourceName: "PersonHH", View: vwPHH, IDField: abm.PersonID})
+        obj.AddTableSource({SourceName: "TAZ4Ds", View: vwTAZ4Ds, IDField: "TAZID"})
+        obj.AddTableSource({SourceName: "TAZDems", View: vwTAZDems, IDField: "TAZ"})
         obj.AddMatrixSource({SourceName: "AutoSkim", File: autoSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "W_BusSkim", File: WalkBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "PNR_BusSkim", File: PNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
@@ -324,6 +331,10 @@ Macro "Evaluate Mode Choice"(Args, spec)
     end
     DestroyExpression(GetFieldFullSpec(vwPHH, depPeriod))
     DestroyExpression(GetFieldFullSpec(vwPHH, depTime))
+
+    objT = null 
+    objD = null 
+
     Return(ret)
 endMacro
 
