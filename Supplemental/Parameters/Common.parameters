@@ -1396,10 +1396,11 @@
                 {"Bike Distance","BikeSkim.Distance",-0.685,0,0,0,1,0,0},
                 {"HH has vehicle(s) - DriveAlone","PersonHH.Vehicles > 0",0.404,1,0,0,0,0,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.14,0,1,0,0,0,0},
-                {"Auto Time","AutoSkim.Time",-0.0472,1,1,0,0,0,0},
+                {"Auto Time (Drive modes)","AutoSkim.Time",-0.0472,1,1,0,0,0,0},
+                {"Auto Time (School bus)","AutoSkim.Time",-0.0117,0,0,0,0,0,1},
                 {"Low Access-Egress Time","W_BusSkim.[Access Walk Time] + W_BusSkim.[Egress Walk Time] < 15",0.613,0,0,0,0,1,0},
                 {"Bus Total Time","W_BusSkim.[Total Time]",-0.0117,0,0,0,0,1,0},
-                {"Income below 50K","PersonHH.IncomeLevel = 1",-0.0117,0,0,1,1,1,0}}
+                {"Income below 50K","PersonHH.IncomeLevel = 1",1.12,0,0,1,1,1,1}}
         }
         Args.SchoolModeRUtility = {
             "Type":"array",
@@ -3053,11 +3054,19 @@
             "Value":"%Input Folder%\\visitors\\vis_occupancy.csv"
         }
 	
-    Section = "Commercial Vehicles/Trucks"
-
-        Args.[CV Trip Rates] = { "Type":"File" , "Value":"%Input Folder%\\cv\\cv_generation.csv", "Description":"CV trip rates" }
-        Args.[CV TOD Rates] = { "Type":"File" , "Value":"%Input Folder%\\cv\\cv_tod.csv", "Description":"CV tod factors" }
-
+	Section = "Commercial Vehicles/Trucks"
+	
+        Args.[CV Trip Rates] = {
+            "Type":"File",
+            "Description":"CV trip rates",
+            "Value":"%Input Folder%\\cv\\cv_generation.csv"
+        }
+        Args.[CV TOD Rates] = {
+            "Type":"File",
+            "Description":"CV tod factors",
+            "Value":"%Input Folder%\\cv\\cv_tod.csv"
+        }
+	
 	Section = "Airport"
 	
         Args.[Airport Attraction Rates] = {
