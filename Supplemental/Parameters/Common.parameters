@@ -873,17 +873,17 @@
             "Caption":"Work Tour Frequency for Workers",
             "Style":"MandTourFreqUtility",
             "Value":{
-                {"ASC","Constant",6.28618,1,0},
-                {"ASC","Constant",2.51841,0,1},
-                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.24756,0,1},
-                {"Age 60 Plus","PersonHH.Age >= 60",0.379312,1,0},
-                {"Female","PersonHH.Gender = 2",0.283341,1,0},
-                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.289247,1,0},
-                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.436642,0,1},
-                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.666641,0,1},
-                {"Also attending school","PersonHH.AttendSchool = 1",-99,0,1},
-                {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99,0,1},
-                {"Also attending univ","PersonHH.AttendUniv = 1",-99,0,1}}
+                {"ASC","Constant",6.3076,1,0},
+                {"ASC","Constant",2.1008,0,1},
+                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.2476,0,1},
+                {"Age 60 Plus","PersonHH.Age >= 60",0.3793,1,0},
+                {"Female","PersonHH.Gender = 2",0.2833,1,0},
+                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.2892,1,0},
+                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.4366,0,1},
+                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.6666,0,1},
+                {"Also attending school","PersonHH.AttendSchool = 1",-99.0,0,1},
+                {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99.0,0,1},
+                {"Also attending univ","PersonHH.AttendUniv = 1",-99.0,0,1}}
         }
 	
 	Section = "MandatoryTours|Frequency|University"
