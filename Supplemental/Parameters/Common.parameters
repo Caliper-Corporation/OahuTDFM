@@ -1301,9 +1301,9 @@
             "Type":"array",
             "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",2.151,1,0,0},
-                {"ASC (Carpool)","Constant",-0.31,0,1,0},
-                {"ASC (Other)","Constant",-99,0,0,1},
+                {"ASC (DriveAlone)","Constant",3.763,1,0,0},
+                {"ASC (Carpool)","Constant",-1.3943,0,1,0},
+                {"ASC (Other)","Constant",-99.0,0,0,1},
                 {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0},
                 {"Auto Time","AutoSkim.Time",-0.0631,1,1,0}}
@@ -1316,8 +1316,8 @@
             "Caption":"University Mode Utility",
             "Style":"MandModeUtilityNM",
             "Value":{
-                {"ASC (Walk)","Constant",0.8784,1,0},
-                {"ASC (Bike)","Constant",0.6403,0,1},
+                {"ASC (Walk)","Constant",-1.8343,1,0},
+                {"ASC (Bike)","Constant",-2.0138,0,1},
                 {"Distance Walk","WalkSkim.Distance",-2.3089,1,0},
                 {"Distance Bike","BikeSkim.Distance",-0.8071,0,1},
                 {"Income below 50K","PersonHH.IncomeLevel = 1",1.5234,1,1}}
@@ -1330,9 +1330,9 @@
             "Caption":"University Mode Utility",
             "Style":"MandModeUtilityPT",
             "Value":{
-                {"ASC (PT_Walk)","Constant",3.8222,1,1,0,0,0,0},
-                {"ASC (PT_PNR)","Constant",-1.6116,0,0,1,1,0,0},
-                {"ASC (PT_KNR)","Constant",-3.38,0,0,0,0,1,1},
+                {"ASC (PT_Walk)","Constant",6.7416,1,1,0,0,0,0},
+                {"ASC (PT_PNR)","Constant",-0.2141,0,0,1,1,0,0},
+                {"ASC (PT_KNR)","Constant",-2.1685,0,0,0,0,1,1},
                 {"Walk Bus IVTT","W_BusSkim.[Total Time]",-0.015,1,0,0,0,0,0},
                 {"Walk Rail IVTT","W_RailSkim.[Total Time]",-0.015,0,1,0,0,0,0},
                 {"PNR Bus IVTT","PNR_BusSkim.[Total Time]",-0.015,0,0,1,0,0,0},
