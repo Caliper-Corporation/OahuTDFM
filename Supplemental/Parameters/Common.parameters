@@ -1204,9 +1204,9 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",2.605,1,0,0},
-                {"ASC (Carpool)","Constant",1.378,0,1,0},
-                {"ASC (Other/TNC)","Constant",2.71,0,0,1},
+                {"ASC (DriveAlone)","Constant",2.8591,1,0,0},
+                {"ASC (Carpool)","Constant",1.259,0,1,0},
+                {"ASC (Other/TNC)","Constant",0.7043,0,0,1},
                 {"Highway Time (Auto)","AutoSkim.Time",-0.0735,1,1,0},
                 {"Highway Time (Other)","AutoSkim.Time",-0.204,0,0,1},
                 {"HH has vehicle(s) (Drive Alone)","PersonHH.Vehicles > 0",2.6,1,0,0},
@@ -1224,8 +1224,8 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityNM",
             "Value":{
-                {"ASC (Walk)","Constant",9.48,1,0},
-                {"ASC (Bike)","Constant",4.45,0,1},
+                {"ASC (Walk)","Constant",9.2319,1,0},
+                {"ASC (Bike)","Constant",3.3035,0,1},
                 {"Distance Walk","WalkSkim.Distance",-1.88,1,0},
                 {"Distance Bike","BikeSkim.Distance",-0.555,0,1},
                 {"Income below 50K","PersonHH.IncomeLevel = 1",0.315,1,1}}
@@ -1238,9 +1238,9 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityPT",
             "Value":{
-                {"ASC (W)","Constant",6.91,1,1,0,0,0,0},
-                {"ASC (PNR)","Constant",0.297,0,0,1,1,0,0},
-                {"ASC (KNR)","Constant",-0.69,0,0,0,0,1,1},
+                {"ASC (W)","Constant",4.7839,1,1,0,0,0,0},
+                {"ASC (PNR)","Constant",-0.5684,0,0,1,1,0,0},
+                {"ASC (KNR)","Constant",-1.6406,0,0,0,0,1,1},
                 {"Walk Bus Time","W_BusSkim.[Total Time]",-0.0259,1,0,0,0,0,0},
                 {"Walk Rail Time","W_RailSkim.[Total Time]",-0.0259,0,1,0,0,0,0},
                 {"PNR Bus IVTT","PNR_BusSkim.[Total Time]",-0.0259,0,0,1,0,0,0},
