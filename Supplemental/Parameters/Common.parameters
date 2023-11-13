@@ -686,15 +686,15 @@
             "Description":"WFHSpec",
             "Style":"WFH",
             "Value":{
-                {1,"Agriculture and Mining",4.3},
-                {2,"Manufacturing",9.4},
-                {3,"Utilties, Construction, Transportation and Waste Mgmt",7.5},
-                {4,"Wholesale Trade",21.7},
-                {5,"Retail Trade",5.6},
-                {6,"Finance, Professional, Information and Real Estate",40.9},
-                {7,"Education, Health and Social Assistance Services",15},
-                {8,"Food, Entertainment, Arts and Other Services",3.1},
-                {9,"Public Administration",19.4}}
+                {1.0,"Agriculture and Mining",2.1},
+                {2.0,"Manufacturing",6.3},
+                {3.0,"Utilties, Construction, Transportation and Waste Mgmt",10.7},
+                {4.0,"Wholesale Trade",17.3},
+                {5.0,"Retail Trade",16.1},
+                {6.0,"Finance, Professional, Information and Real Estate",30.9},
+                {7.0,"Education, Health and Social Assistance Services",10.7},
+                {8.0,"Food, Entertainment, Arts and Other Services",12.9},
+                {9.0,"Public Administration",8.4}}
         }
 	
 	Section = "Long Term Choices|Mandatory Participation|Daycare Status"
