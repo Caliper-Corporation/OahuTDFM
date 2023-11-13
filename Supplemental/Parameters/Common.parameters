@@ -726,7 +726,7 @@
             "Caption":"University Participation Utility",
             "Style":"AttendUtility",
             "Value":{
-                {"ASC","Constant",-3.29,0,1},
+                {"ASC","Constant",3.29,0,1},
                 {"Age under 40","PersonHH.Age <= 40",2.0496,1,0},
                 {"Low Income","PersonHH.IncomeLevel = 1",0.2603,1,0},
                 {"HH With Kids","PersonHH.Kids > 0",0.1887,0,1},
