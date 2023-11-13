@@ -590,6 +590,13 @@ mode_choice <- tour_file %>%
       access_mode != "",
       paste0(access_mode, "_", primary_mode),
       primary_mode
+    ),
+    # In order to avoid large changes to the model code, change tnx/taxi
+    # to the 'other' field
+    primary_mode = case_when(
+      primary_mode == "tnc" ~ "other",
+      primary_mode == "taxi" ~ "other",
+      TRUE ~ primary_mode
     )
   ) %>%
   group_by(tour_type, primary_mode) %>%
