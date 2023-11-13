@@ -893,16 +893,16 @@
             "Caption":"University Tour Frequency for University Students",
             "Style":"MandTourFreqUtility",
             "Value":{
-                {"ASC","Constant",6.2402,1,0},
-                {"ASC","Constant",3.2197,0,1},
+                {"ASC","Constant",6.2856,1,0},
+                {"ASC","Constant",2.7466,0,1},
                 {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.2476,0,1},
                 {"Age 60 Plus","PersonHH.Age >= 60",0.3793,1,0},
                 {"Female","PersonHH.Gender = 2",0.2833,1,0},
                 {"Full Time Worker","PersonHH.WorkerCategory = 1",0.2892,1,0},
                 {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.4366,0,1},
                 {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.6666,0,1},
-                {"Also attending work","PersonHH.WorkAttendance = 1",-99,0,1},
-                {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99,0,1}}
+                {"Also attending work","PersonHH.WorkAttendance = 1",-99.0,0,1},
+                {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99.0,0,1}}
         }
 	
 	Section = "MandatoryTours|Activity Duration|Full Time Workers"
