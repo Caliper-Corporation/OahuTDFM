@@ -726,11 +726,11 @@
             "Caption":"University Participation Utility",
             "Style":"AttendUtility",
             "Value":{
-                {"ASC","Constant",1.3914,0,1},
+                {"ASC","Constant",-3.29,0,1},
                 {"Age under 40","PersonHH.Age <= 40",2.0496,1,0},
-                {"Low Income","PersonHH.IncomeLevel = 1",0.260326,1,0},
+                {"Low Income","PersonHH.IncomeLevel = 1",0.2603,1,0},
                 {"HH With Kids","PersonHH.Kids > 0",0.1887,0,1},
-                {"Person in Labor Force","PersonHH.IndustryCategory < 10",0.667544,0,1}}
+                {"Person in Labor Force","PersonHH.IndustryCategory < 10",0.6675,0,1}}
         }
 	
 	Section = "Long Term Choices|Location Models|Work"
@@ -1303,7 +1303,7 @@
             "Value":{
                 {"ASC (DriveAlone)","Constant",2.151,1,0,0},
                 {"ASC (Carpool)","Constant",-0.31,0,1,0},
-                {"ASC (Other)","Constant",-99.0,0,0,1},
+                {"ASC (Other)","Constant",-99,0,0,1},
                 {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0},
                 {"Auto Time","AutoSkim.Time",-0.0631,1,1,0}}
