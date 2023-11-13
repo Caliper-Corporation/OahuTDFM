@@ -638,7 +638,7 @@
             "Caption":"Worker Category Utility",
             "Style":"WorkerCategoryUtility",
             "Value":{
-                {"ASC","Constant",-0.9892,1,0},
+                {"ASC","Constant",-0.52,1,0},
                 {"HH With Kids","PersonHH.Kids > 0",0.1623,1,0},
                 {"HH with Pre Sch Kids","PersonHH.PreSchKids > 0",0.9504,1,0},
                 {"Female in HH with Kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.3425,1,0},
@@ -657,8 +657,8 @@
                 {"Female in HH with Low Avg Worker Income","(PersonHH.Gender = 2)*(PersonHH.AvgWrkIncCategory = 1)",-0.369,1,0},
                 {"Age < 30 in HH with Low Avg Worker Income","(PersonHH.Age < 30)*(PersonHH.AvgWrkIncCategory = 1)",-0.4013,1,0},
                 {"Worker by HHSize","PersonHH.Workers/PersonHH.HHSize",0.4742,1,0},
-                {"Transit Accessibility to jobs","TAZ4Ds.TransitAccessibilityToJobsAM.O/1000",-0.01693,1,0},
-                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.O/1000",0.03614,1,0},
+                {"Transit Accessibility to jobs","TAZ4Ds.TransitAccessibilityToJobsAM.O/1000",-0.0169,1,0},
+                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.O/1000",0.0361,1,0},
                 {"Medium Income Per Worker","PersonHH.AvgWrkIncCategory = 2",1.067,1,0},
                 {"High Income Per Worker","PersonHH.AvgWrkIncCategory = 3",0.5296,1,0}}
         }
