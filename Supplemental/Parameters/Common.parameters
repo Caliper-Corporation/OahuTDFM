@@ -686,15 +686,15 @@
             "Description":"WFHSpec",
             "Style":"WFH",
             "Value":{
-                {1.0,"Agriculture and Mining",2.1},
-                {2.0,"Manufacturing",6.3},
-                {3.0,"Utilties, Construction, Transportation and Waste Mgmt",10.7},
-                {4.0,"Wholesale Trade",17.3},
-                {5.0,"Retail Trade",16.1},
-                {6.0,"Finance, Professional, Information and Real Estate",30.9},
-                {7.0,"Education, Health and Social Assistance Services",10.7},
-                {8.0,"Food, Entertainment, Arts and Other Services",12.9},
-                {9.0,"Public Administration",8.4}}
+                {1,"Agriculture and Mining",2.1},
+                {2,"Manufacturing",6.3},
+                {3,"Utilties, Construction, Transportation and Waste Mgmt",10.7},
+                {4,"Wholesale Trade",17.3},
+                {5,"Retail Trade",16.1},
+                {6,"Finance, Professional, Information and Real Estate",30.9},
+                {7,"Education, Health and Social Assistance Services",10.7},
+                {8,"Food, Entertainment, Arts and Other Services",12.9},
+                {9,"Public Administration",8.4}}
         }
 	
 	Section = "Long Term Choices|Mandatory Participation|Daycare Status"
@@ -704,11 +704,11 @@
             "Caption":"Daycare Participation Utility",
             "Style":"AttendUtility",
             "Value":{
-                {"ASC","Constant",1.6535,0,1},
-                {"Age 4","PersonHH.Age = 4",0.638171,1,0},
-                {"Age <= 2","PersonHH.Age <= 2",0.721677,0,1},
-                {"Low Income HH","PersonHH.IncomeLevel = 1",0.258549,0,1},
-                {"HH with 3+ kids","PersonHH.Kids >= 3",-0.596698,1,0}}
+                {"ASC","Constant",-1.16,0,1},
+                {"Age 4","PersonHH.Age = 4",0.6382,1,0},
+                {"Age <= 2","PersonHH.Age <= 2",0.7217,0,1},
+                {"Low Income HH","PersonHH.IncomeLevel = 1",0.2585,0,1},
+                {"HH with 3+ kids","PersonHH.Kids >= 3",-0.5967,1,0}}
         }
 	
 	Section = "Long Term Choices|Mandatory Participation|School Status"
