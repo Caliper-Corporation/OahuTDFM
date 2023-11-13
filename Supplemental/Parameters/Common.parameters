@@ -1158,10 +1158,10 @@
             "Caption":"School Start Time",
             "Style":"SchStartUtility",
             "Value":{
-                {"ASC","Constant",null,3.57753,3.3872,3.06659},
+                {"ASC","Constant",3.0453,3.8787,2.2422,2.1174},
                 {"School Duration >= 6 hrs","PersonHH.School_Duration/60 >= 6",null,3.2071,3.2071,null},
-                {"School Duration <= 3 hrs","PersonHH.School_Duration/60 <= 3",null,null,null,2.78249},
-                {"Also a part time worker","PersonHH.WorkerCategory = 2",null,null,-99,-99}}
+                {"School Duration <= 3 hrs","PersonHH.School_Duration/60 <= 3",null,null,null,2.7825},
+                {"Also a part time worker","PersonHH.WorkerCategory = 2",null,null,-99.0,-99.0}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|Work|Modes"
