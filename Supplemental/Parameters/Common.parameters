@@ -1449,8 +1449,8 @@
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.4447,0,1,0,0},
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.914,0,0,0,1},
                 {"Non Auto Work Mode","TourData.ForwardModeCode > 2 and TourData.ReturnModeCode > 2",0.5536,1,0,0,0},
-                {"PT Work Mode Forward","TourData.ForwardModeCode > 20 and TourData.ForwardModeCode < 50",-99.0,0,1,0,1},
-                {"PT Work Mode Return","TourData.ReturnModeCode > 20 and TourData.ReturnModeCode < 50",-99.0,0,0,1,1}}
+                {"PT Work Mode Forward","TourData.ForwardModeCode > 20 and TourData.ForwardModeCode < 50",-99,0,1,0,1},
+                {"PT Work Mode Return","TourData.ReturnModeCode > 20 and TourData.ReturnModeCode < 50",-99,0,0,1,1}}
         }
         Args.StopBeforeDropoffsProb = {
             "Type":"double",
@@ -1490,8 +1490,8 @@
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.4447,0,1,0,0},
                 {"Home to Work Dist <= 5 miles","AutoSkim.Distance <= 5",0.914,0,0,0,1},
                 {"Non Auto Work Mode","TourData.ForwardModeCode > 2 and TourData.ReturnModeCode > 2",0.5536,1,0,0,0},
-                {"PT Work Mode Forward","TourData.ForwardModeCode > 20 and TourData.ForwardModeCode < 50",-99.0,0,1,0,1},
-                {"PT Work Mode Return","TourData.ReturnModeCode > 20 and TourData.ReturnModeCode < 50",-99.0,0,0,1,1}}
+                {"PT Work Mode Forward","TourData.ForwardModeCode > 20 and TourData.ForwardModeCode < 50",-99,0,1,0,1},
+                {"PT Work Mode Return","TourData.ReturnModeCode > 20 and TourData.ReturnModeCode < 50",-99,0,0,1,1}}
         }
 	
 	Section = "MandatoryStops|Destination|Size Variable"
@@ -1568,7 +1568,7 @@
                 {"Excess TT to stop > 5 min","TourData.<dir>StopDeltaTT > 5",null,null,null,-1.283,null,null,null,null,null},
                 {"Acitvity Duration: <= 6.5 hrs","TourData.ActivityDuration/60 <= 6.5",null,null,null,null,-0.5856,-0.5856,null,-0.5856,null},
                 {"Activity duration: 7.5 to 11.5 hrs","TourData.ActivityDuration/60 >= 7.5 and TourData.ActivityDuration/60 <= 11.5",0.8947,0.7838,0.6032,0.6032,null,null,null,null,null},
-                {"ASC","Constant",-0.06613,0.1653,-0.03583,-0.2177,0.2083,-0.1517,-1.114,-0.8084,null}}
+                {"ASC","Constant",-0.533224,-0.804623,-0.956117,-0.244868,1.81995,1.52454,1.03607,1.69929,2.9472}}
         }
 	
 	Section = "MandatoryStops|Duration|Univ Tours"
@@ -1587,7 +1587,7 @@
                 {"Excess TT to stop > 5 min","TourData.<dir>StopDeltaTT > 5",null,null,null,-1.283,null,null,null,null,null},
                 {"Activity Duration: <= 6.5 hrs","TourData.ActivityDuration/60 <= 6.5",null,null,null,null,-0.5856,-0.5856,null,-0.5856,null},
                 {"Activity Duration: 7.5 to 11.5 hrs","TourData.ActivityDuration/60 >= 7.5 and TourData.ActivityDuration/60 <= 11.5",0.8947,0.7838,0.6032,0.6032,null,null,null,null,null},
-                {"ASC","Constant",-0.06613,0.1653,-0.03583,-0.2177,0.2083,-0.1517,-1.114,-0.8084,null}}
+                {"ASC","Constant",-3.74484,-3.65103,-3.29587,-1.44425,4.6917,4.94194,-1.11444,5.62144,5.0801}}
         }
 	
 	Section = "SubTours|Frequency"
