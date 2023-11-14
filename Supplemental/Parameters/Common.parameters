@@ -1362,7 +1362,7 @@
             "Value":{
                 {"DriveAlone","PersonHH.VehicleAvail = 1"},
                 {"Carpool","PersonHH.DropoffPersonID <> null"},
-                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Walk","WalkSkim.Distance <= 3"},
                 {"Bike","BikeSkim.Distance <= 4"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
@@ -1373,7 +1373,7 @@
             "Value":{
                 {"DriveAlone","PersonHH.SchoolForwardModeCode = 1"},
                 {"Carpool","PersonHH.PickupPersonID <> null"},
-                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Walk","WalkSkim.Distance <= 3"},
                 {"Bike","PersonHH.SchoolForwardModeCode = 4"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
@@ -1385,11 +1385,11 @@
             "Caption":"School Mode Utility (Forward)",
             "Style":"SchModeUtility",
             "Value":{
-                {"ASC (DriveAlone)","Constant",0.404,1,0,0,0,0,0},
-                {"ASC (Carpool)","Constant",0.986,0,1,0,0,0,0},
-                {"ASC (Walk)","Constant",2.38,0,0,1,0,0,0},
-                {"ASC (Bike)","Constant",1.07,0,0,0,1,0,0},
-                {"ASC (W_Bus)","Constant",0.0735,0,0,0,0,1,0},
+                {"ASC (DriveAlone)","Constant",1.8724,1,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.325,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",7.3843,0,0,1,0,0,0},
+                {"ASC (Bike)","Constant",-3.612,0,0,0,1,0,0},
+                {"ASC (W_Bus)","Constant",-5.8611,0,0,0,0,1,0},
                 {"Walk Distance","WalkSkim.Distance",-1.48,0,0,1,0,0,0},
                 {"Bike Distance","BikeSkim.Distance",-0.685,0,0,0,1,0,0},
                 {"HH has vehicle(s) - DriveAlone","PersonHH.Vehicles > 0",0.404,1,0,0,0,0,0},
@@ -1398,18 +1398,19 @@
                 {"Auto Time (School bus)","AutoSkim.Time",-0.0117,0,0,0,0,0,1},
                 {"Low Access-Egress Time","W_BusSkim.[Access Walk Time] + W_BusSkim.[Egress Walk Time] < 15",0.613,0,0,0,0,1,0},
                 {"Bus Total Time","W_BusSkim.[Total Time]",-0.0117,0,0,0,0,1,0},
-                {"Income below 50K","PersonHH.IncomeLevel = 1",1.12,0,0,1,1,1,1}}
+                {"Income below 50K","PersonHH.IncomeLevel = 1",1.12,0,0,1,1,1,1},
+                {"ASC (School Bus)","Constant",-7.6763,0,0,0,0,0,1}}
         }
         Args.SchoolModeRUtility = {
             "Type":"array",
             "Caption":"School Mode Utility (Return)",
             "Style":"SchModeUtility",
             "Value":{
-                {"ASC (DriveAlone)","Constant",0.404,1,0,0,0,0,0},
-                {"ASC (Carpool)","Constant",0.986,0,1,0,0,0,0},
-                {"ASC (Walk)","Constant",2.38,0,0,1,0,0,0},
-                {"ASC (Bike)","Constant",1.07,0,0,0,1,0,0},
-                {"ASC (W_Bus)","Constant",0.0735,0,0,0,0,1,0},
+                {"ASC (DriveAlone)","Constant",1.8724,1,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.325,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",7.3843,0,0,1,0,0,0},
+                {"ASC (Bike)","Constant",-3.612,0,0,0,1,0,0},
+                {"ASC (W_Bus)","Constant",-5.8611,0,0,0,0,1,0},
                 {"Walk Distance","WalkSkim.Distance",-1.48,0,0,1,0,0,0},
                 {"Bike Distance","BikeSkim.Distance",-0.685,0,0,0,1,0,0},
                 {"HH has vehicle(s) - DriveAlone","PersonHH.Vehicles > 0",0.404,1,0,0,0,0,0},
@@ -1417,7 +1418,8 @@
                 {"Auto Time","AutoSkim.Time",-0.0472,1,1,0,0,0,0},
                 {"Low Access-Egress Time","W_BusSkim.[Access Walk Time] + W_BusSkim.[Egress Walk Time] < 15",0.613,0,0,0,0,1,0},
                 {"Bus Total Time","W_BusSkim.[Total Time]",-0.0117,0,0,0,0,1,0},
-                {"Income below 50K","PersonHH.IncomeLevel = 1",-0.0117,0,0,1,1,1,0}}
+                {"Income below 50K","PersonHH.IncomeLevel = 1",-0.0117,0,0,1,1,1,0},
+                {"ASC (School Bus)","Constant",-7.6763,0,0,0,0,0,1}}
         }
 	
 	Section = "MandatoryStops|Frequency|Work Tours"
