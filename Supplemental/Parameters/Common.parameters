@@ -1663,7 +1663,7 @@
             "Caption":"Work/Univ SubTour Duration Utility",
             "Style":"SubTourDurUtility",
             "Value":{
-                {"ASC","Constant",1.932,1.216,0.7729,-0.4421,null},
+                {"ASC","Constant",-2.93452,-2.98491,-0.55752,-0.560506,null},
                 {"HH With Kids","TourData.Kids > 0",null,0.3176,null,null,null},
                 {"High Income HH","TourData.IncomeLevel = 3",null,null,0.5996,0.5996,null},
                 {"Auto Work Tour","TourData.ForwardModeCode <= 2",null,null,1.048,1.048,null},
