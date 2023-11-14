@@ -521,7 +521,7 @@ daycare <- per_add_tour_counts %>%
 
 # University status
 university <- per_add_tour_counts %>%
-  filter(R_AGE >= 18 & SCHOOL1 != "unknown") %>%
+  filter(R_AGE >= 19 & SCHOOL1 != "unknown") %>%
   group_by(SCHOOL1) %>%
   summarize(weight = sum(WTHHFIN5D_HI, na.rm = TRUE)) %>%
   mutate(target_pct = round(weight / sum(weight) * 100, 1)) %>%
@@ -573,23 +573,19 @@ tour_frequency <- tour_file %>%
 
 # mandatory tour mode shares
 mode_choice <- tour_file %>%
-  # # Add worker status
-  # left_join(
-  #   per_add_tour_counts %>%
-  #     select(HOUSEID, PERSONID, WORKER),
-  #   by = c("HOUSEID", "PERSONID")
-  # ) %>%
   mutate(
-    # tour_type = case_when(
-    #   tour_type != "Work" ~ tour_type,
-    #   WORKER == "FullTime" ~ "Work (FT)",
-    #   TRUE ~ "Work (PT)"
-    # ),
     primary_mode = ifelse(primary_mode %in% c("hov2", "hov3"), "hov", primary_mode),
     primary_mode = ifelse(
       access_mode != "",
       paste0(access_mode, "_", primary_mode),
       primary_mode
+    ),
+    # In order to avoid large changes to the model code, change tnx/taxi
+    # to the 'other' field
+    primary_mode = case_when(
+      primary_mode == "tnc" ~ "other",
+      primary_mode == "taxi" ~ "other",
+      TRUE ~ primary_mode
     )
   ) %>%
   group_by(tour_type, primary_mode) %>%

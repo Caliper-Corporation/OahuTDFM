@@ -195,13 +195,13 @@ menu "MandatoryTours_Menu"
         mr.RunCode("Calibrate PTWorkDuration", Args)   
     endItem
 
-    MenuItem "Univ Duration" text: "University Work Duration" do
+    MenuItem "Univ Duration" text: "University Duration" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate UnivDuration", Args)   
     endItem
 
-    MenuItem "School Duration" text: "School Work Duration" do
+    MenuItem "School Duration" text: "School Duration" do
         mr = CreateObject("Model.Runtime")
         Args = mr.GetValues()
         mr.RunCode("Calibrate SchoolDuration", Args)   

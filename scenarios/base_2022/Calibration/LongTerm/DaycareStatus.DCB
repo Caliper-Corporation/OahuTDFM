@@ -1,4 +1,8 @@
 
-19
+51
 "Alternative",C,1,11,0,11,0,,"","",,"Copy",
 "TargetShare",R,12,8,0,12,4,,"","",,"Sum",
+"InitialShare",R,20,8,0,12,2,,"","",,"Sum",
+"InitialASC",R,28,8,0,12,4,,"","",,"Sum",
+"AdjustedShare",R,36,8,0,12,2,,"","",,"Sum",
+"AdjustedASC",R,44,8,0,12,4,,"","",,"Sum",

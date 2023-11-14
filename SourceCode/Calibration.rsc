@@ -794,6 +794,9 @@ Macro "Calibrate Mandatory MC"(Args, mSpec)
     abm = RunMacro("Get ABM Manager", Args)
     mSpec.abmManager = abm
 
+    objT = CreateObject("Table", Args.AccessibilitiesOutputs)
+    objD = CreateObject("Table", Args.DemographicOutputs)
+
     periods = null
     periods.AM.StartTime = 360 // 6 AM
     periods.AM.EndTime = 540   // 9 AM

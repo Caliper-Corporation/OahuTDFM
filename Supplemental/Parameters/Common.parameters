@@ -66,7 +66,7 @@
         Args.MaxIterations = {
             "Type":"int",
             "Description":"Maximum number of iterations that this model can run.",
-            "Value":1
+            "Value":4
         }
         Args.RunInIterations = {
             "Type":"array",
@@ -593,7 +593,7 @@
             "Caption":"Driver License Utility: Applies to Age >= 16",
             "Style":"DriverLicenseUtility",
             "Value":{
-                {"ASC","Constant",1.491,1,0},
+                {"ASC","Constant",0.86,1,0},
                 {"Worker","PersonHH.IndustryCategory < 10",0.7829,1,0},
                 {"Age {25-64}","PersonHH.Age >= 25 and PersonHH.Age < 65",1.1508,1,0},
                 {"Low Income HH","PersonHH.IncomeCategory = 1",0.7168,0,1}}
@@ -606,10 +606,10 @@
             "Caption":"Auto Ownership Utility",
             "Style":"AutoOwnershipUtility",
             "Value":{
-                {"ASC_NoAuto","Constant",-3.9929,1,0,0,0,0},
-                {"ASC_OneAuto","Constant",-0.0305,0,1,0,0,0},
-                {"ASC_TwoAutos","Constant",1.4639,0,0,1,0,0},
-                {"ASC_ThreeAutos","Constant",0.6886,0,0,0,1,0},
+                {"ASC_NoAuto","Constant",-0.69,1,0,0,0,0},
+                {"ASC_OneAuto","Constant",0.89,0,1,0,0,0},
+                {"ASC_TwoAutos","Constant",2.14,0,0,1,0,0},
+                {"ASC_ThreeAutos","Constant",0.84,0,0,0,1,0},
                 {"One Licensed Adult","HH.NLicensed = 1",2.5696,0,1,0,0,0},
                 {"Two Licensed Adults","HH.NLicensed = 2",0.3127,0,0,1,0,0},
                 {"Three Licensed Adults","HH.NLicensed = 3",1.1493,0,0,0,1,0},
@@ -638,7 +638,7 @@
             "Caption":"Worker Category Utility",
             "Style":"WorkerCategoryUtility",
             "Value":{
-                {"ASC","Constant",-0.9892,1,0},
+                {"ASC","Constant",-0.52,1,0},
                 {"HH With Kids","PersonHH.Kids > 0",0.1623,1,0},
                 {"HH with Pre Sch Kids","PersonHH.PreSchKids > 0",0.9504,1,0},
                 {"Female in HH with Kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.3425,1,0},
@@ -657,8 +657,8 @@
                 {"Female in HH with Low Avg Worker Income","(PersonHH.Gender = 2)*(PersonHH.AvgWrkIncCategory = 1)",-0.369,1,0},
                 {"Age < 30 in HH with Low Avg Worker Income","(PersonHH.Age < 30)*(PersonHH.AvgWrkIncCategory = 1)",-0.4013,1,0},
                 {"Worker by HHSize","PersonHH.Workers/PersonHH.HHSize",0.4742,1,0},
-                {"Transit Accessibility to jobs","TAZ4Ds.TransitAccessibilityToJobsAM.O/1000",-0.01693,1,0},
-                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.O/1000",0.03614,1,0},
+                {"Transit Accessibility to jobs","TAZ4Ds.TransitAccessibilityToJobsAM.O/1000",-0.0169,1,0},
+                {"Non Motorized Accessibility","TAZ4Ds.NonMotorizedAccessibility.O/1000",0.0361,1,0},
                 {"Medium Income Per Worker","PersonHH.AvgWrkIncCategory = 2",1.067,1,0},
                 {"High Income Per Worker","PersonHH.AvgWrkIncCategory = 3",0.5296,1,0}}
         }
@@ -686,15 +686,15 @@
             "Description":"WFHSpec",
             "Style":"WFH",
             "Value":{
-                {1,"Agriculture and Mining",4.3},
-                {2,"Manufacturing",9.4},
-                {3,"Utilties, Construction, Transportation and Waste Mgmt",7.5},
-                {4,"Wholesale Trade",21.7},
-                {5,"Retail Trade",5.6},
-                {6,"Finance, Professional, Information and Real Estate",40.9},
-                {7,"Education, Health and Social Assistance Services",15},
-                {8,"Food, Entertainment, Arts and Other Services",3.1},
-                {9,"Public Administration",19.4}}
+                {1,"Agriculture and Mining",2.1},
+                {2,"Manufacturing",6.3},
+                {3,"Utilties, Construction, Transportation and Waste Mgmt",10.7},
+                {4,"Wholesale Trade",17.3},
+                {5,"Retail Trade",16.1},
+                {6,"Finance, Professional, Information and Real Estate",30.9},
+                {7,"Education, Health and Social Assistance Services",10.7},
+                {8,"Food, Entertainment, Arts and Other Services",12.9},
+                {9,"Public Administration",8.4}}
         }
 	
 	Section = "Long Term Choices|Mandatory Participation|Daycare Status"
@@ -704,11 +704,11 @@
             "Caption":"Daycare Participation Utility",
             "Style":"AttendUtility",
             "Value":{
-                {"ASC","Constant",1.6535,0,1},
-                {"Age 4","PersonHH.Age = 4",0.638171,1,0},
-                {"Age <= 2","PersonHH.Age <= 2",0.721677,0,1},
-                {"Low Income HH","PersonHH.IncomeLevel = 1",0.258549,0,1},
-                {"HH with 3+ kids","PersonHH.Kids >= 3",-0.596698,1,0}}
+                {"ASC","Constant",-1.16,0,1},
+                {"Age 4","PersonHH.Age = 4",0.6382,1,0},
+                {"Age <= 2","PersonHH.Age <= 2",0.7217,0,1},
+                {"Low Income HH","PersonHH.IncomeLevel = 1",0.2585,0,1},
+                {"HH with 3+ kids","PersonHH.Kids >= 3",-0.5967,1,0}}
         }
 	
 	Section = "Long Term Choices|Mandatory Participation|School Status"
@@ -726,11 +726,11 @@
             "Caption":"University Participation Utility",
             "Style":"AttendUtility",
             "Value":{
-                {"ASC","Constant",1.3914,0,1},
+                {"ASC","Constant",3.29,0,1},
                 {"Age under 40","PersonHH.Age <= 40",2.0496,1,0},
-                {"Low Income","PersonHH.IncomeLevel = 1",0.260326,1,0},
+                {"Low Income","PersonHH.IncomeLevel = 1",0.2603,1,0},
                 {"HH With Kids","PersonHH.Kids > 0",0.1887,0,1},
-                {"Person in Labor Force","PersonHH.IndustryCategory < 10",0.667544,0,1}}
+                {"Person in Labor Force","PersonHH.IndustryCategory < 10",0.6675,0,1}}
         }
 	
 	Section = "Long Term Choices|Location Models|Work"
@@ -740,32 +740,31 @@
             "Caption":"Size Variable and Attractions Fields",
             "Style":"SizeVar2",
             "Value":{
-                {1,"Agriculture","Emp_Agriculture",5.4227},
-                {2,"Manufacturing and Mining","Emp_Manufacturing",5.4227},
-                {3,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction",5.4227},
-                {4,"Wholesale","Emp_Wholesale",4.7767},
-                {5,"Retail","Emp_Retail",3.8709},
-                {6,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate",3.325},
-                {7,"Education","Emp_Education",6.2443},
-                {8,"Health Care","Emp_HealthCare",4.8991},
-                {9,"Service","Emp_Services",5.4099},
-                {10,"Public Administration","Emp_Public",5.181},
-                {11,"Military","Emp_Military",5.4726}}
+                {1,"Agriculture","Emp_Agriculture",4.304},
+                {2,"Manufacturing and Mining","Emp_Manufacturing",4.305},
+                {3,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction",4.304},
+                {4,"Wholesale","Emp_Wholesale",3.824},
+                {5,"Retail","Emp_Retail",2.801},
+                {6,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate",2.742},
+                {7,"Education","Emp_Education",5.227},
+                {8,"Health Care","Emp_HealthCare",3.917},
+                {9,"Service (including hotel employment)","Emp_ServHotel",4.449},
+                {10,"Public Administration","Emp_Public",4.286},
+                {11,"Military","Emp_Military",4.494},
+                {null,"Population","Population",0}}
         }
         Args.WorkLocUtility = {
             "Type":"array",
             "Caption":"Work Location Utility: IndCode ranges from '1' to '11'",
             "Style":"DestUtilityWithFilter",
             "Value":{
-                {"Highway Time","AutoSkim.Time",null,-0.025},
-                {"Excess highway time over 60 min","(AutoSkim.Time - 60)","AutoSkim.Time > 60",0.001368},
-                {"Distance < 2 miles","AutoSkim.Distance < 2",null,0.3112},
-                {"Distance for females","AutoSkim.Distance","PersonHH.gender = 2",-0.0298},
-                {"Distance for <30 year olds","AutoSkim.Distance","PersonHH.Age < 30",-0.0352},
-                {"Intrazonal destination","Intrazonal.IZ",null,2.3823},
-                {"MC logsums","ModeAccessibility.Auto",null,0.4618},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,27.34},
-                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",null,0.1998},
+                {"Highway Time","AutoSkim.Time * 2",null,-0.025},
+                {"Excess highway time over 60 min","(AutoSkim.Time * 2 - 60)","AutoSkim.Time * 2 > 60",0.012},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",null,0.333},
+                {"Distance for females","AutoSkim.Distance","PersonHH.gender = 2",-0.028},
+                {"Distance for <30 year olds","AutoSkim.Distance","PersonHH.Age < 30",-0.033},
+                {"Intrazonal destination","Intrazonal.IZ",null,1.402},
+                {"MC logsums","ModeAccessibility.Auto",null,0.466},
                 {"Shadow Prices","WorkDCShadowPrices.Industry<IndCode>.D",null,1}}
         }
         Args.WorkDCShadowPrices = {
@@ -824,20 +823,18 @@
             "Description":"StopSizeVar",
             "Style":"SizeVarUtility",
             "Value":{
-                {"Emp_Education",4.2965},
-                {"K12Enrollment",5.7177}}
+                {"Population",0},
+                {"K12Enrollment",4.891}}
         }
         Args.SchoolLocUtility = {
             "Type":"array",
             "Caption":"School Location Utility: Type is one of 'Elementary', 'Middle' or 'HighSchool'",
             "Style":"DestUtility",
             "Value":{
-                {"Distance < 2 miles","AutoSkim.Distance < 2",0.4678},
-                {"Highway Time","AutoSkim.Time",-0.0178},
-                {"Intrazonal","Intrazonal.IZ = 1",-0.6326},
-                {"MC logsums","ModeAccessibility.Auto",3.5019},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",4.405},
-                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",0.0022},
+                {"Distance < 2 miles","AutoSkim.Distance < 2",0.466},
+                {"Highway Time","AutoSkim.Time * 2",-0.017},
+                {"Intrazonal","Intrazonal.IZ = 1",-0.639},
+                {"MC logsums","ModeAccessibility.Auto",3.515},
                 {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
         }
         Args.SchoolDCShadowPrices = {
@@ -873,14 +870,14 @@
             "Caption":"Work Tour Frequency for Workers",
             "Style":"MandTourFreqUtility",
             "Value":{
-                {"ASC","Constant",6.28618,1,0},
-                {"ASC","Constant",2.51841,0,1},
-                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.24756,0,1},
-                {"Age 60 Plus","PersonHH.Age >= 60",0.379312,1,0},
-                {"Female","PersonHH.Gender = 2",0.283341,1,0},
-                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.289247,1,0},
-                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.436642,0,1},
-                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.666641,0,1},
+                {"ASC","Constant",6.3076,1,0},
+                {"ASC","Constant",2.1008,0,1},
+                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.2476,0,1},
+                {"Age 60 Plus","PersonHH.Age >= 60",0.3793,1,0},
+                {"Female","PersonHH.Gender = 2",0.2833,1,0},
+                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.2892,1,0},
+                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.4366,0,1},
+                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.6666,0,1},
                 {"Also attending school","PersonHH.AttendSchool = 1",-99,0,1},
                 {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99,0,1},
                 {"Also attending univ","PersonHH.AttendUniv = 1",-99,0,1}}
@@ -893,14 +890,14 @@
             "Caption":"University Tour Frequency for University Students",
             "Style":"MandTourFreqUtility",
             "Value":{
-                {"ASC","Constant",6.28618,1,0},
-                {"ASC","Constant",2.51841,0,1},
-                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.24756,0,1},
-                {"Age 60 Plus","PersonHH.Age >= 60",0.379312,1,0},
-                {"Female","PersonHH.Gender = 2",0.283341,1,0},
-                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.289247,1,0},
-                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.436642,0,1},
-                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.666641,0,1},
+                {"ASC","Constant",6.2856,1,0},
+                {"ASC","Constant",2.7466,0,1},
+                {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.2476,0,1},
+                {"Age 60 Plus","PersonHH.Age >= 60",0.3793,1,0},
+                {"Female","PersonHH.Gender = 2",0.2833,1,0},
+                {"Full Time Worker","PersonHH.WorkerCategory = 1",0.2892,1,0},
+                {"Work Travel Time <= 30 min","AutoSkim.Time <= 30",0.4366,0,1},
+                {"Workers by HH Size","PersonHH.Workers/PersonHH.HHSize",0.6666,0,1},
                 {"Also attending work","PersonHH.WorkAttendance = 1",-99,0,1},
                 {"Work Travel Time > 45 min","AutoSkim.Time > 45",-99,0,1}}
         }
@@ -912,22 +909,22 @@
             "Caption":"Full Time Worker: Work Duration Alternatives (Hours)",
             "Style":"AlternativesList",
             "Value":{
-                {"0 - 1 h",null,2.70805},
-                {"1 - 2 h","1 - 3 hrs",3.5899},
-                {"2 - 3 h","1 - 3 hrs",3.42956},
-                {"3 - 4 h","3 - 4 hrs",3.88863},
-                {"4 - 5 h","4 - 5 hrs",4.03946},
-                {"5 - 6 h","5 - 7 hrs",3.84296},
-                {"6 - 7 h","5 - 7 hrs",3.91599},
-                {"7 - 8 h","7 - 8 hrs",4.90481},
-                {"8 - 9 h","8 - 11 hrs",6.25419},
-                {"9 - 10 h","8 - 11 hrs",5.64987},
-                {"10 - 11 h","8 - 11 hrs",5.36219},
-                {"11 - 12 h","11 - 13 hrs",4.6396},
-                {"12 - 13 h","11 - 13 hrs",3.68941},
-                {"13 - 14 h","13 - 19 hrs",3.17805},
-                {"14 - 15 h","13 - 19 hrs",2.70805},
-                {"15 - 16 h","13 - 19 hrs",2.60269}}
+                {"0 - 1 h",null,3.0426},
+                {"1 - 2 h","1 - 3 hrs",3.6287},
+                {"2 - 3 h","1 - 3 hrs",3.1492},
+                {"3 - 4 h","3 - 4 hrs",3.5529},
+                {"4 - 5 h","4 - 5 hrs",3.7067},
+                {"5 - 6 h","5 - 7 hrs",3.8553},
+                {"6 - 7 h","5 - 7 hrs",3.8615},
+                {"7 - 8 h","7 - 8 hrs",4.7881},
+                {"8 - 9 h","8 - 11 hrs",6.1015},
+                {"9 - 10 h","8 - 11 hrs",6.1334},
+                {"10 - 11 h","8 - 11 hrs",5.3127},
+                {"11 - 12 h","11 - 13 hrs",4.5312},
+                {"12 - 13 h","11 - 13 hrs",3.5092},
+                {"13 - 14 h","13 - 19 hrs",2.6022},
+                {"14 - 15 h","13 - 19 hrs",2.2734},
+                {"15 - 16 h","13 - 19 hrs",1.0296}}
         }
         Args.FTWorkDurUtility = {
             "Type":"array",
@@ -948,17 +945,17 @@
             "Caption":"Part Time Worker: Work Duration Alternatives (Hours)",
             "Style":"AlternativesList",
             "Value":{
-                {"1 - 2 h","1 - 4 hrs",1.32403},
-                {"2 - 3 h","1 - 4 hrs",1.70702},
-                {"3 - 4 h","1 - 4 hrs",1.50635},
-                {"4 - 5 h","4 - 12 hrs",2.23359},
-                {"5 - 6 h","4 - 12 hrs",1.79175},
-                {"6 - 7 h","4 - 12 hrs",1.67397},
-                {"7 - 8 h","4 - 12 hrs",2.03688},
-                {"8 - 9 h","4 - 12 hrs",2.12026},
-                {"9 - 10 h","4 - 12 hrs",1.46633},
-                {"10 - 11 h","4 - 12 hrs",1.20397},
-                {"11 - 12 h","4 - 12 hrs",null}}
+                {"1 - 2 h","1 - 4 hrs",-1.8602},
+                {"2 - 3 h","1 - 4 hrs",-3.2974},
+                {"3 - 4 h","1 - 4 hrs",-1.9175},
+                {"4 - 5 h","4 - 12 hrs",3.3573},
+                {"5 - 6 h","4 - 12 hrs",3.3128},
+                {"6 - 7 h","4 - 12 hrs",3.3424},
+                {"7 - 8 h","4 - 12 hrs",3.1465},
+                {"8 - 9 h","4 - 12 hrs",3.4871},
+                {"9 - 10 h","4 - 12 hrs",3.2311},
+                {"10 - 11 h","4 - 12 hrs",2.4924},
+                {"11 - 12 h","4 - 12 hrs",2.276}}
         }
         Args.PTWorkDurUtility = {
             "Type":"array",
@@ -976,18 +973,18 @@
             "Caption":"University Duration Alternatives (Hours)",
             "Style":"AlternativesList",
             "Value":{
-                {"0 - 1 h",null,2.70805},
-                {"1 - 2 h","1 - 3 hrs",3.5899},
-                {"2 - 3 h","1 - 3 hrs",3.42956},
-                {"3 - 4 h","3 - 4 hrs",3.88863},
-                {"4 - 5 h","4 - 5 hrs",4.03946},
-                {"5 - 6 h","5 - 7 hrs",3.84296},
-                {"6 - 7 h","5 - 7 hrs",3.91599},
-                {"7 - 8 h","7 - 8 hrs",4.90481},
-                {"8 - 9 h","8 - 11 hrs",5.64987},
-                {"9 - 10 h","8 - 11 hrs",6.25419},
-                {"10 - 11 h","8 - 11 hrs",5.36219},
-                {"11 - 12 h","11 - 13 hrs",4.6396}}
+                {"0 - 1 h",null,4.6573},
+                {"1 - 2 h","1 - 3 hrs",4.0948},
+                {"2 - 3 h","1 - 3 hrs",3.905},
+                {"3 - 4 h","3 - 4 hrs",3.602},
+                {"4 - 5 h","4 - 5 hrs",3.9224},
+                {"5 - 6 h","5 - 7 hrs",3.5728},
+                {"6 - 7 h","5 - 7 hrs",2.9814},
+                {"7 - 8 h","7 - 8 hrs",3.496},
+                {"8 - 9 h","8 - 11 hrs",4.2772},
+                {"9 - 10 h","8 - 11 hrs",3.0956},
+                {"10 - 11 h","8 - 11 hrs",1.7307},
+                {"11 - 12 h","11 - 13 hrs",2.3229}}
         }
         Args.UnivDurUtility = {
             "Type":"array",
@@ -1008,16 +1005,16 @@
             "Caption":"Students: School Duration Alternatives (Hours)",
             "Style":"AlternativesList",
             "Value":{
-                {"0 - 1 h",null,-2.70855},
-                {"1 - 2 h",null,-1.31617},
-                {"2 - 3 h","2 - 3 hrs",-1.63999},
-                {"3 - 4 h","3 - 4 hrs",-1.41526},
-                {"4 - 5 h","4 - 5 hrs",-0.622922},
-                {"5 - 6 h",null,-1.20265},
-                {"6 - 7 h","6 - 7 hrs",0.658146},
-                {"7 - 8 h","7 - 8 hrs",null},
-                {"8 - 9 h","8 - 9 hrs",null},
-                {"9 - 10 h","9 plus hrs",null}}
+                {"0 - 1 h",null,-2.3517},
+                {"1 - 2 h",null,-5.309},
+                {"2 - 3 h","2 - 3 hrs",-5.2318},
+                {"3 - 4 h","3 - 4 hrs",-4.4616},
+                {"4 - 5 h","4 - 5 hrs",-2.5406},
+                {"5 - 6 h",null,-0.1094},
+                {"6 - 7 h","6 - 7 hrs",0.852},
+                {"7 - 8 h","7 - 8 hrs",0.0114},
+                {"8 - 9 h","8 - 9 hrs",-0.0418},
+                {"9 - 10 h","9 plus hrs",0.0069}}
         }
         Args.SchDurUtility = {
             "Type":"array",
@@ -1040,23 +1037,23 @@
             "Caption":"Full Time Worker: Work Start Time Alternatives",
             "Style":"AlternativesList",
             "Value":{
-                {"4 - 5","3 AM - 5 AM",1.60657},
-                {"5 - 6","5 AM - 6 AM",2.39043},
-                {"6 - 7","6 AM - 7 AM",3.53571},
-                {"7 - 8","7 AM - 8 AM",4.04334},
-                {"8 - 9","8 AM - 9 AM",4.05469},
-                {"9 - 10","9 AM - 10 AM",3.36749},
-                {"10 - 11","10 AM - 12 PM",2.27867},
-                {"11 - 12","10 AM - 12 PM",1.51653},
-                {"12 - 13","12 PM - 1 PM",1.71784},
-                {"13 - 14","1 PM - 3 PM",1.5177},
-                {"14 - 15","1 PM - 3 PM",0.883974},
-                {"15 - 16","3 PM - 5 PM",0.527989},
-                {"16 - 17","3 PM - 5 PM",0.592528},
-                {"17 - 18","5 PM - 9 PM",1.13087},
-                {"18 - 19","5 PM - 9 PM",null},
-                {"19 - 20","5 PM - 9 PM",null},
-                {"20 - 21","5 PM - 9 PM",-1.43408}}
+                {"4 - 5","3 AM - 5 AM",1.4124},
+                {"5 - 6","5 AM - 6 AM",3.0699},
+                {"6 - 7","6 AM - 7 AM",3.855},
+                {"7 - 8","7 AM - 8 AM",4.0307},
+                {"8 - 9","8 AM - 9 AM",3.5985},
+                {"9 - 10","9 AM - 10 AM",2.943},
+                {"10 - 11","10 AM - 12 PM",1.8291},
+                {"11 - 12","10 AM - 12 PM",2.0059},
+                {"12 - 13","12 PM - 1 PM",1.5121},
+                {"13 - 14","1 PM - 3 PM",2.1434},
+                {"14 - 15","1 PM - 3 PM",0.8556},
+                {"15 - 16","3 PM - 5 PM",1.9234},
+                {"16 - 17","3 PM - 5 PM",1.377},
+                {"17 - 18","5 PM - 9 PM",1.4934},
+                {"18 - 19","5 PM - 9 PM",0.8002},
+                {"19 - 20","5 PM - 9 PM",1.0878},
+                {"20 - 21","5 PM - 9 PM",1.493}}
         }
         Args.FTWorkStartUtility = {
             "Type":"array",
@@ -1082,21 +1079,21 @@
             "Caption":"Part Time Workers: Work Start Time Alternatives",
             "Style":"AlternativesList",
             "Value":{
-                {"4 - 5",null,-99},
-                {"5 - 6","5 AM - 10 AM",null},
-                {"6 - 7","5 AM - 10 AM",1.51795},
-                {"7 - 8","5 AM - 10 AM",2.61656},
-                {"8 - 9","5 AM - 10 AM",2.70357},
-                {"9 - 10","5 AM - 10 AM",2.58579},
-                {"10 - 11",null,1.96723},
-                {"11 - 12",null,1.96723},
-                {"12 - 13",null,1.52539},
-                {"13 - 14","1 PM - 5 PM",0.625341},
-                {"14 - 15","1 PM - 5 PM",null},
-                {"15 - 16","1 PM - 5 PM",0.507558},
-                {"16 - 17","1 PM - 5 PM",null},
-                {"17 - 18","5 PM - 7 PM",1.63075},
-                {"18 - 19","5 PM - 7 PM",0.714464}}
+                {"4 - 5",null,0.8014},
+                {"5 - 6","5 AM - 10 AM",1.3848},
+                {"6 - 7","5 AM - 10 AM",1.1397},
+                {"7 - 8","5 AM - 10 AM",2.3925},
+                {"8 - 9","5 AM - 10 AM",2.1412},
+                {"9 - 10","5 AM - 10 AM",2.2567},
+                {"10 - 11",null,1.7432},
+                {"11 - 12",null,1.2877},
+                {"12 - 13",null,-0.1786},
+                {"13 - 14","1 PM - 5 PM",1.6051},
+                {"14 - 15","1 PM - 5 PM",0.8904},
+                {"15 - 16","1 PM - 5 PM",1.3384},
+                {"16 - 17","1 PM - 5 PM",1.4438},
+                {"17 - 18","5 PM - 7 PM",0.9389},
+                {"18 - 19","5 PM - 7 PM",1.0993}}
         }
         Args.PTWorkStartUtility = {
             "Type":"array",
@@ -1117,23 +1114,23 @@
             "Caption":"University Start Time Alternatives",
             "Style":"AlternativesList",
             "Value":{
-                {"5 - 6","5 AM - 6 AM",2.39043},
-                {"6 - 7","6 AM - 7 AM",3.53571},
-                {"7 - 8","7 AM - 8 AM",4.04334},
-                {"8 - 9","8 AM - 9 AM",4.05469},
-                {"9 - 10","9 AM - 10 AM",3.36749},
-                {"10 - 11","10 AM - 12 PM",2.27867},
-                {"11 - 12","10 AM - 12 PM",1.51653},
-                {"12 - 13","12 PM - 1 PM",1.71784},
-                {"13 - 14","1 PM - 3 PM",1.5177},
-                {"14 - 15","1 PM - 3 PM",0.883974},
-                {"15 - 16","3 PM - 5 PM",0.527989},
-                {"16 - 17","3 PM - 5 PM",0.592528},
-                {"17 - 18","5 PM - 9 PM",1.13087},
-                {"18 - 19","5 PM - 9 PM",null},
-                {"19 - 20","5 PM - 9 PM",null},
-                {"20 - 21","5 PM - 9 PM",-1.43408},
-                {"21 - 22","5 PM - 9 PM",null}}
+                {"5 - 6","5 AM - 6 AM",-99},
+                {"6 - 7","6 AM - 7 AM",-99},
+                {"7 - 8","7 AM - 8 AM",-99},
+                {"8 - 9","8 AM - 9 AM",3.3255},
+                {"9 - 10","9 AM - 10 AM",2.377},
+                {"10 - 11","10 AM - 12 PM",2.3355},
+                {"11 - 12","10 AM - 12 PM",1.8606},
+                {"12 - 13","12 PM - 1 PM",2.5155},
+                {"13 - 14","1 PM - 3 PM",0.5963},
+                {"14 - 15","1 PM - 3 PM",0.9979},
+                {"15 - 16","3 PM - 5 PM",1.572},
+                {"16 - 17","3 PM - 5 PM",1.2314},
+                {"17 - 18","5 PM - 9 PM",2.907},
+                {"18 - 19","5 PM - 9 PM",2.6172},
+                {"19 - 20","5 PM - 9 PM",2.2996},
+                {"20 - 21","5 PM - 9 PM",1.7364},
+                {"21 - 22","5 PM - 9 PM",1.5145}}
         }
         Args.UnivStartUtility = {
             "Type":"array",
@@ -1158,9 +1155,9 @@
             "Caption":"School Start Time",
             "Style":"SchStartUtility",
             "Value":{
-                {"ASC","Constant",null,3.57753,3.3872,3.06659},
+                {"ASC","Constant",3.0641,3.8818,2.2291,2.0482},
                 {"School Duration >= 6 hrs","PersonHH.School_Duration/60 >= 6",null,3.2071,3.2071,null},
-                {"School Duration <= 3 hrs","PersonHH.School_Duration/60 <= 3",null,null,null,2.78249},
+                {"School Duration <= 3 hrs","PersonHH.School_Duration/60 <= 3",null,null,null,2.7825},
                 {"Also a part time worker","PersonHH.WorkerCategory = 2",null,null,-99,-99}}
         }
 	
@@ -1204,8 +1201,9 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",2.71,1,0,0},
-                {"ASC (Carpool)","Constant",1.84,0,1,0},
+                {"ASC (DriveAlone)","Constant",2.8523,1,0,0},
+                {"ASC (Carpool)","Constant",1.1682,0,1,0},
+                {"ASC (Other/TNC)","Constant",0.6478,0,0,1},
                 {"Highway Time (Auto)","AutoSkim.Time",-0.0735,1,1,0},
                 {"Highway Time (Other)","AutoSkim.Time",-0.204,0,0,1},
                 {"HH has vehicle(s) (Drive Alone)","PersonHH.Vehicles > 0",2.6,1,0,0},
@@ -1223,8 +1221,8 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityNM",
             "Value":{
-                {"ASC (Walk)","Constant",5.8,1,0},
-                {"ASC (Bike)","Constant",3.41,0,1},
+                {"ASC (Walk)","Constant",8.2508,1,0},
+                {"ASC (Bike)","Constant",3.3846,0,1},
                 {"Distance Walk","WalkSkim.Distance",-1.88,1,0},
                 {"Distance Bike","BikeSkim.Distance",-0.555,0,1},
                 {"Income below 50K","PersonHH.IncomeLevel = 1",0.315,1,1}}
@@ -1237,9 +1235,9 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityPT",
             "Value":{
-                {"ASC (W)","Constant",3.07,1,1,0,0,0,0},
-                {"ASC (PNR)","Constant",3.07,0,0,1,1,0,0},
-                {"ASC (KNR)","Constant",3.07,0,0,0,0,1,1},
+                {"ASC (W)","Constant",6.6701,1,1,0,0,0,0},
+                {"ASC (PNR)","Constant",0.2397,0,0,1,1,0,0},
+                {"ASC (KNR)","Constant",-1.367,0,0,0,0,1,1},
                 {"Walk Bus Time","W_BusSkim.[Total Time]",-0.0259,1,0,0,0,0,0},
                 {"Walk Rail Time","W_RailSkim.[Total Time]",-0.0259,0,1,0,0,0,0},
                 {"PNR Bus IVTT","PNR_BusSkim.[Total Time]",-0.0259,0,0,1,0,0,0},
@@ -1300,9 +1298,9 @@
             "Type":"array",
             "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",0.7151,1,0,0},
-                {"ASC (Carpool)","Constant",1.6612,0,1,0},
-                {"ASC (Other)","Constant",-99,0,0,1},
+                {"ASC (DriveAlone)","Constant",3.7093,1,0,0},
+                {"ASC (Carpool)","Constant",-1.4181,0,1,0},
+                {"ASC (Other)","Constant",-99.0,0,0,1},
                 {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0},
                 {"Auto Time","AutoSkim.Time",-0.0631,1,1,0}}
@@ -1315,8 +1313,8 @@
             "Caption":"University Mode Utility",
             "Style":"MandModeUtilityNM",
             "Value":{
-                {"ASC (Walk)","Constant",3.4375,1,0},
-                {"ASC (Bike)","Constant",0.5392,0,1},
+                {"ASC (Walk)","Constant",-1.8596,1,0},
+                {"ASC (Bike)","Constant",-2.0387,0,1},
                 {"Distance Walk","WalkSkim.Distance",-2.3089,1,0},
                 {"Distance Bike","BikeSkim.Distance",-0.8071,0,1},
                 {"Income below 50K","PersonHH.IncomeLevel = 1",1.5234,1,1}}
@@ -1329,9 +1327,9 @@
             "Caption":"University Mode Utility",
             "Style":"MandModeUtilityPT",
             "Value":{
-                {"ASC (PT_Walk)","Constant",-0.6993,1,1,0,0,0,0},
-                {"ASC (PT_PNR)","Constant",-0.6993,0,0,1,1,0,0},
-                {"ASC (PT_KNR)","Constant",-0.6993,0,0,0,0,1,1},
+                {"ASC (PT_Walk)","Constant",6.8533,1,1,0,0,0,0},
+                {"ASC (PT_PNR)","Constant",-0.1877,0,0,1,1,0,0},
+                {"ASC (PT_KNR)","Constant",-2.1507,0,0,0,0,1,1},
                 {"Walk Bus IVTT","W_BusSkim.[Total Time]",-0.015,1,0,0,0,0,0},
                 {"Walk Rail IVTT","W_RailSkim.[Total Time]",-0.015,0,1,0,0,0,0},
                 {"PNR Bus IVTT","PNR_BusSkim.[Total Time]",-0.015,0,0,1,0,0,0},
@@ -1364,7 +1362,7 @@
             "Value":{
                 {"DriveAlone","PersonHH.VehicleAvail = 1"},
                 {"Carpool","PersonHH.DropoffPersonID <> null"},
-                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Walk","WalkSkim.Distance <= 3"},
                 {"Bike","BikeSkim.Distance <= 4"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
@@ -1375,7 +1373,7 @@
             "Value":{
                 {"DriveAlone","PersonHH.SchoolForwardModeCode = 1"},
                 {"Carpool","PersonHH.PickupPersonID <> null"},
-                {"Walk","WalkSkim.Distance <= 1.5"},
+                {"Walk","WalkSkim.Distance <= 3"},
                 {"Bike","PersonHH.SchoolForwardModeCode = 4"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 30"}}
         }
@@ -1387,11 +1385,11 @@
             "Caption":"School Mode Utility (Forward)",
             "Style":"SchModeUtility",
             "Value":{
-                {"ASC (DriveAlone)","Constant",0.404,1,0,0,0,0,0},
-                {"ASC (Carpool)","Constant",0.986,0,1,0,0,0,0},
-                {"ASC (Walk)","Constant",2.38,0,0,1,0,0,0},
-                {"ASC (Bike)","Constant",1.07,0,0,0,1,0,0},
-                {"ASC (W_Bus)","Constant",0.0735,0,0,0,0,1,0},
+                {"ASC (DriveAlone)","Constant",1.8724,1,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.325,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",7.3843,0,0,1,0,0,0},
+                {"ASC (Bike)","Constant",-3.612,0,0,0,1,0,0},
+                {"ASC (W_Bus)","Constant",-5.8611,0,0,0,0,1,0},
                 {"Walk Distance","WalkSkim.Distance",-1.48,0,0,1,0,0,0},
                 {"Bike Distance","BikeSkim.Distance",-0.685,0,0,0,1,0,0},
                 {"HH has vehicle(s) - DriveAlone","PersonHH.Vehicles > 0",0.404,1,0,0,0,0,0},
@@ -1400,18 +1398,19 @@
                 {"Auto Time (School bus)","AutoSkim.Time",-0.0117,0,0,0,0,0,1},
                 {"Low Access-Egress Time","W_BusSkim.[Access Walk Time] + W_BusSkim.[Egress Walk Time] < 15",0.613,0,0,0,0,1,0},
                 {"Bus Total Time","W_BusSkim.[Total Time]",-0.0117,0,0,0,0,1,0},
-                {"Income below 50K","PersonHH.IncomeLevel = 1",1.12,0,0,1,1,1,1}}
+                {"Income below 50K","PersonHH.IncomeLevel = 1",1.12,0,0,1,1,1,1},
+                {"ASC (School Bus)","Constant",-7.6763,0,0,0,0,0,1}}
         }
         Args.SchoolModeRUtility = {
             "Type":"array",
             "Caption":"School Mode Utility (Return)",
             "Style":"SchModeUtility",
             "Value":{
-                {"ASC (DriveAlone)","Constant",0.404,1,0,0,0,0,0},
-                {"ASC (Carpool)","Constant",0.986,0,1,0,0,0,0},
-                {"ASC (Walk)","Constant",2.38,0,0,1,0,0,0},
-                {"ASC (Bike)","Constant",1.07,0,0,0,1,0,0},
-                {"ASC (W_Bus)","Constant",0.0735,0,0,0,0,1,0},
+                {"ASC (DriveAlone)","Constant",1.8724,1,0,0,0,0,0},
+                {"ASC (Carpool)","Constant",2.325,0,1,0,0,0,0},
+                {"ASC (Walk)","Constant",7.3843,0,0,1,0,0,0},
+                {"ASC (Bike)","Constant",-3.612,0,0,0,1,0,0},
+                {"ASC (W_Bus)","Constant",-5.8611,0,0,0,0,1,0},
                 {"Walk Distance","WalkSkim.Distance",-1.48,0,0,1,0,0,0},
                 {"Bike Distance","BikeSkim.Distance",-0.685,0,0,0,1,0,0},
                 {"HH has vehicle(s) - DriveAlone","PersonHH.Vehicles > 0",0.404,1,0,0,0,0,0},
@@ -1419,7 +1418,8 @@
                 {"Auto Time","AutoSkim.Time",-0.0472,1,1,0,0,0,0},
                 {"Low Access-Egress Time","W_BusSkim.[Access Walk Time] + W_BusSkim.[Egress Walk Time] < 15",0.613,0,0,0,0,1,0},
                 {"Bus Total Time","W_BusSkim.[Total Time]",-0.0117,0,0,0,0,1,0},
-                {"Income below 50K","PersonHH.IncomeLevel = 1",-0.0117,0,0,1,1,1,0}}
+                {"Income below 50K","PersonHH.IncomeLevel = 1",-0.0117,0,0,1,1,1,0},
+                {"ASC (School Bus)","Constant",-7.6763,0,0,0,0,0,1}}
         }
 	
 	Section = "MandatoryStops|Frequency|Work Tours"
