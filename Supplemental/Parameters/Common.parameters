@@ -823,21 +823,19 @@
             "Description":"StopSizeVar",
             "Style":"SizeVarUtility",
             "Value":{
-                {"Emp_Education",4.2965},
-                {"K12Enrollment",5.7177}}
+                {"Population",0},
+                {"K12Enrollment",4.891}}
         }
         Args.SchoolLocUtility = {
             "Type":"array",
             "Caption":"School Location Utility: Type is one of 'Elementary', 'Middle' or 'HighSchool'",
             "Style":"DestUtility",
             "Value":{
-                {"Distance < 2 miles","AutoSkim.Distance < 2",0.4678},
-                {"Highway Time","AutoSkim.Time",-0.0178},
-                {"Intrazonal","Intrazonal.IZ = 1",-0.6326},
-                {"MC logsums","ModeAccessibility.Auto",3.5019},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",4.405},
-                {"Transit Accessibility to Jobs","TAZ4Ds.TransitAccessibilityToJobsAM.D",0.0022},
-                {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
+                {"Distance < 2 miles","AutoSkim.Distance < 2",0.466},
+                {"Highway Time","AutoSkim.Time * 2",-0.017},
+                {"Intrazonal","Intrazonal.IZ = 1",-0.639},
+                {"MC logsums","ModeAccessibility.Auto",3.515},
+                {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1.0}}
         }
         Args.SchoolDCShadowPrices = {
             "Type":"File",
