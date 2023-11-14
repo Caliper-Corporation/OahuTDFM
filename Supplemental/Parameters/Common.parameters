@@ -1598,7 +1598,7 @@
             "Description":"SubTourChoiceUtility",
             "Style":"SubTourFreqUtility",
             "Value":{
-                {"ASC","Constant",2.875,0,1},
+                {"ASC","Constant",3.2189,0,1},
                 {"Male","TourData.Gender = 1",-0.124,0,1},
                 {"Two Plus Workers","TourData.Workers >= 2",0.5779,0,1},
                 {"HH with Kids","TourData.Kids > 0",-0.3034,0,1},
