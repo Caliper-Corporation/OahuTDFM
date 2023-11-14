@@ -268,11 +268,26 @@ Macro "Work Location"(Args)
     pbar = CreateObject("G30 Progress Bar", "Running Work Location Model by Industry", true, indCodes.length)
     se = CreateObject("Table", {FileName: Args.DemographicOutputs, View: "TAZData"})
 
+    // To support the visitor model, hotel employment is split out from service.
+    // For the resident model, these are still the same. Create an employment
+    // field in the SE data that is both.
+    se.AddField({
+        FieldName: "Emp_ServHotel",
+        Description: "Combines service and hotel employment. Used for resident work location choice."
+    })
+    se.Emp_ServHotel = se.Emp_Services + se.Emp_Hotel
+
+    // When looping over industry types, all industries use the Population
+    // field in the size term. Get that field name and coefficient.
+    pop_coef = size_coefs[empFlds.position("Population")]
+
     for i = 1 to indCodes.length do
         indCode = String(indCodes[i])
         size_coef = size_coefs[i]
         empFld = empFlds[i]
         description = descriptions[i]
+
+        if empFld = "Population" then continue
 
         // Availability is restricted to only zones with relevant employment
         availExpressions = null
@@ -284,15 +299,14 @@ Macro "Work Location"(Args)
 
         opt = null
         opt.TableObject = se
-        opt.Equation = {Variable: {empFld}, Coefficient: {size_coef}}
+        opt.Equation = {
+            Variable: {empFld, "Population"}, 
+            Coefficient: {size_coef, pop_coef}
+        }
         opt.NewOutputField = size_field
         opt.ExponentiateCoeffs = 1
         RunMacro("Compute Size Variable", opt)
         opt = null
-        // if doing service employment, must add in hotel employment
-        if Lower(description) = "service" then do
-            se.(size_field) = se.(size_field) + (exp(size_coef) * se.Emp_Hotel)
-        end
 
         utilSpec = null
         utilSpec.AvailabilityExpressions = availExpressions
