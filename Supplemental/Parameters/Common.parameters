@@ -740,18 +740,18 @@
             "Caption":"Size Variable and Attractions Fields",
             "Style":"SizeVar2",
             "Value":{
-                {1.0,"Agriculture","Emp_Agriculture",4.304},
-                {2.0,"Manufacturing and Mining","Emp_Manufacturing",4.305},
-                {3.0,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction",4.304},
-                {4.0,"Wholesale","Emp_Wholesale",3.824},
-                {5.0,"Retail","Emp_Retail",2.801},
-                {6.0,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate",2.742},
-                {7.0,"Education","Emp_Education",5.227},
-                {8.0,"Health Care","Emp_HealthCare",3.917},
-                {9.0,"Service (including hotel employment)","Emp_ServHotel",4.449},
-                {10.0,"Public Administration","Emp_Public",4.286},
-                {11.0,"Military","Emp_Military",4.494},
-                {null,"Population","Population",0.0}}
+                {1,"Agriculture","Emp_Agriculture",4.304},
+                {2,"Manufacturing and Mining","Emp_Manufacturing",4.305},
+                {3,"Construction, Utilities, Transporation, Waste Mgmt","Emp_TransportConstruction",4.304},
+                {4,"Wholesale","Emp_Wholesale",3.824},
+                {5,"Retail","Emp_Retail",2.801},
+                {6,"Finance, Insurance, Real Estate, Professional","Emp_FinanceRealEstate",2.742},
+                {7,"Education","Emp_Education",5.227},
+                {8,"Health Care","Emp_HealthCare",3.917},
+                {9,"Service (including hotel employment)","Emp_ServHotel",4.449},
+                {10,"Public Administration","Emp_Public",4.286},
+                {11,"Military","Emp_Military",4.494},
+                {null,"Population","Population",0}}
         }
         Args.WorkLocUtility = {
             "Type":"array",
@@ -835,7 +835,7 @@
                 {"Highway Time","AutoSkim.Time * 2",-0.017},
                 {"Intrazonal","Intrazonal.IZ = 1",-0.639},
                 {"MC logsums","ModeAccessibility.Auto",3.515},
-                {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1.0}}
+                {"Shadow Price","SchoolDCShadowPrices.<Type>.D",1}}
         }
         Args.SchoolDCShadowPrices = {
             "Type":"File",
@@ -945,17 +945,17 @@
             "Caption":"Part Time Worker: Work Duration Alternatives (Hours)",
             "Style":"AlternativesList",
             "Value":{
-                {"1 - 2 h","1 - 4 hrs",-0.5875},
-                {"2 - 3 h","1 - 4 hrs",-2.0247},
-                {"3 - 4 h","1 - 4 hrs",-0.6448},
-                {"4 - 5 h","4 - 12 hrs",2.8959},
-                {"5 - 6 h","4 - 12 hrs",2.8513},
-                {"6 - 7 h","4 - 12 hrs",2.8809},
-                {"7 - 8 h","4 - 12 hrs",2.6851},
-                {"8 - 9 h","4 - 12 hrs",3.0257},
-                {"9 - 10 h","4 - 12 hrs",2.7696},
-                {"10 - 11 h","4 - 12 hrs",2.031},
-                {"11 - 12 h","4 - 12 hrs",1.8145}}
+                {"1 - 2 h","1 - 4 hrs",-1.8602},
+                {"2 - 3 h","1 - 4 hrs",-3.2974},
+                {"3 - 4 h","1 - 4 hrs",-1.9175},
+                {"4 - 5 h","4 - 12 hrs",3.3573},
+                {"5 - 6 h","4 - 12 hrs",3.3128},
+                {"6 - 7 h","4 - 12 hrs",3.3424},
+                {"7 - 8 h","4 - 12 hrs",3.1465},
+                {"8 - 9 h","4 - 12 hrs",3.4871},
+                {"9 - 10 h","4 - 12 hrs",3.2311},
+                {"10 - 11 h","4 - 12 hrs",2.4924},
+                {"11 - 12 h","4 - 12 hrs",2.276}}
         }
         Args.PTWorkDurUtility = {
             "Type":"array",
