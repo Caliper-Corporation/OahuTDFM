@@ -1,9 +1,0 @@
-    
-    
-Scenario "Base Year"
-    
-    [Disable Steps] = null
-    MaxIterations = 1
-    [Disable Macros] = null
-EndScenario
-    
