@@ -1820,18 +1820,18 @@
             "Caption":"Joint Tours Composition Utility (A: Adults, K: Kids)",
             "Style":"JointTourCompOtherUtility",
             "Value":{
-                {"ASC","Constant",0,1.50982,1.89751,3.6276,1.35479,0.379157},
-                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-0.7057,-0.1373,-0.6202,-1.186,0,0},
-                {"HH has Pre-School Kids","HH.PreSchKids > 0",0.2357,0,0,0,0,0},
-                {"No. of Pre-School Kids","HH.PreSchKids",0,-0.8166,0,0,-1.382,0},
-                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",0,0,0,0.6053,0,0},
-                {"Kids per Adult","HH.KidsPerAdult",2.061,1.344,1.255,1.21,0,0},
-                {"High Income","HH.IncomeCategory = 4",0.714,0,0,0,0,0},
-                {"Has Worker","HH.Workers > 0",-1.001,0,0,0,0,0},
-                {"Vehicles >= 2","HH.Vehicles >= 2",-0.5635,0,0,0,0,0},
-                {"Vehicles >= 3","HH.Vehicles >= 3",-0.85,0,0,0,0,0},
-                {"Available Time <= 2 hours","HH.HHAvgFreeTime_09to18 - 10 <= 2",-1.01,0,0,0,0,0},
-                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.015,0,0,0,0,0}}
+                {"ASC","Constant",0.0,-0.763415,-1.04484,-1.51885,-0.157224,-0.466386},
+                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-0.7057,-0.1373,-0.6202,-1.186,0.0,0.0},
+                {"HH has Pre-School Kids","HH.PreSchKids > 0",0.2357,0.0,0.0,0.0,0.0,0.0},
+                {"No. of Pre-School Kids","HH.PreSchKids",0.0,-0.8166,0.0,0.0,-1.382,0.0},
+                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",0.0,0.0,0.0,0.6053,0.0,0.0},
+                {"Kids per Adult","HH.KidsPerAdult",2.061,1.344,1.255,1.21,0.0,0.0},
+                {"High Income","HH.IncomeCategory = 4",0.714,0.0,0.0,0.0,0.0,0.0},
+                {"Has Worker","HH.Workers > 0",-1.001,0.0,0.0,0.0,0.0,0.0},
+                {"Vehicles >= 2","HH.Vehicles >= 2",-0.5635,0.0,0.0,0.0,0.0,0.0},
+                {"Vehicles >= 3","HH.Vehicles >= 3",-0.85,0.0,0.0,0.0,0.0,0.0},
+                {"Available Time <= 2 hours","HH.HHAvgFreeTime_09to18 - 10 <= 2",-1.01,0.0,0.0,0.0,0.0,0.0},
+                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.015,0.0,0.0,0.0,0.0,0.0}}
         }
 	
 	Section = "JointTours|Composition|Shop"
