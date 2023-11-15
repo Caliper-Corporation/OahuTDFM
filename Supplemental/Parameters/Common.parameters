@@ -1729,14 +1729,14 @@
             "Caption":"Work/Univ SubTour Mode Utility",
             "Style":"SubTourModeUtility",
             "Value":{
-                {"ASC Auto Driver","Constant",5.218,1,0,0,0,0},
-                {"ASC Auto Passenger","Constant",1.696,0,1,0,0,0},
-                {"ASC Walk","Constant",0.5358,0,0,1,0,0},
-                {"ASC Bike","Constant",0.5358,0,0,0,1,0},
+                {"ASC Auto Driver","Constant",4.8751,1,0,0,0,0},
+                {"ASC Auto Passenger","Constant",3.8171,0,1,0,0,0},
+                {"ASC Walk","Constant",1.3726,0,0,1,0,0},
+                {"ASC Bike","Constant",0.176,0,0,0,1,0},
                 {"WorkTAZ same as StopTAZ","TourData.Destination = TourData.SubTourTAZ",2.872,0,0,1,1,0},
                 {"Distance if greater than 0.5 mile","(WalkSkim.Distance > 0.5)*WalkSkim.Distance",-3.088,0,0,1,0,0},
-                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99,0,0,1,0,0},
-                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99,0,0,0,1,0}}
+                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99.0,0,0,1,0,0},
+                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99.0,0,0,0,1,0}}
         }
         Args.SubTourDAPct = {
             "Type":"double",
