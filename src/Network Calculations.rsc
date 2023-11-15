@@ -1132,11 +1132,10 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     DrvOpts.PermitAllWalk = PermitAllW
     DrvOpts.AllowWalkAccess = AllowWacc
     DrvOpts.ParkingNodes = ParkFilter
-    // if period = "PM" then
-    //     o.DriveEgress(DrvOpts)
-    // else
-    //     o.DriveAccess(DrvOpts)  // temporarily commented out PnR/KnR setting due to bug in Transit API
-    o.DriveAccess(DrvOpts)
+    if period = "PM" then
+        o.DriveEgress(DrvOpts)
+    else
+        o.DriveAccess(DrvOpts)
 
     o.CentroidFilter = "Centroid = 1"
     o.LinkImpedance = "bus_time" // default
