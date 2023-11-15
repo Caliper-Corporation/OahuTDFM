@@ -606,6 +606,10 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
                 else join.PostedSpeed
             join.(dir + "TransitSpeed" + period) = posted_speed
             join.(dir + "TransitTime" + period) = join.Length / posted_speed * 60
+            // Fill in the non-period fields just to avoid confusion when
+            // looking at the link layer.
+            join.(dir + "TransitSpeed") = posted_speed
+            join.(dir + "TransitTime") = join.Length / posted_speed * 60
         end
     end
 
