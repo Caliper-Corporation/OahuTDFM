@@ -2544,7 +2544,7 @@
             "Caption":"Solo Tour Duration Other Utility",
             "Style":"SoloTourDurOtherUtility",
             "Value":{
-                {"ASC","Constant",-0.185891,-0.364127,0.243183,0.435179,0.290915,0,0.100557,-0.154123,-0.170049,-1.55534,1.57201},
+                {"ASC","Constant",-0.4501,-0.4761,0.0782,0.437,0.1571,0.0,0.3427,-0.007,-2.463,-0.9045,0.2962},
                 {"HHIncome High","PersonHH.IncomeLevel = 3",null,null,null,null,null,null,null,null,0.452809,0.452809,null},
                 {"HHIncome Mid","PersonHH.IncomeLevel = 2",null,null,null,null,null,null,null,null,null,null,null},
                 {"HHIncome Low","PersonHH.IncomeLevel = 1",0.065788,0.065788,null,null,-0.273083,-0.273083,null,null,null,null,null},
