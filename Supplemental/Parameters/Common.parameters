@@ -1906,7 +1906,7 @@
             "Caption":"Joint Tours Participation (Other) Utility",
             "Style":"ParticipationUtility",
             "Value":{
-                {"ASC","Constant",0.450316,1,0},
+                {"ASC","Constant",1.2398,1,0},
                 {"Age below 4 years","PersonHH.Age < 4",1.025,1,0},
                 {"Free time between 7 AM, 8 PM less than 4 hours","PersonHH.FreeTime_07to20 < 4",-5.078,1,0},
                 {"Free time between 7 AM, 8 PM less than 6 hours","PersonHH.FreeTime_07to20 < 6",1.482,1,0},
