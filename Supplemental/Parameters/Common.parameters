@@ -1693,7 +1693,7 @@
             "Description":"SubTourStartAlts",
             "Style":"AlternativesList",
             "Value":{
-                {"7 - 8",null,-99.0},
+                {"7 - 8",null,-99},
                 {"8 - 9",null,-6.7884},
                 {"9 - 10","9 AM - 10 AM",-1.3645},
                 {"10 - 11","10 AM - 11 AM",0.5213},
@@ -1735,8 +1735,8 @@
                 {"ASC Bike","Constant",2.3405,0,0,0,1,0},
                 {"WorkTAZ same as StopTAZ","TourData.Destination = TourData.SubTourTAZ",2.872,0,0,1,1,0},
                 {"Distance if greater than 0.5 mile","(WalkSkim.Distance > 0.5)*WalkSkim.Distance",-3.088,0,0,1,0,0},
-                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99.0,0,0,1,0,0},
-                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99.0,0,0,0,1,0}}
+                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99,0,0,1,0,0},
+                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99,0,0,0,1,0}}
         }
         Args.SubTourDAPct = {
             "Type":"double",
@@ -1820,7 +1820,7 @@
             "Caption":"Joint Tours Composition Utility (A: Adults, K: Kids)",
             "Style":"JointTourCompOtherUtility",
             "Value":{
-                {"ASC","Constant",0,-0.763415,-1.04484,-1.51885,-0.157224,-0.466386},
+                {"ASC","Constant",0,-1.1359,-1.4057,-1.856,-0.5743,-0.8563},
                 {"No. of Non-Working Adults","HH.Adults - HH.Workers",-0.7057,-0.1373,-0.6202,-1.186,0,0},
                 {"HH has Pre-School Kids","HH.PreSchKids > 0",0.2357,0,0,0,0,0},
                 {"No. of Pre-School Kids","HH.PreSchKids",0,-0.8166,0,0,-1.382,0},
@@ -1841,14 +1841,14 @@
             "Caption":"Joint Tours Composition Utility (A: Adults, K: Kids)",
             "Style":"JointTourCompShopUtility",
             "Value":{
-                {"ASC","Constant",0.332171,1.62094,2.43712,1.68963,0},
-                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-2.172,0,-0.5711,-0.4334,0},
-                {"HH has Pre-School Kids","HH.PreSchKids > 0",2.249,1.563,0,0,0},
-                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",-3.407,-4.403,0,-5.141,0},
-                {"Kids per Adult","HH.KidsPerAdult",-0.4707,-1.762,-1.762,-0.7732,0},
-                {"High Income","HH.IncomeCategory = 4",0.3247,0,0,0,0},
-                {"Vehicles >= 3","HH.Vehicles >= 3",-2.047,0,0,0,0},
-                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.377,0,0,0,0}}
+                {"ASC","Constant",-1.5802,-0.9976,0.6612,0.2095,0.0},
+                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-2.172,0.0,-0.5711,-0.4334,0.0},
+                {"HH has Pre-School Kids","HH.PreSchKids > 0",2.249,1.563,0.0,0.0,0.0},
+                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",-3.407,-4.403,0.0,-5.141,0.0},
+                {"Kids per Adult","HH.KidsPerAdult",-0.4707,-1.762,-1.762,-0.7732,0.0},
+                {"High Income","HH.IncomeCategory = 4",0.3247,0.0,0.0,0.0,0.0},
+                {"Vehicles >= 3","HH.Vehicles >= 3",-2.047,0.0,0.0,0.0,0.0},
+                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.377,0.0,0.0,0.0,0.0}}
         }
 	
 	Section = "JointTours|Participation|Other|Adults"
@@ -1858,7 +1858,7 @@
             "Caption":"Joint Tours Participation (Other) Utility",
             "Style":"ParticipationUtility",
             "Value":{
-                {"ASC","Constant",2.7649,1,0},
+                {"ASC","Constant",3.1185,1,0},
                 {"Female from HH with kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.2691,1,0},
                 {"Senior","PersonHH.Age >= 65",1.86,1,0},
                 {"Senior from HH with kids","PersonHH.Age >= 65 and PersonHH.Kids > 0",-3.528,1,0},
@@ -1875,7 +1875,7 @@
             "Caption":"Joint Tours Participation (Other) Utility",
             "Style":"ParticipationUtility",
             "Value":{
-                {"ASC","Constant",1.72226,1,0},
+                {"ASC","Constant",2.1541,1,0},
                 {"Age below 4 years","PersonHH.Age < 4",-0.5715,1,0},
                 {"Age below 11 years","PersonHH.Age < 11",0.3986,1,0},
                 {"Free time between 7 AM, 8 PM less than 4 hours","PersonHH.FreeTime_07to20 < 4",-0.2034,1,0},
@@ -2008,7 +2008,7 @@
             "Caption":"Joint Tour Duration Other Utility",
             "Style":"JointTourDurOtherUtility",
             "Value":{
-                {"ASC","Constant",3.92232,2.43186,1.9988,2.44905,1.38918,1.14608,1.61962,1.45414,0.0718,null,2.05826},
+                {"ASC","Constant",3.7211,1.5911,1.3773,0.9615,1.3085,0.6836,1.5266,1.2097,-1.6139,null,0.3356},
                 {"HH Income Low","HH.IncomeLevel = 1",0.7616,0.7616,null,null,null,null,null,null,null,null,null},
                 {"HH Income High","HH.IncomeLevel = 3",null,null,null,null,0.4183,0.4183,null,null,null,null,null},
                 {"Number Joint Tours","HH.NumberJointOtherTours + HH.NumberJointShopTours",0.2702,0.1317,0.3929,null,null,null,null,null,null,null,null},
@@ -2044,20 +2044,20 @@
             "Caption":"Joint Tour StartTime Other Alternatives",
             "Style":"AlternativesList",
             "Value":{
-                {"7 - 8","7 AM - 10 AM",-0.245756},
-                {"8 - 9","7 AM - 10 AM",1.82827},
-                {"9 - 10","7 AM - 10 AM",1.46486},
-                {"10 - 11","10 AM - 1 PM",1.5627},
-                {"11 - 12","10 AM - 1 PM",0.781015},
-                {"12 - 13","10 AM - 1 PM",0.707322},
-                {"13 - 14","1 PM - 4 PM",1.28452},
-                {"14 - 15","1 PM - 4 PM",1.54958},
-                {"15 - 16","1 PM - 4 PM",0.672983},
-                {"16 - 17","4 PM - 6 PM",0.643772},
-                {"17 - 18","4 PM - 6 PM",0},
-                {"18 - 19","6 PM - 9 PM",-0.860719},
-                {"19 - 20","6 PM - 9 PM",-4.16646},
-                {"20 - 21","6 PM - 9 PM",-6.97962}}
+                {"7 - 8","7 AM - 10 AM",5.671},
+                {"8 - 9","7 AM - 10 AM",6.2933},
+                {"9 - 10","7 AM - 10 AM",6.0608},
+                {"10 - 11","10 AM - 1 PM",5.1269},
+                {"11 - 12","10 AM - 1 PM",4.3426},
+                {"12 - 13","10 AM - 1 PM",4.8858},
+                {"13 - 14","1 PM - 4 PM",5.4025},
+                {"14 - 15","1 PM - 4 PM",3.6319},
+                {"15 - 16","1 PM - 4 PM",1.362},
+                {"16 - 17","4 PM - 6 PM",-0.9848},
+                {"17 - 18","4 PM - 6 PM",-5.7411},
+                {"18 - 19","6 PM - 9 PM",-5.8039},
+                {"19 - 20","6 PM - 9 PM",-9.4542},
+                {"20 - 21","6 PM - 9 PM",-10.6972}}
         }
 	
 	Section = "JointTours|StartTime|Other|Utility"
@@ -2131,10 +2131,10 @@
             "Caption":"Joint Tour Mode Other Utility",
             "Style":"JointTourOtherModeUtility",
             "Value":{
-                {"ASC (Auto)","Constant",4.09962,1,0,0,0,0},
-                {"ASC (Walk)","Constant",3.49733,0,1,0,0,0},
-                {"ASC (W_Bus)","Constant",2.28673,0,0,0,1,0},
-                {"ASC (Other)","Constant",-1.69427,0,0,0,0,1},
+                {"ASC (Auto)","Constant",3.9124,1,0,0,0,0},
+                {"ASC (Walk)","Constant",3.2247,0,1,0,0,0},
+                {"ASC (W_Bus)","Constant",2.3723,0,0,0,1,0},
+                {"ASC (Other)","Constant",-1.2456,0,0,0,0,1},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0},
                 {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0,0,0,0},
                 {"IntraTAZ Tour","HH.TAZID = HH.Joint_<purp>_Destination",2.774,0,1,0,0,0},
