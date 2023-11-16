@@ -1841,14 +1841,14 @@
             "Caption":"Joint Tours Composition Utility (A: Adults, K: Kids)",
             "Style":"JointTourCompShopUtility",
             "Value":{
-                {"ASC","Constant",-1.5802,-0.9976,0.6612,0.2095,0.0},
-                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-2.172,0.0,-0.5711,-0.4334,0.0},
-                {"HH has Pre-School Kids","HH.PreSchKids > 0",2.249,1.563,0.0,0.0,0.0},
-                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",-3.407,-4.403,0.0,-5.141,0.0},
-                {"Kids per Adult","HH.KidsPerAdult",-0.4707,-1.762,-1.762,-0.7732,0.0},
-                {"High Income","HH.IncomeCategory = 4",0.3247,0.0,0.0,0.0,0.0},
-                {"Vehicles >= 3","HH.Vehicles >= 3",-2.047,0.0,0.0,0.0,0.0},
-                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.377,0.0,0.0,0.0,0.0}}
+                {"ASC","Constant",-1.5802,-0.9976,0.6612,0.2095,0},
+                {"No. of Non-Working Adults","HH.Adults - HH.Workers",-2.172,0,-0.5711,-0.4334,0},
+                {"HH has Pre-School Kids","HH.PreSchKids > 0",2.249,1.563,0,0,0},
+                {"No. of Pre-School Kids >= 2","HH.PreSchKids >= 2",-3.407,-4.403,0,-5.141,0},
+                {"Kids per Adult","HH.KidsPerAdult",-0.4707,-1.762,-1.762,-0.7732,0},
+                {"High Income","HH.IncomeCategory = 4",0.3247,0,0,0,0},
+                {"Vehicles >= 3","HH.Vehicles >= 3",-2.047,0,0,0,0},
+                {"Available Time <= 4 hours","HH.HHAvgFreeTime_09to18 - 10 <= 4",-1.377,0,0,0,0}}
         }
 	
 	Section = "JointTours|Participation|Other|Adults"
@@ -2163,12 +2163,12 @@
             "Caption":"Joint Tour Mode Shop Utility",
             "Style":"JointTourShopModeUtility",
             "Value":{
-                {"ASC","Constant",-4.667,1,0},
+                {"ASC","Constant",-5.0593,1,0},
                 {"Has Preschool Kids on Tour","HH.Joint_<purp>_HasPreSchKids",0.89,1,0},
                 {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",4.269,1,0},
                 {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",1.738,1,0},
                 {"Walk Distance","WalkSkim.Distance",-7.928,0,1},
-                {"Walk Distance > 2 miles","WalkSkim.Distance > 2",-99,0,1},
+                {"Walk Distance > 2 miles","WalkSkim.Distance > 2",-99.0,0,1},
                 {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0}}
         }
         Args.JointTourModeShopAvail = {
