@@ -49,11 +49,18 @@ translate_vis <- translate_table(vis)
 ```
 
 ```{r}
-# fix the party variable, which has some zeros
+# fix the party variable, which has some zeros. Also, if the trip party size
+# is greater than the visitor party size, this means that people outside
+# the visitor group (or 'household') are on the trip. For example on a bus.
+# One set of trips has a visitor party of 5 but a trip party of 360.
+# Avoid counting these extra people.
 fix_party <- translate_vis %>%
-  mutate(trip_party = pmax(1, trip_party))
+  mutate(
+    trip_party = pmax(1, trip_party),
+    trip_party = pmin(VIS_PARTY, trip_party)
+  )
 
-# avg party size = 1.88
+# avg party size = 1.44
 # fix_party %>%
 #   summarize(avg_party = mean(trip_party))
 
@@ -87,6 +94,11 @@ update_tazs %>%
   slice(1) %>%
   group_by(PURPOSE) %>%
   summarize(party_size = weighted.mean(VIS_PARTY, Daily_Census_Weight))
+
+# trip party size
+update_tazs %>%
+  group_by(PURPOSE) %>%
+  summarize(party_size = weighted.mean(trip_party, Daily_Census_Weight))
 ```
 
 
@@ -196,22 +208,60 @@ add_skims <- determine_trip_purpose %>%
 ## Trip Rates
 
 ```{r}
-trip_rates <- add_skims %>%
-  group_by(SAMPN, trip_purp) %>%
-  summarize(trips = n()) %>%
+# The survey is not like a traditional household survey where each person's
+# travel is enumerated and trips are duplicated if 2 household members both
+# went on the same trip. Instead, this is just a list of the trips that
+# happened and the number of people who were on them. In order to calculate
+# accurate person-rates for the model, the party-trips must be broken down
+# into person trips.
+
+
+# Expand the trip records based on travel party size and add person ids.
+trip_add_personid <- add_skims %>%
+  group_by(SAMPN) %>%
+  mutate(TRIPID = seq(1, n(), 1)) %>%
+  uncount(weights = party) %>%
+  group_by(SAMPN, TRIPID) %>%
+  mutate(
+    PERSONID = seq(1, n(), 1)
+    # PERSONID = paste0(SAMPN, PERSONID)
+  ) %>%
+  relocate(TRIPID:PERSONID, .after = SAMPN)
+
+# Aggregate trips by person id
+agg_trips <- trip_add_personid %>%
+  group_by(SAMPN, PERSONID, trip_purp) %>%
+  summarize(trips = n())
+  
+# To account for people making 0 trips, create a fully-enumerated list of
+# persons in each household.
+person_tbl <- fix_party %>%
+  group_by(SAMPN) %>%
+  slice(1) %>%
+  uncount(weights = VIS_PARTY) %>%
+  group_by(SAMPN) %>%
+  mutate(PERSONID = seq(1, n(), 1)) %>%
+  select(SAMPN, PERSONID)
+
+# Now join the aggregated trip counts to the person table and calculate
+# average trip rates.
+trip_rates <- person_tbl %>%
+  left_join(agg_trips, by = c("SAMPN", "PERSONID")) %>%
   ungroup() %>%
-  tidyr::complete(SAMPN, trip_purp, fill = list("trips" = 0)) %>%
+  unite(SAMPN:PERSONID, col = "PERSONID2", remove = FALSE) %>%
+  tidyr::complete(PERSONID2, trip_purp, fill = list("trips" = 0)) %>%
+  separate(col = "PERSONID2", into = c("SAMPN", "PERSONID"), convert = TRUE) %>%
+  filter(!is.na(trip_purp) & trip_purp != "H") %>%
   left_join(
     add_skims %>%
       group_by(SAMPN) %>%
       summarize(visitor_type = first(visitor_type), weight = first(weight)),
     by = "SAMPN"
   ) %>%
-  mutate(visitor_type = ifelse(visitor_type == "both", "business", visitor_type)) %>%
+  mutate(trips = ifelse(visitor_type == "personal" & trip_purp == "HBW", .0, trips)) %>%
   group_by(visitor_type, trip_purp) %>%
   summarize(rate = weighted.mean(trips, weight)) %>%
-  # remove H trips (not trips) and the (tiny) HBW rate for personal visitors
-  filter(trip_purp != "H", !(trip_purp == "HBW" & visitor_type == "personal")) %>%
+  filter(!is.na(visitor_type)) %>%
   mutate(
     visitor_type = str_sub(visitor_type, 1, 1),
     trip_purp = paste0("prod_", "v", visitor_type, trip_purp),
@@ -220,7 +270,15 @@ trip_rates <- add_skims %>%
   pivot_wider(names_from = trip_purp, values_from = rate, values_fill = 0) %>%
   rename(Field = visitor_type) %>%
   mutate(Description = NA)
+
+# trips per business visitor: 3.29
+# trips per personal visitor: 3.58
+# trip_rates %>%
+#   pivot_longer(cols = prod_vbHBEat:prod_vpNHB) %>%
+#   group_by(Field) %>%
+#   summarize(rate = sum(value))
 ```
+
 
 ## Time of Day
 
