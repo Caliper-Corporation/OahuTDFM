@@ -1,5 +1,5 @@
 Oahu Network 102907
-423
+431
 "ID",I,1,4,0,4,0,,"","",,"Sum",
 "Road Name",C,5,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
 "Road_Name2",C,26,21,0,21,0,,"","Contains secondary information (like if it is a zipper lane)",,"Copy",
@@ -81,3 +81,5 @@ Oahu Network 102907
 "Line_Source",I,412,4,0,10,0,,"","1: Original planning links|2: TIGER links|3: Adams additional links",,"Copy",
 "Original_Link_ID_NEW",I,416,4,0,10,0,,"","",,"Copy",
 "Future",I,420,4,0,8,0,,"","",,"Copy",
+"count_sid_lc",I,424,4,0,10,0,,"","Count Station ID as tagged by the Load Counts macro",,"Sum",
+"count_vol_lc",I,428,4,0,10,0,,"","Count ID as tagged by the Load Counts macro",,"Sum",
