@@ -2283,7 +2283,7 @@
             "Caption":"Joint Stop Duration Other Utility",
             "Style":"NMStopsDurUtility",
             "Value":{
-                {"ASC","Constant",0.560798,0.884337,0.552094,1.10441,0.347306,null},
+                {"ASC","Constant",1.9818,2.2481,1.5251,2.1318,0.5741,null},
                 {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",0.6986,null,null,null,null,null},
                 {"Pre School Kids on Tour","ToursData.HasPreSchKids",0.2015,null,null,null,null,null},
                 {"Seniors on Tour","ToursData.HasSeniors",-0.6228,-0.6228,null,null,null,null},
@@ -2304,7 +2304,7 @@
             "Caption":"Joint Stop Duration Shop Utility",
             "Style":"NMStopsDurUtility",
             "Value":{
-                {"ASC","Constant",0.151498,0.577791,0.244257,0.891722,0.159529,null},
+                {"ASC","Constant",0.6203,1.1361,0.6357,0.1371,-0.8354,null},
                 {"Entire HH on Tour","ToursData.nAdultsOnTour = ToursData.Adults and ToursData.nKidsOnTour = ToursData.Kids",0.6986,null,null,null,null,null},
                 {"Pre School Kids on Tour","ToursData.HasPreSchKids",0.2015,null,null,null,null,null},
                 {"Seniors on Tour","ToursData.HasSeniors",-0.6228,-0.6228,null,null,null,null},
