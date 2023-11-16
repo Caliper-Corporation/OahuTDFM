@@ -2027,7 +2027,7 @@
             "Caption":"Joint Tour Duration Shop Utility",
             "Style":"JointTourDurShopUtility",
             "Value":{
-                {"ASC","Constant",1.69014,1.03336,-0.554249,-0.722305,-0.141429,null},
+                {"ASC","Constant",-0.4458,0.8534,-0.7021,0.6506,-0.0215,null},
                 {"HHIncome Low","HH.IncomeLevel = 1",-0.6096,-0.6096,null,null,null,null},
                 {"HHIncome High","HH.IncomeLevel = 3",null,null,null,null,-0.5131,-0.5131},
                 {"Number Joint Tours","HH.NumberJointOtherTours + HH.NumberJointShopTours",1.022,1.203,1.518,null,null,null},
