@@ -438,9 +438,9 @@
             "Description":"MandatoryAggMCModes",
             "Style":"Nesting Structure S",
             "Value":{
-                {"Root","Motorized, NonMotorized, Other",null},
-                {"Motorized","DriveAlone, Carpool, W_Bus",0.63747},
-                {"NonMotorized","Walk, Bike",0.138794}}
+                {"Root","Auto, NonAuto",null},
+                {"Auto","DriveAlone, Carpool, Other",1},
+                {"NonAuto","Walk, Bike, W_Bus",0.666}}
         }
         Args.MandatoryAggMCAvail = {
             "Type":"array",
@@ -458,16 +458,16 @@
             "Description":"MandatoryAggMCUtility",
             "Style":"ModeUtilityLS",
             "Value":{
-                {"ASC","Constant",4.24115,3.47314,3.95687,3.59434,1.52073,null},
-                {"AM Skim Time","AutoSkim.Time",-0.007815,-0.007815,null,null,null,null},
-                {"AM Skim Distance","AutoSkim.Distance",null,null,-1.14549,-0.866468,null,null},
-                {"AM Transit IVTT","W_BusSkim.[In-Vehicle Time]",null,null,null,null,-0.007815,null},
-                {"AM Transit Fare/VOT","W_BusSkim.Fare/<VOT>",null,null,null,null,-0.4689,null},
-                {"Auto Operating Cost Term: Distance*AOC/VOT","AutoSkim.Distance*<AOC>/<VOT>",-0.4689,-0.4689,null,null,null,null},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",null,null,null,null,0.006111,null},
-                {"log(TotalEmploymentDensity)","log(1 + TAZ4Ds.TotalEmploymentDensity.D)",null,null,0.081396,0.081396,null,null},
-                {"Job Mix Diversity","nz(TAZ4Ds.JobMixDiversity.D)",0.122341,0.122341,null,null,null,null},
-                {"log(Transit Accessibility to Jobs)","log(1 + TAZ4Ds.TransitAccessibilityToJobsAM.D)",null,null,null,null,0.064876,null}}
+                {"ASC","Constant",4.0,3.2,4.79,2.55,2.42,null},
+                {"AM Skim Time","AutoSkim.Time",-0.0789,-0.0789,null,null,null,-0.224},
+                {"Walk Distance","WalkSkim.Distance",null,null,-1.8,null,null,null},
+                {"Bike distance","BikeSkim.Distance",null,null,null,-0.58,null,null},
+                {"Transit Total Time","W_BusSkim.[Total Time]",null,null,null,null,-0.0314,null},
+                {"Transit Fare","W_BusSkim.Fare",null,null,null,null,-0.295,null},
+                {"Low access-egress time","W_BusSkim.[Access Walk Time] + W_BusSkim.[Egress Walk Time] < 20",null,null,null,null,0.361,null},
+                {"High stop density at O and D","nz(TAZ4Ds.TransitStopDensity.O) > 50 and nz(TAZ4Ds.TransitStopDensity.D) > 50",null,null,null,null,0.449,null},
+                {"Low parking cost","nz(TAZData.ParkingCost.D < 5)",0.512,null,null,null,null,null},
+                {"Low parking availability","nz(TAZData.ParkingSpaces.D) + nz(TAZData.FreeParkingSpaces.D) < 50",null,0.374,null,null,0.374,null}}
         }
 	
 	Section = "Accessibility|Destination Logsums|Auto"
