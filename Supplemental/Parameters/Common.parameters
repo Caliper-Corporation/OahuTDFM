@@ -788,19 +788,19 @@
             "Description":"StopSizeVar",
             "Style":"SizeVarUtility",
             "Value":{
-                {"UnivEnrollment",6.7586},
-                {"OtherEnrollment",4.8565}}
+                {"UnivEnrollment",4.639},
+                {"OtherEnrollment",2.767},
+                {"Population",0}}
         }
         Args.UnivLocUtility = {
             "Type":"array",
             "Caption":"University Location Utility",
             "Style":"DestUtility",
             "Value":{
-                {"Distance < 2 miles","AutoSkim.Distance < 2",-0.8874},
-                {"Highway Time","AutoSkim.Time",-0.0917},
-                {"Excess highway time over 30 min","(AutoSkim.Time - 30)*(AutoSkim.Time > 30)",0.0486},
-                {"Transit Stop Density","nz(TAZ4Ds.TransitStopDensity.D)",34.91},
-                {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1}}
+                {"Distance < 2 miles","AutoSkim.Distance < 2",-0.932},
+                {"Highway Time (round trip)","AutoSkim.Time * 2",-0.098},
+                {"Excess highway time over 30 min","(AutoSkim.Time - 30)*(AutoSkim.Time > 30)",0.059},
+                {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1.0}}
         }
         Args.UnivDCShadowPrices = {
             "Type":"File",
