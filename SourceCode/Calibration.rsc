@@ -506,6 +506,7 @@ Macro "Calibrate JT Mode"(Args, p)
     tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
     tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
 
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
     opts = {Type: "Joint_" + purp, 
             Category: "Joint_" + purp, 
             Filter: "Joint_" + p + "_Composition <> null and Joint_" + p + "_Destination <> null"}
@@ -609,6 +610,7 @@ Macro "Calibrate Solo Mode"(Args, p)
     tmOpts =  {abmManager: abm, Type: 'Solo', Purpose: purp}
     tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
 
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
     opts = {Type: "Solo_" + purp, 
             Category: "Solo_" + purp, 
             Filter: "Solo_" + p + "_Destination <> null"}
@@ -643,6 +645,8 @@ Macro "Calibrate Model"(Args, Opts)
 
     // Call macro to Adjust ASC
     RunMacro("Calibrate ASCs", Opts, modelSpec)
+
+    RunMacro("Export ABM Data", Args, {Overwrite: 1})
 
     RunMacro("ReleaseSingleton", "ABM_Manager")
     RunMacro("ReleaseSingleton", "ABM.TimeManager")

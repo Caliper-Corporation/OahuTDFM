@@ -1,5 +1,9 @@
 
-30,codepage=65001
+62
 "Alternative",C,1,6,0,6,0,,"","",,"Copy",
 "Description",C,7,20,0,20,0,,"","",,"Copy",
 "TargetShare",F,27,4,0,10,2,,"","",,"Sum",
+"InitialShare",R,31,8,0,12,2,,"","",,"Sum",
+"InitialASC",R,39,8,0,12,4,,"","",,"Sum",
+"AdjustedShare",R,47,8,0,12,2,,"","",,"Sum",
+"AdjustedASC",R,55,8,0,12,4,,"","",,"Sum",
