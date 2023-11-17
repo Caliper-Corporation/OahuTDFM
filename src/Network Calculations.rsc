@@ -968,7 +968,6 @@ macro "BuildHighwayNetwork Oahu" (Args)
         netObj.AddLinkField({Name: "Alpha", Field: {"ABAlpha", "BAAlpha"}})
         netObj.AddLinkField({Name: "Beta", Field: {"ABBeta", "BABeta"}})
         netObj.OutNetworkName = netfile
-        netSetObj.SetPenalties({UTurn: -1})
         netObj.Run()
         
         netSetObj = null
@@ -976,7 +975,8 @@ macro "BuildHighwayNetwork Oahu" (Args)
         netSetObj.LayerDB = LineDB
         netSetObj.LoadNetwork(netfile)
         netSetObj.CentroidFilter = "Centroid = 1"
-            // netSetObj.SetPenalties({LinkPenaltyTable: TurnPenaltyFile, PenaltyField: "Penalty"})
+        // netSetObj.SetPenalties({LinkPenaltyTable: TurnPenaltyFile, PenaltyField: "Penalty"})
+        netSetObj.SetPenalties({UTurn: -1})
         netSetObj.Run()
 
     end
