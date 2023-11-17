@@ -468,7 +468,7 @@ Macro "Merge Route Systems" (MacroOpts)
   {nlyr2, llyr2, rlyr2, slyr2} = rts2.GetLayerNames()
 
   // Create route and stop field arrays to merge attributes
-  tbl = CreateObject("Table", rlyr2)
+  tbl = CreateObject("Table", rlyr)
   field_names = tbl.GetFieldNames()
   dont_include = {"Route_ID", "Length"}
   for field_name in field_names do

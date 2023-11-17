@@ -1,9 +1,9 @@
 Macro "Reports" (Args)
-    // RunMacro("Load Link Layer", Args)
-    // RunMacro("Calculate Daily Fields", Args)
-    // RunMacro("Create Count Difference Map", Args)
-    // RunMacro("VOC Maps", Args)
-    // RunMacro("Speed Maps", Args)
+    RunMacro("Load Link Layer", Args)
+    RunMacro("Calculate Daily Fields", Args)
+    RunMacro("Create Count Difference Map", Args)
+    RunMacro("VOC Maps", Args)
+    RunMacro("Speed Maps", Args)
     RunMacro("Count PRMSEs", Args)
     return(1)
 endmacro
@@ -145,11 +145,11 @@ Macro "Calculate Daily Fields" (Args)
   fields_to_add = fields_to_add + {
     {"AB_Flow_Daily", "Real", 10, 2,,,,"AB Daily Flow"},
     {"BA_Flow_Daily", "Real", 10, 2,,,,"BA Daily Flow"},
-    {"Total_Flow_Daily", "Real", 10, 2,,,,"Daily Flow in both direction"},
+    {"Total_Flow_Daily", "Real", 10, 2,,,,"Daily Flow in both direction"}
   }
   for mode in modes do
     fields_to_add = fields_to_add + {
-        {"Total_" + mode + "_Flow_Daily", "Real", 10, 2,,,,"Daily " + mode + " Flow in both direction"},
+        {"Total_" + mode + "_Flow_Daily", "Real", 10, 2,,,,"Daily " + mode + " Flow in both direction"}
     }
   end
 
@@ -169,8 +169,8 @@ Macro "Calculate Daily Fields" (Args)
       output.("Total_" + field + "_Daily") = nz(output.("Total_" + field + "_Daily")) + v_output
     end
 
-	description = "Daily " + field + " in both directions"
-	if field = "Delay" then description = description + " (hours)"
+    description = "Daily " + field + " in both directions"
+    if field = "Delay" then description = description + " (hours)"
     fields_to_add = fields_to_add + {{"Total_" + field + "_Daily", "Real", 10, 2,,,, description}}
   end
 

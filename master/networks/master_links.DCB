@@ -1,5 +1,5 @@
 Oahu Network 102907
-423
+431
 "ID",I,1,4,0,4,0,,"","",,"Sum",
 "Road Name",C,5,21,0,21,0,,"","New Road Name including centroid designation|",,"Copy",
 "Road_Name2",C,26,21,0,21,0,,"","Contains secondary information (like if it is a zipper lane)",,"Copy",
@@ -15,10 +15,10 @@ Oahu Network 102907
 "BA_LANEPM",I,108,4,0,10,0,,"","Reverse # of Lanes in the Midday, EA, and NT Periods|",,"Copy",
 "AB_LANEOP",I,112,4,0,10,0,,"","Forward # of Lanes in the PM Period|",,"Copy",
 "BA_LANEOP",I,116,4,0,10,0,,"","Reverse # of Lanes in the PM Period|",,"Copy",
-"WalkSpeed",R,120,8,0,10,2,,"","Set to 2.5 mph by default (if null)|Use this field to increase walk speed to represent|features like side walks, safer travel areas, etc.",,"Sum",
-"BikeSpeed",R,128,8,0,10,2,,"","Set to 12 mph by default (if null)|Use this field to increase bike speed to represent|features like protected bike lanes.",,"Sum",
-"CountID",I,136,4,0,10,0,,"","Count Station ID",,"Sum",
-"DailyCount",I,140,4,0,10,0,,"","Daily Count Volume",,"Sum",
+"WalkSpeed",R,120,8,0,10,2,,"","Set to 2.5 mph by default (if null)|Use this field to increase walk speed to represent|features like side walks, safer travel areas, etc.",,"Copy",
+"BikeSpeed",R,128,8,0,10,2,,"","Set to 12 mph by default (if null)|Use this field to increase bike speed to represent|features like protected bike lanes.",,"Copy",
+"CountID",I,136,4,0,10,0,,"","Count Station ID",,"Copy",
+"DailyCount",I,140,4,0,10,0,,"","Daily Count Volume",,"Copy",
 "OLDFIELDS",C,144,16,0,16,0,,"","All fields to the right of here are old and will likely be deleted.|Preserved for now during development in case they are helpful.",,"Copy",
 "CountID_old",I,160,4,0,8,0,,"","ID of count station",,"Copy",
 "Obs-Flow",I,164,4,0,8,0,,"","Daily count volume (AADT)",,"Copy",
@@ -81,3 +81,5 @@ Oahu Network 102907
 "Line_Source",I,412,4,0,10,0,,"","1: Original planning links|2: TIGER links|3: Adams additional links",,"Copy",
 "Original_Link_ID_NEW",I,416,4,0,10,0,,"","",,"Copy",
 "Future",I,420,4,0,8,0,,"","",,"Copy",
+"count_sid_lc",I,424,4,0,10,0,,"","Count Station ID as tagged by the Load Counts macro",,"Sum",
+"count_vol_lc",I,428,4,0,10,0,,"","Count ID as tagged by the Load Counts macro",,"Sum",

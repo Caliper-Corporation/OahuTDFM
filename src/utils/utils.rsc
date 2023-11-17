@@ -1622,6 +1622,7 @@ Macro "Count Difference Map" (macro_opts)
 
   // Set color theme line styles and colors
   line_colors =	{
+    ColorRGB(32896,32896,32896), // other
     ColorRGB(17733,30069,46260),
     ColorRGB(29812,44461,53713),
     ColorRGB(43947,55769,59881),
@@ -1635,7 +1636,7 @@ Macro "Count Difference Map" (macro_opts)
   // This one puts black borders around the line
   /*dualline = LineStyle({{{2, -1, 0},{0,0,1},{0,0,-1}}})*/
 
-  for i = 1 to 8 do
+  for i = 1 to 9 do
     class_id = GetLayer() +"|" + cTheme + "|" + String(i)
     SetLineStyle(class_id, dualline)
     SetLineColor(class_id, line_colors[i])
@@ -1644,6 +1645,7 @@ Macro "Count Difference Map" (macro_opts)
 
   // Change the labels of the classes (how the divisions appear in the legend)
   labels = {
+    "Other",
     "-100 to -50", "-50 to -30", "-30 to -10",
     "-10 to 10", "10 to 30", "30 to 50",
     "50 to 100", ">100"
