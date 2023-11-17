@@ -968,6 +968,7 @@ macro "BuildHighwayNetwork Oahu" (Args)
         netObj.AddLinkField({Name: "Alpha", Field: {"ABAlpha", "BAAlpha"}})
         netObj.AddLinkField({Name: "Beta", Field: {"ABBeta", "BABeta"}})
         netObj.OutNetworkName = netfile
+        netSetObj.SetPenalties({UTurn: -1})
         netObj.Run()
         
         netSetObj = null
