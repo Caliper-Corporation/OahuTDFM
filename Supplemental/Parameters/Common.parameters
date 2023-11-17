@@ -2763,9 +2763,9 @@
             "Caption":"Solo Intermediate Stop Frequency Other Utility",
             "Style":"StopsFreqUtility",
             "Value":{
-                {"ASC (0_0)","Constant",1.60194,1,0,0,0},
-                {"ASC (0_1)","Constant",0.220484,0,0,1,0},
-                {"ASC (1_0)","Constant",0.254561,0,0,1,0},
+                {"ASC (0_0)","Constant",2.6123,1,0,0,0},
+                {"ASC (0_1)","Constant",0.115,0,0,1,0},
+                {"ASC (1_1)","Constant",-2.665,0,0,0,1},
                 {"Kid","ToursData.Age < 18",1.136,1,0,0,0},
                 {"Age [0-4]","ToursData.Age <=4",-1.226,1,0,0,0},
                 {"Age [5-14]","ToursData.Age >=5 and ToursData.Age <= 14",-1.116,1,0,0,0},
@@ -2782,7 +2782,7 @@
                 {"Main Stop Distance >= 10 miles","AutoSkim.Distance >= 10",0.3973,0,0,0,1},
                 {"Main TAZ same as Home TAZ","ToursData.TAZID = ToursData.Destination",0.118,1,0,0,0},
                 {"Non Auto Work Mode","ToursData.IsAutoTour <> 1",0.8245,1,0,0,0},
-                {"Number of Solo Discretionary Tours","ToursData.NumberSoloOtherTours + ToursData.NumberSoloShopTours",0.02917,1,0,0,0}}
+                {"Number of Solo Discretionary Tours","ToursData.NumberSoloOtherTours + ToursData.NumberSoloShopTours",0.0292,1,0,0,0}}
         }
 	
 	Section = "SoloTourStops|Frequency|Shop"
@@ -2792,9 +2792,9 @@
             "Caption":"Solo Intermediate Stop Frequency Shop Utility",
             "Style":"StopsFreqUtility",
             "Value":{
-                {"ASC (0_0)","Constant",1.44691,1,0,0,0},
-                {"ASC (0_1)","Constant",0.10605,0,0,1,0},
-                {"ASC (1_0)","Constant",0.198089,0,0,1,0},
+                {"ASC (0_0)","Constant",1.8699,1,0,0,0},
+                {"ASC (0_1)","Constant",1.0341,0,0,1,0},
+                {"ASC (1_1)","Constant",-1.2474,0,0,0,1},
                 {"Kid","ToursData.Age < 18",1.136,1,0,0,0},
                 {"Age [0-4]","ToursData.Age <=4",-1.226,1,0,0,0},
                 {"Age [5-14]","ToursData.Age >=5 and ToursData.Age <= 14",-1.116,1,0,0,0},
@@ -2811,7 +2811,7 @@
                 {"Main Stop Distance >= 10 miles","AutoSkim.Distance >= 10",0.3973,0,0,0,1},
                 {"Main TAZ same as Home TAZ","ToursData.TAZID = ToursData.Destination",0.118,1,0,0,0},
                 {"Non Auto Work Mode","ToursData.IsAutoTour <> 1",0.8245,1,0,0,0},
-                {"Number of Solo Discretionary Tours","ToursData.NumberSoloOtherTours + ToursData.NumberSoloShopTours",0.02917,1,0,0,0}}
+                {"Number of Solo Discretionary Tours","ToursData.NumberSoloOtherTours + ToursData.NumberSoloShopTours",0.0292,1,0,0,0}}
         }
 	
 	Section = "SoloTourStops|Destination|Size Variable"
@@ -2867,7 +2867,7 @@
             "Caption":"Solo Stop Duration Other Utility",
             "Style":"NMStopsDurUtility",
             "Value":{
-                {"ASC","Constant",-0.287443,0.217572,-0.189117,0.07855,-1.2543,null},
+                {"ASC","Constant",-0.6789,-0.9415,-0.9788,-0.5669,-0.9736,null},
                 {"Kid","ToursData.Age < 18",-1.10998,-1.10998,-0.913353,-1.92405,null,null},
                 {"Worker","ToursData.WorkerCategory <= 2",0.206661,0.215176,null,null,null,null},
                 {"Senior","ToursData.Age >= 65",0.197594,0.197594,null,null,null,null},
@@ -2892,7 +2892,7 @@
             "Caption":"Solo Stop Duration Shop Utility",
             "Style":"NMStopsDurUtility",
             "Value":{
-                {"ASC","Constant",-0.696014,-0.168393,-0.47344,-0.022058,-1.34569,null},
+                {"ASC","Constant",-0.7181,-0.0969,-0.4838,0.6595,-1.801,null},
                 {"Kid","ToursData.Age < 18",-1.10998,-1.10998,-0.913353,-1.92405,null,null},
                 {"Worker","ToursData.WorkerCategory <= 2",0.206661,0.215176,null,null,null,null},
                 {"Senior","ToursData.Age >= 65",0.197594,0.197594,null,null,null,null},
