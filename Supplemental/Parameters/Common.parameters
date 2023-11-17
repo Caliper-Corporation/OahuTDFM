@@ -2565,7 +2565,7 @@
             "Caption":"Solo Tour Duration Shop Utility",
             "Style":"SoloTourDurShopUtility",
             "Value":{
-                {"ASC","Constant",0.218159,0.622205,0.803368,0.804945,-0.225296,0},
+                {"ASC","Constant",-2.3667,-1.071,0.2088,0.073,-1.022,null},
                 {"HHIncome High","PersonHH.IncomeLevel = 3",null,null,-0.339508,-0.339508,null,null},
                 {"HHIncome Mid","PersonHH.IncomeLevel = 2",null,null,null,null,null,null},
                 {"HHIncome Low","PersonHH.IncomeLevel = 1",-0.348409,-0.348409,null,null,null,null},
