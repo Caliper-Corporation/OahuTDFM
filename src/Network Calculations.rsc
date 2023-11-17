@@ -975,7 +975,8 @@ macro "BuildHighwayNetwork Oahu" (Args)
         netSetObj.LayerDB = LineDB
         netSetObj.LoadNetwork(netfile)
         netSetObj.CentroidFilter = "Centroid = 1"
-            // netSetObj.SetPenalties({LinkPenaltyTable: TurnPenaltyFile, PenaltyField: "Penalty"})
+        // netSetObj.SetPenalties({LinkPenaltyTable: TurnPenaltyFile, PenaltyField: "Penalty"})
+        netSetObj.SetPenalties({UTurn: -1})
         netSetObj.Run()
 
     end
