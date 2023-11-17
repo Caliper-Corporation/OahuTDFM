@@ -606,6 +606,10 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
                 else join.PostedSpeed
             join.(dir + "TransitSpeed" + period) = posted_speed
             join.(dir + "TransitTime" + period) = join.Length / posted_speed * 60
+            // Fill in the non-period fields just to avoid confusion when
+            // looking at the link layer.
+            join.(dir + "TransitSpeed") = posted_speed
+            join.(dir + "TransitTime") = join.Length / posted_speed * 60
         end
     end
 
@@ -1128,11 +1132,10 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     DrvOpts.PermitAllWalk = PermitAllW
     DrvOpts.AllowWalkAccess = AllowWacc
     DrvOpts.ParkingNodes = ParkFilter
-    // if period = "PM" then
-    //     o.DriveEgress(DrvOpts)
-    // else
-    //     o.DriveAccess(DrvOpts)  // temporarily commented out PnR/KnR setting due to bug in Transit API
-    o.DriveAccess(DrvOpts)
+    if period = "PM" then
+        o.DriveEgress(DrvOpts)
+    else
+        o.DriveAccess(DrvOpts)
 
     o.CentroidFilter = "Centroid = 1"
     o.LinkImpedance = "bus_time" // default
