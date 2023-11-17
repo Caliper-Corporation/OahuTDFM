@@ -610,6 +610,7 @@ Macro "Calibrate Solo Mode"(Args, p)
     tmOpts =  {abmManager: abm, Type: 'Solo', Purpose: purp}
     tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
 
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
     opts = {Type: "Solo_" + purp, 
             Category: "Solo_" + purp, 
             Filter: "Solo_" + p + "_Destination <> null"}
