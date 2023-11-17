@@ -926,6 +926,7 @@ endmacro
 macro "BuildNetworks Oahu" (Args, Result)
 
     RunMacro("BuildHighwayNetwork Oahu", Args)
+    RunMacro("Check Highway Network", Args)
     RunMacro("Create Transit Networks", Args)
     return(1)
 EndMacro
@@ -982,6 +983,46 @@ macro "BuildHighwayNetwork Oahu" (Args)
     quit:
     Return(ret_value)
 
+endmacro
+
+/*
+Runs a test assignment for each period using a dummy matrix to check that all 
+links have proper capacity/speed values.
+*/
+
+Macro "Check Highway Network" (Args)
+
+    if Args.FeedbackIteration > 1 then return()
+
+    out_dir = Args.[Output Folder]
+    skim_dir = out_dir + "/skims"
+    se_file = Args.DemographicOutputs
+    hwy_dbd = Args.HighwayDatabase
+    periods = {"AM", "PM", "OP"}
+
+    se = CreateObject("Table", se_file)
+    mtx_file = GetTempFileName(".mtx")
+    mh = CreateMatrixFromView("temp", se.GetView() + "|", "TAZ", "TAZ", {"TAZ"}, {"File Name": mtx_file})
+    mtx = CreateObject("Matrix", mh)
+    mtx.AddCores({"SOV"})
+    mtx.SOV := mtx.TAZ
+    mtx = null
+
+    obj = CreateObject("Network.Assignment")
+    obj.LayerDB = hwy_dbd
+    obj.ResetClasses()
+    obj.Iterations = 1
+    obj.Convergence = .01
+    obj.DemandMatrix ({MatrixFile: mtx_file})
+    obj.AddClass({Demand: "SOV"})
+    obj.FlowTable = GetRandFileName("*.bin")
+    for period in periods do
+        obj.Network = skim_dir + "/highwaynet_" + period + ".net"
+        obj.DelayFunction = {Function: "bpr.vdf", Fields : {"FreeFlowTime",
+            "Capacity", "Alpha", "Beta", "None"}}
+        ret_value = obj.Run()
+        results = obj.GetResults()
+    end
 endmacro
 
 /*
