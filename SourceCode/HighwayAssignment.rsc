@@ -116,15 +116,3 @@ Macro "Highway Assignment" (Args, periods)
     end
 
 endmacro
-
-macro "FeedbackConvergence" (Args)
-    if Args.Iteration = null then Args.Iteration = 1
-    if Args.MaxIterations = null then Args.MaxIterations = 1
-    if Args.Iteration < Args.MaxIterations then
-        retValue = 2
-    else
-        retValue = 1
-    
-    Args.Iteration = Args.Iteration + 1
-    Return(retValue)
-endmacro
