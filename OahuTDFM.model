@@ -938,7 +938,6 @@ Body:
         retValue = 1
     
     Args.Iteration = Args.Iteration + 1
-    Return(1)
     Return(retValue)
 EndMacro
 
