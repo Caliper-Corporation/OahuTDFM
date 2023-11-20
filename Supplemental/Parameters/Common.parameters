@@ -799,8 +799,8 @@
             "Value":{
                 {"Distance < 2 miles","AutoSkim.Distance < 2",-0.932},
                 {"Highway Time (round trip)","AutoSkim.Time * 2",-0.098},
-                {"Excess highway time over 30 min","(AutoSkim.Time - 30)*(AutoSkim.Time > 30)",0.059},
-                {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1.0}}
+                {"Excess highway time over 30 min","(2*AutoSkim.Time - 30)*(2*AutoSkim.Time > 30)",0.059},
+                {"Shadow Prices","UnivDCShadowPrices.ShadowPrice.D",1}}
         }
         Args.UnivDCShadowPrices = {
             "Type":"File",
