@@ -93,6 +93,8 @@ Macro "Highway Assignment" (Args, periods)
         results.data.[MSA PERCENT RMSE]
         etc.
         */
+        rmse = results.data.[MSA PERCENT RMSE]
+        Args.(period + "RMSE") = rmse
 
         // Update link layer
         line = CreateObject("Table", {FileName: hwy_dbd, LayerType: "Line"})
@@ -116,3 +118,40 @@ Macro "Highway Assignment" (Args, periods)
     end
 
 endmacro
+
+Macro "FeedbackConvergence" (Args)
+    RetValue = 1
+    amrmse = Args.AMRMSE
+    pmrmse = Args.PMRMSE
+    oprmse = Args.OPRMSE
+    amconv = Args.AMFeedbackConvergence
+    pmconv = Args.PMFeedbackConvergence
+    opconv = Args.OPFeedbackConvergence
+    if Args.Iteration = null then Args.Iteration = 1
+    if Args.MaxIterations = null then Args.MaxIterations = 1
+RunMacro("Export Congested Link Times", Args)
+    SetStatus(4, "Feedback Iteration: " + i2s(Args.Iteration) + " - RMSE: " + r2s(rmse),)
+    if (amrmse < amconv) and (pmrmse < pmconv) and (oprmse < opconv) or (Args.Iteration >= Args.MaxIterations) then do
+        RetValue = 1
+        if Args.Iteration > 1 then
+            RunMacro("Export Congested Link Times", Args)
+    end
+    else 
+        RetValue = 2
+    Args.Iteration = Args.Iteration + 1
+    return(RetValue)
+    Throw()
+EndMacro
+
+Macro "Export Congested Link Times" (Args)
+    hwy_dbd = Args.HighwayDatabase
+    Line = CreateObject("Table", {FileName: hwy_dbd, LayerType: "Line"})
+    expfields = {"ID", "ABAMTime", "BAAMTime", "ABPMTime", "BAPMTime", "ABOPTime", "BAOPTime"}
+    renamefields = {"ID", "ABAMCongestedTime", "BAAMCongestedTime", "ABPMCongestedTime", "BAPMCongestedTime", "ABOPCongestedTime", "BAOPCongestedTime"}
+    out_file = Args.[Output Folder] + "/networks/CongestedTimes.bin"
+    Exptab = Line.Export({FileName: out_file, FieldNames: expfields})
+    for i = 2 to renamefields.length do
+        Exptab.RenameField({FieldName: expfields[i], NewName: renamefields[i]})
+    end
+    
+EndMacro

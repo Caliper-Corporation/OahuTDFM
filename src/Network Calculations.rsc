@@ -519,6 +519,23 @@ macro "Speeds and Capacities" (Args, Result)
     join.Mode = 1
     join = null
 
+    // Use congested times if the file exists
+    CongestedTimeFile = Args.CongestedTimeFile
+    if GetFileInfo(CongestedTimeFile) <> null then do
+        targetfields = {"ABAMTime", "BAAMTime", "ABPMTime", "BAPMTime", "ABOPTime", "BAOPTime"}
+        sourcefields = {"ABAMCongestedTime", "BAAMCongestedTime", "ABPMCongestedTime", "BAPMCongestedTime", "ABOPCongestedTime", "BAOPCongestedTime"}
+
+        ConSpd = CreateObject("Table", CongestedTimeFile)
+        jvcg = Line.Join({Table: ConSpd, LeftFields: "ID", RightFields: "ID"})
+        for i = 1 to sourcefields.length do
+            jvcg.(targetfields[i]) = if jvcg.(sourcefields[i]) = null 
+                then jvcg.(targetfields[i]) 
+                else jvcg.(sourcefields[i])
+        end
+        jvcg = null
+    end
+
+
     quit:
     Return(ret_value)
 
@@ -544,20 +561,20 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     {FieldName: "BABikeTime"}, 
     {FieldName: "ABTransitFactor"}, 
     {FieldName: "BATransitFactor"}, 
-    {FieldName: "ABTransitSpeed"}, 
-    {FieldName: "BATransitSpeed"}, 
-    {FieldName: "ABTransitTime"}, 
-    {FieldName: "BATransitTime"}, 
-    {FieldName: "ABTransitSpeedAM"}, 
-    {FieldName: "BATransitSpeedAM"}, 
+    // {FieldName: "ABTransitSpeed"}, 
+    // {FieldName: "BATransitSpeed"}, 
+    // {FieldName: "ABTransitTime"}, 
+    // {FieldName: "BATransitTime"}, 
+    // {FieldName: "ABTransitSpeedAM"}, 
+    // {FieldName: "BATransitSpeedAM"}, 
     {FieldName: "ABTransitTimeAM"}, 
     {FieldName: "BATransitTimeAM"}, 
-    {FieldName: "ABTransitSpeedPM"}, 
-    {FieldName: "BATransitSpeedPM"}, 
+    // {FieldName: "ABTransitSpeedPM"}, 
+    // {FieldName: "BATransitSpeedPM"}, 
     {FieldName: "ABTransitTimePM"}, 
     {FieldName: "BATransitTimePM"}, 
-    {FieldName: "ABTransitSpeedOP"}, 
-    {FieldName: "BATransitSpeedOP"}, 
+    // {FieldName: "ABTransitSpeedOP"}, 
+    // {FieldName: "BATransitSpeedOP"}, 
     {FieldName: "ABTransitTimeOP"}, 
     {FieldName: "BATransitTimeOP"} 
    }
@@ -576,22 +593,24 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     join = Line.Join({Table: SC, LeftFields: {"HCMType", "AreaType", "HCMMedian"}, RightFields: {"HCMType", "AreaType", "HCMMedian"}})
     join.ABTransitFactor = join.TransitFactor
     join.BATransitFactor = join.TransitFactor
-    join.ABTransitSpeed = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeed = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTime = join.Length / join.ABTransitSpeed * 60
-    join.BATransitTime = join.Length / join.BATransitSpeed * 60
-    join.ABTransitSpeedAM = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeedAM = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTimeAM = join.Length / join.ABTransitSpeedAM * 60
-    join.BATransitTimeAM = join.Length / join.BATransitSpeedAM * 60
-    join.ABTransitSpeedPM = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeedPM = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTimePM = join.Length / join.ABTransitSpeedPM * 60
-    join.BATransitTimePM = join.Length / join.BATransitSpeedPM * 60
-    join.ABTransitSpeedOP = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeedOP = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTimeOP = join.Length / join.ABTransitSpeedOP * 60
-    join.BATransitTimeOP = join.Length / join.BATransitSpeedOP * 60
+    // join.ABTransitSpeed = join.ABFreeFlowSpeed / join.ABTransitFactor
+    // join.BATransitSpeed = join.BAFreeFlowSpeed / join.BATransitFactor
+    // join.ABTransitTime = join.Length / join.ABTransitSpeed * 60
+    // join.BATransitTime = join.Length / join.BATransitSpeed * 60
+    
+    // join.ABTransitSpeedAM = join.ABFreeFlowSpeed / join.ABTransitFactor
+    // join.BATransitSpeedAM = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimeAM = join.ABAMTime * join.ABTransitFactor
+    join.BATransitTimeAM = join.BAAMTime * join.BATransitFactor
+    // join.ABTransitSpeedPM = join.ABFreeFlowSpeed / join.ABTransitFactor
+    // join.BATransitSpeedPM = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimePM = join.ABPMTime * join.ABTransitFactor
+    join.BATransitTimePM = join.BAPMTime * join.BATransitFactor
+    // join.ABTransitSpeedOP = join.ABFreeFlowSpeed / join.ABTransitFactor
+    // join.BATransitSpeedOP = join.BAFreeFlowSpeed / join.BATransitFactor
+    join.ABTransitTimeOP = join.ABOPTime * join.ABTransitFactor
+    join.BATransitTimeOP = join.BAOPTime * join.BATransitFactor
+    
     // Calculate for non-drivable links (e.g. transit only)
     join.SelectByQuery({
         SetName: "transit_only",
@@ -604,12 +623,12 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
             posted_speed = if join.PostedSpeed = null
                 then 25
                 else join.PostedSpeed
-            join.(dir + "TransitSpeed" + period) = posted_speed
+            // join.(dir + "TransitSpeed" + period) = posted_speed
             join.(dir + "TransitTime" + period) = join.Length / posted_speed * 60
             // Fill in the non-period fields just to avoid confusion when
             // looking at the link layer.
-            join.(dir + "TransitSpeed") = posted_speed
-            join.(dir + "TransitTime") = join.Length / posted_speed * 60
+            // join.(dir + "TransitSpeed") = posted_speed
+            // join.(dir + "TransitTime") = join.Length / posted_speed * 60
         end
     end
 
