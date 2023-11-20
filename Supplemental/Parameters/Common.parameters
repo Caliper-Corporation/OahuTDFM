@@ -1350,7 +1350,7 @@
             "Caption":"School Modes",
             "Style":"Nesting Structure",
             "Value":{
-                {"Root","DriveAlone, Carpool, NonAuto",null},
+                {"Root","DriveAlone, Carpool, NonHHAuto, NonAuto",null},
                 {"NonAuto","Walk, Bike, W_Bus, SchoolBus",0.371}}
         }
         Args.SchModeFAvailability = {
