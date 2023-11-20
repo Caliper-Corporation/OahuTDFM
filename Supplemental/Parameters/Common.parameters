@@ -870,8 +870,7 @@
             "Caption":"Work Tour Frequency for Workers",
             "Style":"MandTourFreqUtility",
             "Value":{
-                {"ASC","Constant",6.3076,1,0},
-                {"ASC","Constant",2.1008,0,1},
+                {"ASC","Constant",4.3541,1,0},
                 {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.2476,0,1},
                 {"Age 60 Plus","PersonHH.Age >= 60",0.3793,1,0},
                 {"Female","PersonHH.Gender = 2",0.2833,1,0},
@@ -890,8 +889,7 @@
             "Caption":"University Tour Frequency for University Students",
             "Style":"MandTourFreqUtility",
             "Value":{
-                {"ASC","Constant",6.2856,1,0},
-                {"ASC","Constant",2.7466,0,1},
+                {"ASC","Constant",2.6902,1,0},
                 {"Work Travel Time <= 15 min","AutoSkim.Time <= 15",1.2476,0,1},
                 {"Age 60 Plus","PersonHH.Age >= 60",0.3793,1,0},
                 {"Female","PersonHH.Gender = 2",0.2833,1,0},
