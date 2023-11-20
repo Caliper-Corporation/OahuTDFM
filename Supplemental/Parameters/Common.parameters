@@ -638,7 +638,7 @@
             "Caption":"Worker Category Utility",
             "Style":"WorkerCategoryUtility",
             "Value":{
-                {"ASC","Constant",-0.52,1,0},
+                {"ASC","Constant",-0.505,1,0},
                 {"HH With Kids","PersonHH.Kids > 0",0.1623,1,0},
                 {"HH with Pre Sch Kids","PersonHH.PreSchKids > 0",0.9504,1,0},
                 {"Female in HH with Kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.3425,1,0},
