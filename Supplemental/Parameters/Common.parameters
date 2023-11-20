@@ -593,7 +593,7 @@
             "Caption":"Driver License Utility: Applies to Age >= 16",
             "Style":"DriverLicenseUtility",
             "Value":{
-                {"ASC","Constant",0.86,1,0},
+                {"ASC","Constant",0.7983,1,0},
                 {"Worker","PersonHH.IndustryCategory < 10",0.7829,1,0},
                 {"Age {25-64}","PersonHH.Age >= 25 and PersonHH.Age < 65",1.1508,1,0},
                 {"Low Income HH","PersonHH.IncomeCategory = 1",0.7168,0,1}}
