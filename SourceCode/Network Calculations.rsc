@@ -18,6 +18,53 @@ Macro "Network Calculations" (Args)
     return(1)
 endmacro
 
+// copies highway network, demographics, and transit routes to output folder for further processing
+macro "CopyDataToOutputFolder" (Args)
+    ret_value = 1
+    hwyinputdb = Args.HighwayInputDatabase 
+    hwyoutputdb = Args.HighwayDatabase 
+    DemoMaster = Args.Demographics
+    DemoOut = Args.DemographicOutputs
+    rs_filemaster = Args.TransitRouteInputs
+    rs_file = Args.TransitRoutes
+    CopyDatabase(hwyinputdb, hwyoutputdb)   // copy master network to copy
+    CopyTableFiles(null, "FFB", DemoMaster, , DemoOut, )    // copy master demographics to copy
+    tab = CreateObject("Table", DemoOut)
+    dropflds = {"EMP_NAICS_11", "EMP_NAICS_21", "EMP_NAICS_22", "EMP_NAICS_23", "EMP_NAICS_31-33", "EMP_NAICS_42", "EMP_NAICS_44-45", "EMP_NAICS_48-49", "EMP_NAICS_51", 
+                "EMP_NAICS_52", "EMP_NAICS_53", "EMP_NAICS_54", "EMP_NAICS_55", "EMP_NAICS_56", "EMP_NAICS_61", "EMP_NAICS_62", "EMP_NAICS_71", "EMP_NAICS_72", 
+                "EMP_NAICS_81", "EMP_NAICS_92"}
+    tab.DropFields({FieldNames: dropflds})
+        // add master transit network
+
+    o = CreateObject("DataManager")
+    o.AddDataSource("RS", {FileName: rs_filemaster, DataType: "RS"})
+    routeLayers = o.GetRouteLayers("RS")
+
+    RouteLayer = routeLayers.RouteLayer
+    StopLayer = routeLayers.StopLayer
+    LineLayer = routeLayers.LineLayer
+    NodeLayer = routeLayers.NodeLayer
+
+    SetLayer(RouteLayer)
+    
+    args = null
+    args.RouteLayer       = RouteLayer
+    args.RouteSet         = null
+    args.StopSet          = null
+    args.TaggedField      = "NodeID"
+    args.RepeatedSetName  = "Repeated Stop Tags"
+    args.NotTaggedSetName = "Not Tagged"
+    args.CreateLog        = true
+    // check for repeated tagged nodes and flag if found
+    TagInfo = RunMacro("Select Repeated Tagged Nodes", args)
+    
+    if TagInfo.errorMessage <> null then Throw(GetLastError())
+    // create copy of route system
+
+    o.CopyRouteSystem("RS", {TargetRS: rs_file, Settings: {Geography: hwyoutputdb}})
+    Return(ret_value)
+endmacro
+
 /*
 Remove network columns from the mode table that if that mode doesn't exist in 
 the scenario. This will in turn control which networks (tnw) get created.
