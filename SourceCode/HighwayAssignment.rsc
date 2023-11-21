@@ -129,7 +129,7 @@ Macro "FeedbackConvergence" (Args)
     opconv = Args.OPFeedbackConvergence
     if Args.Iteration = null then Args.Iteration = 1
     if Args.MaxIterations = null then Args.MaxIterations = 1
-RunMacro("Export Congested Link Times", Args)
+
     SetStatus(4, "Feedback Iteration: " + i2s(Args.Iteration) + " - RMSE: " + r2s(rmse),)
     if (amrmse < amconv) and (pmrmse < pmconv) and (oprmse < opconv) or (Args.Iteration >= Args.MaxIterations) then do
         RetValue = 1
@@ -140,7 +140,6 @@ RunMacro("Export Congested Link Times", Args)
         RetValue = 2
     Args.Iteration = Args.Iteration + 1
     return(RetValue)
-    Throw()
 EndMacro
 
 Macro "Export Congested Link Times" (Args)
