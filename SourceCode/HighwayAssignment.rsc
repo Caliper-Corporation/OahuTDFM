@@ -115,6 +115,9 @@ Macro "Highway Assignment" (Args, periods)
         obj.UpdateLinkField({Name: "Time", Field: {"AB" + period + "Time", "BA" + period + "Time"}})
         obj.Run()
         obj = null
+
+        // Write out the assignment %rmse
+        RunMacro("Write PRMSE", Args, period)
     end
 
 endmacro
