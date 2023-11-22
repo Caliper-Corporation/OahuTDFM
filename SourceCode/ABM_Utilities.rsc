@@ -570,7 +570,7 @@ Macro "Write ABM OD"(Args)
     odPeriod = CreateExpression(vwTrips, "ODPeriod", exprStr,)
 
     vMode = objT.Mode
-    modes = SortArray(v2a(vMode), {Unique: 'True'})
+    modes = SortArray(v2a(vMode), {Unique: 'True', 'Omit Missing': 'True'})
     
     mSkimObj = CreateObject("Matrix", Args.HighwaySkimAM)
     mSkimObj.SetIndex("TAZ")
