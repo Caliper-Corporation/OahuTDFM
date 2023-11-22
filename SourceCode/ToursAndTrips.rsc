@@ -336,7 +336,8 @@ Macro "Create Mandatory Trip File"(Args)
         RunMacro("Append Arrays", arrs, &arrsOut)
     end
 
-    vwTemp = RunMacro("Write Trips Table", {Data: arrsOut, CarpoolOccupancy: Args.WorkCarpoolOccupancy, StartingTripID: 1})
+    opts = {Data: arrsOut, CarpoolOccupancy: Args.WorkCarpoolOccupancy, NonHHAutoOccupancy: Args.NonHHAutoOccupancy, StartingTripID: 1}
+    vwTemp = RunMacro("Write Trips Table", opts)
 
     // Export to final table
     exportOpts = {"Row Order": {{"TripID", "Ascending"}} }
@@ -1065,9 +1066,11 @@ Macro "Write Trips Table"(spec)
         vecsOut.(fld) = a2v(data.(fld))
     end
     vecsOut.One = Vector(nRecs, "Short", {Constant: 1})
-    vecsOut.TripCount = if (vecsOut.Mode = 'Carpool' and vecsOut.OrigPurpose <> "DropOff" and vecsOut.OrigPurpose <> "PickUp" 
+    vecsOut.TripCount = if (Lower(vecsOut.Mode) = 'carpool' and vecsOut.OrigPurpose <> "DropOff" and vecsOut.OrigPurpose <> "PickUp" 
                                 and vecsOut.DestPurpose <> "DropOff" and vecsOut.DestPurpose <> "PickUp") then 
                             vecsOut.Assign/spec.CarpoolOccupancy
+                        else if Lower(vecsOut.Mode) = 'nonhhauto' then
+                            vecsOut.Assign/spec.NonHHAutoOccupancy
                         else
                             vecsOut.Assign
     vecsOut.Period = if vecsOut.TOD = "AM" or vecsOut.TOD = "PM" then vecsOut.TOD else "OP"
