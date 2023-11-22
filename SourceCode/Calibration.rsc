@@ -1108,6 +1108,7 @@ Macro "Evaluate Model"(modelSpec, outputModel)
 
     o = CreateObject("Choice.Mode")
     o.ModelFile = outputModel
+    o.UtilityScaling = "By Parent Theta"
     
     if isAggregate then do
         probFile = GetRandFileName("Probability*.mtx")
@@ -1147,7 +1148,7 @@ Macro "Modify Model"(model_file, alts, shares, targets)
 
     for i = 1 to alts.length do
         alt = seg.GetAlternative(alts[i])
-        if targets[i] > 0 then
+        if shares[i] > 0 and targets[i] > 0 then
             alt.ASC.Coeff = nz(alt.ASC.Coeff) + 0.5*log(targets[i]/shares[i])
         model.Write(model_file)
     end
