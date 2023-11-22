@@ -1054,7 +1054,7 @@ links have proper capacity/speed values.
 
 Macro "Check Highway Network" (Args)
 
-    if Args.FeedbackIteration > 1 then return()
+    if Args.Iteration > 1 then return()
 
     out_dir = Args.[Output Folder]
     skim_dir = out_dir + "/skims"
