@@ -592,9 +592,11 @@ Macro "Write ABM OD"(Args)
         UpdateMatrixFromView(mat, vwTrips + "|__Selection", "Origin", "Destination", GetFieldFullSpec(vwTrips, "Mode"),          
                              {GetFieldFullSpec(vwTrips, "TripCount")}, "Add", {"Missing is zero": "Yes"})
 
-        // Update 'drivealone' core to 'drivealone' + Other and remove 'Other' core. Note Carpool core already contains vehicle trips.
-        mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other)
+        // Update 'drivealone' core to 'drivealone' + 'Other' + 'nonhhauto'and remove 'Other' and 'nonhhauto' core. 
+        // Note Carpool core already contains vehicle trips.
+        mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other) + nz(mObj.nonhhauto)
         mObj.DropCores("other")
+        mObj.DropCores("nonhhauto")
         mObj = null
     end
     DestroyExpression(GetFieldFullSpec(vwTrips, odPeriod))
