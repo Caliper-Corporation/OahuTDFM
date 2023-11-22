@@ -220,7 +220,8 @@
                                                           {"Name":"Walk","Type":"boolean","Align":"center"},
                                                           {"Name":"Bike","Type":"boolean","Align":"center"},
                                                           {"Name":"W_Bus","Type":"boolean","Align":"center"},
-                                                          {"Name":"SchoolBus","Type":"boolean","Align":"center"}}
+                                                          {"Name":"SchoolBus","Type":"boolean","Align":"center"},
+                                                          {"Name":"NonHHAuto","Type":"boolean","Align":"center"}}
                                             })
 
     Styles.ModeUtilityLS = Pme.Table({Height: 13, MaxRows: 12, Values: "Columns",  

@@ -351,7 +351,7 @@ Macro "Mode Choice PostProcess"(Args, spec)
     RunMacro("Update Dest to Home TT", Args, spec)
 
     // Attach Mode Codes
-    codeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, Other: 7, SchoolBus: 8,
+    codeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, Other: 7, SchoolBus: 8, NonHHAuto: 9, 
                 W_Bus: 21, W_Rail: 22, PNR_Bus: 31, PNR_Rail: 32, KNR_Bus: 41, KNR_Rail: 42}
     abm = spec.abmManager
     set = abm.CreatePersonSet({Filter: spec.Filter, Activate: 1})
