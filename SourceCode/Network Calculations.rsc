@@ -18,6 +18,53 @@ Macro "Network Calculations" (Args)
     return(1)
 endmacro
 
+// copies highway network, demographics, and transit routes to output folder for further processing
+macro "CopyDataToOutputFolder" (Args)
+    ret_value = 1
+    hwyinputdb = Args.HighwayInputDatabase 
+    hwyoutputdb = Args.HighwayDatabase 
+    DemoMaster = Args.Demographics
+    DemoOut = Args.DemographicOutputs
+    rs_filemaster = Args.TransitRouteInputs
+    rs_file = Args.TransitRoutes
+    CopyDatabase(hwyinputdb, hwyoutputdb)   // copy master network to copy
+    CopyTableFiles(null, "FFB", DemoMaster, , DemoOut, )    // copy master demographics to copy
+    tab = CreateObject("Table", DemoOut)
+    dropflds = {"EMP_NAICS_11", "EMP_NAICS_21", "EMP_NAICS_22", "EMP_NAICS_23", "EMP_NAICS_31-33", "EMP_NAICS_42", "EMP_NAICS_44-45", "EMP_NAICS_48-49", "EMP_NAICS_51", 
+                "EMP_NAICS_52", "EMP_NAICS_53", "EMP_NAICS_54", "EMP_NAICS_55", "EMP_NAICS_56", "EMP_NAICS_61", "EMP_NAICS_62", "EMP_NAICS_71", "EMP_NAICS_72", 
+                "EMP_NAICS_81", "EMP_NAICS_92"}
+    tab.DropFields({FieldNames: dropflds})
+        // add master transit network
+
+    o = CreateObject("DataManager")
+    o.AddDataSource("RS", {FileName: rs_filemaster, DataType: "RS"})
+    routeLayers = o.GetRouteLayers("RS")
+
+    RouteLayer = routeLayers.RouteLayer
+    StopLayer = routeLayers.StopLayer
+    LineLayer = routeLayers.LineLayer
+    NodeLayer = routeLayers.NodeLayer
+
+    SetLayer(RouteLayer)
+    
+    args = null
+    args.RouteLayer       = RouteLayer
+    args.RouteSet         = null
+    args.StopSet          = null
+    args.TaggedField      = "NodeID"
+    args.RepeatedSetName  = "Repeated Stop Tags"
+    args.NotTaggedSetName = "Not Tagged"
+    args.CreateLog        = true
+    // check for repeated tagged nodes and flag if found
+    TagInfo = RunMacro("Select Repeated Tagged Nodes", args)
+    
+    if TagInfo.errorMessage <> null then Throw(GetLastError())
+    // create copy of route system
+
+    o.CopyRouteSystem("RS", {TargetRS: rs_file, Settings: {Geography: hwyoutputdb}})
+    Return(ret_value)
+endmacro
+
 /*
 Remove network columns from the mode table that if that mode doesn't exist in 
 the scenario. This will in turn control which networks (tnw) get created.
@@ -519,6 +566,23 @@ macro "Speeds and Capacities" (Args, Result)
     join.Mode = 1
     join = null
 
+    // Use congested times if the file exists
+    CongestedTimeFile = Args.CongestedTimeFile
+    if GetFileInfo(CongestedTimeFile) <> null then do
+        targetfields = {"ABAMTime", "BAAMTime", "ABPMTime", "BAPMTime", "ABOPTime", "BAOPTime"}
+        sourcefields = {"ABAMCongestedTime", "BAAMCongestedTime", "ABPMCongestedTime", "BAPMCongestedTime", "ABOPCongestedTime", "BAOPCongestedTime"}
+
+        ConSpd = CreateObject("Table", CongestedTimeFile)
+        jvcg = Line.Join({Table: ConSpd, LeftFields: "ID", RightFields: "ID"})
+        for i = 1 to sourcefields.length do
+            jvcg.(targetfields[i]) = if jvcg.(sourcefields[i]) = null 
+                then jvcg.(targetfields[i]) 
+                else jvcg.(sourcefields[i])
+        end
+        jvcg = null
+    end
+
+
     quit:
     Return(ret_value)
 
@@ -544,20 +608,20 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     {FieldName: "BABikeTime"}, 
     {FieldName: "ABTransitFactor"}, 
     {FieldName: "BATransitFactor"}, 
-    {FieldName: "ABTransitSpeed"}, 
-    {FieldName: "BATransitSpeed"}, 
-    {FieldName: "ABTransitTime"}, 
-    {FieldName: "BATransitTime"}, 
-    {FieldName: "ABTransitSpeedAM"}, 
-    {FieldName: "BATransitSpeedAM"}, 
+    // {FieldName: "ABTransitSpeed"}, 
+    // {FieldName: "BATransitSpeed"}, 
+    // {FieldName: "ABTransitTime"}, 
+    // {FieldName: "BATransitTime"}, 
+    // {FieldName: "ABTransitSpeedAM"}, 
+    // {FieldName: "BATransitSpeedAM"}, 
     {FieldName: "ABTransitTimeAM"}, 
     {FieldName: "BATransitTimeAM"}, 
-    {FieldName: "ABTransitSpeedPM"}, 
-    {FieldName: "BATransitSpeedPM"}, 
+    // {FieldName: "ABTransitSpeedPM"}, 
+    // {FieldName: "BATransitSpeedPM"}, 
     {FieldName: "ABTransitTimePM"}, 
     {FieldName: "BATransitTimePM"}, 
-    {FieldName: "ABTransitSpeedOP"}, 
-    {FieldName: "BATransitSpeedOP"}, 
+    // {FieldName: "ABTransitSpeedOP"}, 
+    // {FieldName: "BATransitSpeedOP"}, 
     {FieldName: "ABTransitTimeOP"}, 
     {FieldName: "BATransitTimeOP"} 
    }
@@ -571,45 +635,42 @@ macro "CalculateTransitSpeeds Oahu" (Args, Result)
     Line.ABBikeTime = Line.Length / Line.BikeSpeed * 60
     Line.BABikeTime = Line.Length / Line.BikeSpeed * 60
 
+    // Transit times
     SpeedCap = Args.SpeedCapacityLookup
     SC = CreateObject("Table", SpeedCap)
     join = Line.Join({Table: SC, LeftFields: {"HCMType", "AreaType", "HCMMedian"}, RightFields: {"HCMType", "AreaType", "HCMMedian"}})
     join.ABTransitFactor = join.TransitFactor
     join.BATransitFactor = join.TransitFactor
-    join.ABTransitSpeed = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeed = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTime = join.Length / join.ABTransitSpeed * 60
-    join.BATransitTime = join.Length / join.BATransitSpeed * 60
-    join.ABTransitSpeedAM = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeedAM = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTimeAM = join.Length / join.ABTransitSpeedAM * 60
-    join.BATransitTimeAM = join.Length / join.BATransitSpeedAM * 60
-    join.ABTransitSpeedPM = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeedPM = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTimePM = join.Length / join.ABTransitSpeedPM * 60
-    join.BATransitTimePM = join.Length / join.BATransitSpeedPM * 60
-    join.ABTransitSpeedOP = join.ABFreeFlowSpeed / join.ABTransitFactor
-    join.BATransitSpeedOP = join.BAFreeFlowSpeed / join.BATransitFactor
-    join.ABTransitTimeOP = join.Length / join.ABTransitSpeedOP * 60
-    join.BATransitTimeOP = join.Length / join.BATransitSpeedOP * 60
+    periods = {"AM", "PM", "OP"}
+    dirs = {"AB", "BA"}
+    for period in periods do
+        for dir in dirs do
+            join.(dir + "TransitTime" + period) = join.(dir + period + "Time") * join.(dir + "TransitFactor")
+            // Some transit routes run on links without times in a given period
+            // (e.g. hov links). In these cases, use the free flow time.
+            join.(dir + "TransitTime" + period) = if join.(dir + "TransitTime" + period) = null
+                then join.ABFreeFlowTime * join.(dir + "TransitFactor")
+                else join.(dir + "TransitTime" + period)
+        end
+    end
+
+    
     // Calculate for non-drivable links (e.g. transit only)
     join.SelectByQuery({
         SetName: "transit_only",
         Query: "T = 1 and D = 0"
     })
-    periods = {"AM", "PM", "OP"}
-    dirs = {"AB", "BA"}
     for period in periods do
         for dir in dirs do
             posted_speed = if join.PostedSpeed = null
                 then 25
                 else join.PostedSpeed
-            join.(dir + "TransitSpeed" + period) = posted_speed
+            // join.(dir + "TransitSpeed" + period) = posted_speed
             join.(dir + "TransitTime" + period) = join.Length / posted_speed * 60
             // Fill in the non-period fields just to avoid confusion when
             // looking at the link layer.
-            join.(dir + "TransitSpeed") = posted_speed
-            join.(dir + "TransitTime") = join.Length / posted_speed * 60
+            // join.(dir + "TransitSpeed") = posted_speed
+            // join.(dir + "TransitTime") = join.Length / posted_speed * 60
         end
     end
 
@@ -993,7 +1054,7 @@ links have proper capacity/speed values.
 
 Macro "Check Highway Network" (Args)
 
-    if Args.FeedbackIteration > 1 then return()
+    if Args.Iteration > 1 then return()
 
     out_dir = Args.[Output Folder]
     skim_dir = out_dir + "/skims"

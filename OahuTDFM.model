@@ -921,6 +921,7 @@ EndMacro
 Macro "Convergence" (Args, Result)
     Attributes = {
         {"Height", 100},
+        {"MacroName", "FeedbackConvergence"},
         {"Picture", "bmp\\planiteration_v3.bmp"},
         {"PicturePosition", "Center"},
         {"Shape", "Decision"},
@@ -929,16 +930,6 @@ Macro "Convergence" (Args, Result)
         {"FillColor",{192,96,0}},
         {"FillColor2",{192,96,0}}
     }
-Body:
-    if Args.Iteration = null then Args.Iteration = 1
-    if Args.MaxIterations = null then Args.MaxIterations = 1
-    if Args.Iteration < Args.MaxIterations then
-        retValue = 2
-    else
-        retValue = 1
-    
-    Args.Iteration = Args.Iteration + 1
-    Return(retValue)
 EndMacro
 
 

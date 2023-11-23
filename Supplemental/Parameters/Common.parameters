@@ -68,10 +68,30 @@
             "Description":"Maximum number of iterations that this model can run.",
             "Value":4
         }
+        Args.AMFeedbackConvergence = {
+            "Type":"double",
+            "Description":"AM Feedback RMSE convergence criteria.",
+            "Value":0.5
+        }
+        Args.PMFeedbackConvergence = {
+            "Type":"double",
+            "Description":"PM Feedback RMSE convergence criteria.",
+            "Value":0.5
+        }
+        Args.OPFeedbackConvergence = {
+            "Type":"double",
+            "Description":"OP Feedback RMSE convergence criteria.",
+            "Value":0.5
+        }
         Args.RunInIterations = {
             "Type":"array",
             "Description":"Option array listing step names and what iteration they run in each scenario",
             "Value":null
+        }
+        Args.CongestedTimeFile = {
+            "Type":"File",
+            "Caption":"Congested link speeds file",
+            "Value":"%Input Folder%\\networks\\CongestedTimes.bin"
         }
 	
 	Section = "Parameters|Periods"

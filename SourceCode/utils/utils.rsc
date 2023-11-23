@@ -2395,16 +2395,17 @@ Macro "Create Intra Cluster Matrix"(Args)
   mc = null
   mat = null
 endMacro
+
 /*
-Used by the convergence macro to write out the %RMSE in each iteration
+Used by the assignment macro to write out the %RMSE in each iteration
 */
 
 Macro "Write PRMSE" (Args, period)
 
   assn_dir = Args.[Output Folder] + "/assignment/roadway"
   file = assn_dir + "/feedback_report_" + period + ".csv"
-  prmse = Args.(period + "_PRMSE")
-  iter = Args.FeedbackIteration
+  prmse = Args.(period + "RMSE")
+  iter = Args.Iteration
 
   if iter = 1 then do
     f = OpenFile(file, "w")
