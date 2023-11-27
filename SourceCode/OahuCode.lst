@@ -25,7 +25,6 @@ utils/TransitProjectManagement.rsc
 utils/mc.rsc
 utils/NestedDC.rsc
 CreateScenario.rsc
-../src/Oahu Steps.rsc
 PopulationSynthesis.rsc
 Skimming.rsc
 Visitors.rsc
