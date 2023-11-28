@@ -398,7 +398,7 @@ Macro "Calibrate JT Composition"(Args, p)
 
     opts = null
     opts.ModelName = "JointTours " + purp + " Composition"
-    opts.MacroName = "Composition Choice Model"
+    opts.MacroName = "JointTours Composition"
     opts.MacroArgs = {abmManager: abm, ModelType: p}
     opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_Composition_" + purp + ".bin"
     RunMacro("Calibrate Model", Args, opts)
@@ -622,7 +622,9 @@ Macro "Calibrate Model"(Args, Opts)
     abm = RunMacro("Get ABM Manager", Args)
     objT = CreateObject("Table", Args.AccessibilitiesOutputs)
     objDC = CreateObject("Table", Args.MandatoryDestAccessibility)
-    objDCNM = CreateObject("Table", Args.NonMandatoryDestAccessibility)
+
+    if GetFileInfo(Args.NonMandatoryDestAccessibility) then
+        objDCNM = CreateObject("Table", Args.NonMandatoryDestAccessibility)
     
     modelName = Opts.ModelName
     calibrationFile = Opts.CalibrationFile
