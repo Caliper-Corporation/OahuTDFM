@@ -1880,7 +1880,7 @@
             "Caption":"Joint Tours Participation (Other) Utility",
             "Style":"ParticipationUtility",
             "Value":{
-                {"ASC","Constant",3.1185,1,0},
+                {"ASC","Constant",2.7923,1,0},
                 {"Female from HH with kids","PersonHH.Gender = 2 and PersonHH.Kids > 0",-0.2691,1,0},
                 {"Senior","PersonHH.Age >= 65",1.86,1,0},
                 {"Senior from HH with kids","PersonHH.Age >= 65 and PersonHH.Kids > 0",-3.528,1,0},
