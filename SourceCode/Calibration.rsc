@@ -622,7 +622,9 @@ Macro "Calibrate Model"(Args, Opts)
     abm = RunMacro("Get ABM Manager", Args)
     objT = CreateObject("Table", Args.AccessibilitiesOutputs)
     objDC = CreateObject("Table", Args.MandatoryDestAccessibility)
-    objDCNM = CreateObject("Table", Args.NonMandatoryDestAccessibility)
+
+    if GetFileInfo(Args.NonMandatoryDestAccessibility) then
+        objDCNM = CreateObject("Table", Args.NonMandatoryDestAccessibility)
     
     modelName = Opts.ModelName
     calibrationFile = Opts.CalibrationFile
