@@ -5,6 +5,7 @@ Macro "Reports" (Args)
     RunMacro("VOC Maps", Args)
     RunMacro("Speed Maps", Args)
     RunMacro("Count PRMSEs", Args)
+    RunMacro("Summarize Links", Args)
     return(1)
 endmacro
 
@@ -491,7 +492,7 @@ Macro "Count PRMSEs" (Args)
   opts.class_field = "HCMType"
   opts.area_field = "AreaType"
   opts.median_field = "HCMMedian"
-  opts.screenline_field = "Scr_Line"
+  opts.screenline_field = "Screenline"
   opts.volume_breaks = {10000, 25000, 50000, 100000}
   opts.out_dir = Args.[Output Folder] + "/_reports/roadway_tables"
   RunMacro("Roadway Count Comparison Tables", opts)
@@ -506,3 +507,40 @@ Macro "Count PRMSEs" (Args)
 //   opts.screenline_field = "Screenline"
 //   RunMacro("Roadway Count Comparison Tables", opts)
 endmacro
+
+/*
+Summarize highway stats like VMT and VHT
+*/
+
+Macro "Summarize Links" (Args)
+
+  hwy_dbd = Args.HighwayDatabase
+  periods = {"AM", "PM", "OP", "Daily"}
+
+  opts.hwy_dbd = hwy_dbd
+  out_dir = Args.[Output Folder]
+  for period in periods do
+    
+    if period = "Daily"
+      then total = "Total"
+      else total = "Tot"
+    
+    opts.summary_fields = {total + "_Flow_" + period, total + "_VMT_" + period, total + "_VHT_" + period, total + "_Delay_" + period}
+    grouping_fields = {"AreaType"}
+    for grouping_field in grouping_fields do
+      opts.output_file = out_dir + "/_reports/roadway_tables/Link_Summary_by_FT_and_" + grouping_field + "_" + period + ".bin"
+      opts.grouping_fields = {"HCMType", grouping_field}
+      RunMacro("Link Summary", opts)
+      // Calculate space-mean-speed
+      tbl = CreateObject("Table", opts.output_file)
+      v_vmt = tbl.("sum_" + total + "_VMT_" + period)
+      v_vht = tbl.("sum_" + total + "_VHT_" + period)
+      tbl.AddField({
+        FieldName: "SpaceMeanSpeed",
+        Description: "Space-mean speed (VMT / VHT)"
+      })
+      tbl.SpaceMeanSpeed = v_vmt / v_vht
+      tbl = null
+    end
+  end
+EndMacro

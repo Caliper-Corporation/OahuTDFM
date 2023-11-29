@@ -1747,7 +1747,7 @@ Inputs (all in a named array)
     * String
     * Full path of the line geographic file of highway links. This should be the
     * "loaded" network, such that the assignment results are included.
-  * `output_csv`
+  * `output_file`
     * String
     * Full path where the output csv will be written
   * `grouping_fields`
@@ -1766,40 +1766,34 @@ Macro "Link Summary" (MacroOpts)
 
   // Extract arguments from named array
   hwy_dbd = MacroOpts.hwy_dbd
-  output_csv = MacroOpts.output_csv
+  output_file = MacroOpts.output_file
   grouping_fields = MacroOpts.grouping_fields
-  if TypeOf(grouping_fields) = "string" then grouping_fields = {grouping_fields}
-  ft_field = MacroOpts.ft_field
   summary_fields = MacroOpts.summary_fields
   filter = MacroOpts.filter
 
   // Argument checking
   if hwy_dbd = null then Throw("'hwy_dbd' not provided")
-  if output_csv = null then Throw("'output_csv' not provided")
+  if output_file = null then Throw("'output_file' not provided")
   if grouping_fields = null then Throw("'grouping_fields' not provided")
+  if TypeOf(grouping_fields) = "string" then grouping_fields = {grouping_fields}
   if summary_fields = null then do
     summary_fields = {"Flow_Daily", "VMT_Daily", "VHT_Daily", "Delay_Daily"}
   end
 
-  // Open the highway link layer and read into a data frame
-  objLyrs = CreateObject("AddDBLayers", {FileName: hwy_dbd})
-  {nlyr, llyr} = objLyrs.Layers
-  hwy_df = CreateObject("df")
-  opts = null
-  opts.view = llyr
-  if grouping_fields <> null
-    then opts.fields = grouping_fields + summary_fields
-    else opts.fields = summary_fields
-  if filter <> null then opts.fields = opts.fields + {"HCMType"}
-  hwy_df.read_view(opts)
+  hwy_tbl = CreateObject("Table", {FileName: hwy_dbd, Layer: 2})
 
   // Optional filter
-  if filter <> null then hwy_df.filter(filter)
+  if filter <> null then hwy_tbl.SelectByQuery({Query: filter})
 
   // Summarize
-  if grouping_fields <> null then hwy_df.group_by(grouping_fields)
-  hwy_df.summarize(summary_fields, "sum")
-  hwy_df.write_csv(output_csv)
+  for field in summary_fields do
+    fieldstats.(field) = "sum"
+  end
+  hwy_tbl = hwy_tbl.Aggregate({
+    GroupBy: grouping_fields,
+    FieldStats: fieldstats
+  })
+  hwy_tbl.Export({FileName: output_file})
 EndMacro
 
 /*
