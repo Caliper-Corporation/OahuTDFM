@@ -659,6 +659,56 @@ Macro "Filter Transit Utility Spec"(util, activeTransitModes)
     Return(CopyArray(outUtil))
 endMacro
 
+/*
+Kyle: this is a copy of the above macro that I'm using to remove rail
+from the non-mandatory tours.
+TODO: improve the original macro to work for both mandatory and non-mandatory.
+
+Remove non active transit modes from the transit utility spec
+*/
+
+Macro "Filter Rail Utility Spec"(util)
+    commonCols = {"Description", "Expression", "Coefficient"}
+    colNames = util.Map(do (f) Return(f[1]) end)
+
+    trUtil = null
+    retainedAlts = null
+    for col in colNames do
+        if commonCols.Position(col) > 0 then do // Retain the common cols
+            trUtil.(col) = CopyArray(util.(col))
+            continue
+        end
+        
+        // Check if col is a variant of rail
+        is_rail = RunMacro("Is value in array", {"rail"}, col)
+        if !is_rail then do
+            retainedAlts = retainedAlts + {col}
+            trUtil.(col) = CopyArray(util.(col))
+        end
+    end
+
+    // Now remove rows that do not have the utilty term checked for all remaining alternatives
+    vSum = nz(a2v(trUtil.(retainedAlts[1])))
+    for i = 2 to retainedAlts.length do
+        vCol = a2v(trUtil.(retainedAlts[i]))
+        vSum = vSum + nz(vCol)
+    end
+
+    // If vSum for any row is 0, then this row can be deleted
+    outUtil = null
+    nRows = vSum.length
+    for i = 1 to nRows do
+        if vSum[i] > 0 then do
+            for col in commonCols + retainedAlts do
+                vec = trUtil.(col)
+                val = vec[i]
+                outUtil.(col) = outUtil.(col) + {val}
+            end
+        end
+    end
+    Return(CopyArray(outUtil))
+endMacro
+
 
 Macro "Is value in array"(arr, val)
     val = Lower(val)

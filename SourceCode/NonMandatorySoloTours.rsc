@@ -378,8 +378,13 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Solo_" + p + "_Destination"})
     
+    // filter out rail modes if rail is not present
+    if !railPresent then do
+        util = RunMacro("Filter Rail Utility Spec", Args.("SoloTourMode" + purpose + "Utility"))
+    end
+
     utilOpts = null
-    utilOpts.UtilityFunction = Args.("SoloTourMode" + purpose + "Utility")
+    utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<tourno>", tourNo}}
     utilOpts.AvailabilityExpressions = Args.("SoloTourMode" + purpose + "Avail")
     obj.AddUtility(utilOpts)
