@@ -353,9 +353,13 @@ Macro "Tour Mode" (Args,Result)
     }
 Data:
     InSections({"MandatoryTours|Tour Mode|Work|Modes",
-                "MandatoryTours|Tour Mode|Work|Utility",
+                "MandatoryTours|Tour Mode|Work|UtilityAuto",
+                    "MandatoryTours|Tour Mode|Work|UtilityNM",
+                    "MandatoryTours|Tour Mode|Work|UtilityPT",
                     "MandatoryTours|Tour Mode|University|Modes",
-                    "MandatoryTours|Tour Mode|University|Utility",
+                    "MandatoryTours|Tour Mode|University|UtilityAuto",
+                    "MandatoryTours|Tour Mode|University|UtilityNM",
+                    "MandatoryTours|Tour Mode|University|UtilityPT",
                     "MandatoryTours|Tour Mode|School|Modes",
                     "MandatoryTours|Tour Mode|School|Utility"})
 EndMacro
@@ -872,7 +876,7 @@ EndMacro
 
 Macro "Other Models" (Args, Result)
     Attributes = {
-        {"MacroNames", {"Airport Model"}}
+        {"MacroNames",{"Airport Model","Commercial Vehicles"}}
     }
 EndMacro
 
@@ -917,6 +921,7 @@ EndMacro
 Macro "Convergence" (Args, Result)
     Attributes = {
         {"Height", 100},
+        {"MacroName", "FeedbackConvergence"},
         {"Picture", "bmp\\planiteration_v3.bmp"},
         {"PicturePosition", "Center"},
         {"Shape", "Decision"},
@@ -925,17 +930,6 @@ Macro "Convergence" (Args, Result)
         {"FillColor",{192,96,0}},
         {"FillColor2",{192,96,0}}
     }
-Body:
-    if Args.Iteration = null then Args.Iteration = 1
-    if Args.MaxIterations = null then Args.MaxIterations = 1
-    if Args.Iteration < Args.MaxIterations then
-        retValue = 2
-    else
-        retValue = 1
-    
-    Args.Iteration = Args.Iteration + 1
-    Return(1)
-    Return(retValue)
 EndMacro
 
 

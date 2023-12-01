@@ -21,7 +21,7 @@ Macro "Model.Attributes" (Args,Result)
         {"Requires",
             {{"Program", "TransCAD"},
             {"Version", 9},
-            {"Build", 32910}}},
+            {"Build", 32930}}},
         {"ResizeImage", 1},
         {"SourceMacro", "Model.Attributes"},
         {"Time Stamp Format", "yyyyMMdd_HHmm"},
@@ -118,7 +118,7 @@ Body:
 
     // Set time period arguments
     periods = null
-    periods.AM.StartTime = 360 // 7 AM
+    periods.AM.StartTime = 360 // 6 AM
     periods.AM.EndTime = 540   // 9 AM
     periods.PM.StartTime = 900 // 3 PM
     periods.PM.EndTime = 1140  // 7 PM

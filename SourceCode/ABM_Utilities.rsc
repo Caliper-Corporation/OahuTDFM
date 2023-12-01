@@ -141,10 +141,10 @@ Macro "ABM Preprocess"(Args)
                     {Name: "UnivMode", Type: "String", Width: 12},
                     {Name: "SchoolForwardMode", Type: "String", Width: 12},
                     {Name: "SchoolReturnMode", Type: "String", Width: 12},
-                    {Name: "WorkModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|6. PTDrive|7. Other|8. SchoolBus"},
-                    {Name: "UnivModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|6. PTDrive|7. Other|8. SchoolBus"},
-                    {Name: "SchoolForwardModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|8. SchoolBus"},
-                    {Name: "SchoolReturnModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|5. PTWalk|8. SchoolBus"},
+                    {Name: "WorkModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike7. Other|8. SchoolBus|21: W_Bus|22: W_Rail|31: PNR_Bus|32: PNR_Rail|41: KNR_Bus|42: KNR_Rail"},
+                    {Name: "UnivModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike7. Other|8. SchoolBus|21: W_Bus|22: W_Rail|31: PNR_Bus|32: PNR_Rail|41: KNR_Bus|42: KNR_Rail"},
+                    {Name: "SchoolForwardModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|8. SchoolBus|21: W_Bus"},
+                    {Name: "SchoolReturnModeCode", Type: "Short", Width: 2, Description: "1. DriveAlone|2. Carpool|3. Walk|4. Bike|8. SchoolBus|21: W_Bus"},
                     {Name: "VehiclePriority", Type: "Short", Description: "A lower value indicates a higher priority of being allocated a vehicle"},
                     {Name: "VehicleAvail", Type: "Short", Description: "Temporary field that determines if a vehicle is available prior to mode choice"},
                     {Name: "VehicleUsed", Type: "Short", Description: "Temporary field that determines if a vehicle was used by this person for mode choice"},
@@ -226,7 +226,6 @@ Macro "Compute Size Variable"(opt)
             vOut = vOut + nz(vecs[i])*coeff
     end
     SetDataVector(vw + "|", outFld, vOut,)
-    obj = null
 endMacro
 
 
@@ -320,21 +319,22 @@ Macro "Fill Travel Times"(Args, spec)
     if TypeOf(spec.OField) <> "string" or TypeOf(spec.DField) <> "string" or TypeOf(spec.FillField) <> "string" then
         Throw("Options 'OField', 'DField' and 'FillField' to macro 'Fill Travel Times' need to be strings")
 
-    skimsDir = printf("%s\\output\\skims\\transit\\", {Args.[Scenario Folder]})
+    trSkimsDir = printf("%s\\output\\skims\\transit\\", {Args.[Scenario Folder]})
     
     // Define skim files: Change this spec after skims by mode are produced by the model.
+    periods = {"AM", "PM", "OP"}
     skimSpec = null
-    skimSpec.Auto.AM = {File: Args.HighwaySkimAM, Core: "Time"}
-    skimSpec.Auto.PM = {File: Args.HighwaySkimPM, Core: "Time"}
-    skimSpec.Auto.OP = {File: Args.HighwaySkimOP, Core: "Time"}
-    skimSpec.PTWalk.AM = {File: skimsDir + "AM_w_bus.mtx", Core: "Total Time"}
-    skimSpec.PTWalk.PM = {File: skimsDir + "PM_w_bus.mtx", Core: "Total Time"}
-    skimSpec.PTWalk.OP = {File: skimsDir + "OP_w_bus.mtx", Core: "Total Time"}
-    skimSpec.PTDrive.AM = {File: skimsDir + "AM_pnr_bus.mtx", Core: "Total Time"}
-    skimSpec.PTDrive.PM = {File: skimsDir + "PM_pnr_bus.mtx", Core: "Total Time"}
-    skimSpec.PTDrive.OP = {File: skimsDir + "OP_pnr_bus.mtx", Core: "Total Time"}
     skimSpec.Walk = {File: Args.WalkSkim, Core: "Time"}
     skimSpec.Bike = {File: Args.BikeSkim, Core: "Time"}
+    for p in periods do
+        skimSpec.Auto.(p) = {File: Args.("HighwaySkim" + p), Core: "Time"}
+        skimSpec.W_Bus.(p) = {File: trSkimsDir + p + "_w_bus.mtx", Core: "Total Time"}
+        skimSpec.W_Rail.(p) = {File: trSkimsDir + p + "_w_rail.mtx", Core: "Total Time"}
+        skimSpec.PNR_Bus.(p) = {File: trSkimsDir + p + "_pnr_bus.mtx", Core: "Total Time"}
+        skimSpec.PNR_Rail.(p) = {File: trSkimsDir + p + "_pnr_rail.mtx", Core: "Total Time"}
+        skimSpec.KNR_Bus.(p) = {File: trSkimsDir + p + "_knr_bus.mtx", Core: "Total Time"}
+        skimSpec.KNR_Rail.(p) = {File: trSkimsDir + p + "_knr_rail.mtx", Core: "Total Time"}
+    end
 
     // Clear values in field first
     baseFilter = printf("(%s <> null and %s <> null)", {spec.OField, spec.DField})
@@ -352,8 +352,8 @@ Macro "Fill Travel Times"(Args, spec)
     if modeFld = null then
         mainModes = {"auto"}
     else do
-        mainModes = skimSpec.Map(do(f) Return(Lower(f[1])) end) // {"auto", "walk", "bike", "ptwalk", "ptdrive"}
-        exprStr = printf("if Lower(%s) <> 'walk' and Lower(%s) <> 'bike' and Lower(%s) <> 'ptwalk' and Lower(%s) <> 'ptdrive' then 'auto' else Lower(%s)", 
+        mainModes = skimSpec.Map(do(f) Return(Lower(f[1])) end)
+        exprStr = printf("if Lower(%s) <> 'walk' and Lower(%s) <> 'bike' and !(Lower(%s) contains 'bus') and !(Lower(%s) contains 'rail') then 'auto' else Lower(%s)", 
                          {modeFld, modeFld, modeFld, modeFld, modeFld})
         modeExpr = CreateExpression(vw, "ModeGroup", exprStr,)
     end
@@ -366,9 +366,8 @@ Macro "Fill Travel Times"(Args, spec)
     pmEnd = timePeriods.PM.EndTime
     depTimeFld = spec.DepTimeField
     if depTimeFld <> null then do
-        timeAllowance = '0'
-        amQry = printf("(%s - %s >= %s and %s - %s < %s)", {depTimeFld, timeAllowance, String(amStart), depTimeFld, timeAllowance, String(amEnd)})
-        pmQry = printf("(%s - %s >= %s and %s - %s < %s)", {depTimeFld, timeAllowance, String(pmStart), depTimeFld, timeAllowance, String(pmEnd)})
+        amQry = printf("(%s >= %s and %s < %s)", {depTimeFld, String(amStart), depTimeFld, String(amEnd)})
+        pmQry = printf("(%s >= %s and %s < %s)", {depTimeFld, String(pmStart), depTimeFld, String(pmEnd)})
         exprStr = printf("if %s then 'AM' else if %s then 'PM' else 'OP'", {amQry, pmQry})
         depPeriod = CreateExpression(vw, "DepPeriod", exprStr,)
     end
@@ -540,7 +539,9 @@ endMacro
 */
 Macro "Create Assignment OD Matrices"(Args)
     RunMacro("Write ABM OD", Args)
-    //RunMacro("Add External and Truck OD", Args)
+    RunMacro("Add Visitor OD", Args)
+    RunMacro("Add Truck OD", Args)
+    RunMacro("Add Airport OD", Args)
     RunMacro("Create Daily OD Matrix", Args)
     Return(true)
 endMacro
@@ -569,7 +570,7 @@ Macro "Write ABM OD"(Args)
     odPeriod = CreateExpression(vwTrips, "ODPeriod", exprStr,)
 
     vMode = objT.Mode
-    modes = SortArray(v2a(vMode), {Unique: 'True'}) // {'drivealone', 'carpool', 'walk', 'bike', 'ptwalk', 'ptdrive', 'other', 'schoolbus'}
+    modes = SortArray(v2a(vMode), {Unique: 'True', 'Omit Missing': 'True'})
     
     mSkimObj = CreateObject("Matrix", Args.HighwaySkimAM)
     mSkimObj.SetIndex("TAZ")
@@ -591,44 +592,86 @@ Macro "Write ABM OD"(Args)
         UpdateMatrixFromView(mat, vwTrips + "|__Selection", "Origin", "Destination", GetFieldFullSpec(vwTrips, "Mode"),          
                              {GetFieldFullSpec(vwTrips, "TripCount")}, "Add", {"Missing is zero": "Yes"})
 
-        // Update 'drivealone' core to 'drivealone' + Other and remove 'Other' core. Note Carpool core already contains vehicle trips.
-        mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other)
+        // Update 'drivealone' core to 'drivealone' + 'Other' + 'nonhhauto'and remove 'Other' and 'nonhhauto' core. 
+        // Note Carpool core already contains vehicle trips.
+        mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other) + nz(mObj.nonhhauto)
         mObj.DropCores("other")
+        mObj.DropCores("nonhhauto")
         mObj = null
     end
     DestroyExpression(GetFieldFullSpec(vwTrips, odPeriod))
     DestroyExpression(GetFieldFullSpec(vwTrips, tripTime))
 endMacro
 
+Macro "Add Visitor OD" (Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    vis_dir = out_dir + "/visitors/trip_matrices"
+    periods = {"AM", "PM", "OP"}
 
-Macro "Add External and Truck OD"(Args)
-    LineDB = Args.HighwayDatabase
-    Line = CreateObject("Table", {FileName: LineDB, LayerType: "Line"})
-    Node = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
-    NodeLayer = Node.GetView()
-    
-    periods = {'AM', 'MD', 'PM', 'NT'}
-    for p in periods do
-        mObj = CreateObject("Matrix", Args.(p + "_OD"))
-        mExt = CreateObject("Matrix", Args.(p + "ExternalTrips"))
-        mExt.SetIndex("TAZ")
+    // get visitor purposes
+    factor_file = Args.VisOccupancyFactors
+    fac_tbl = CreateObject("Table", factor_file)
+    v_purp = fac_tbl.trip_type
+    v_purp = SortVector(v_purp, {Unique: "true"})
+    fac_tbl = null
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
 
-        mObj.drivealone := nz(mObj.drivealone) + nz(mExt.[DriveAlone VehicleTrips])
-        mObj.carpool := nz(mObj.carpool) + nz(mExt.[Carpool VehicleTrips])
-        mObj.LTRK := mExt.[LTRK Trips]
-        mObj.MTRK := mExt.[MTRK Trips]
-        mObj.HTRK := mExt.[HTRK Trips]
+        for vis_purp in v_purp do
+            vis_mtx_file = vis_dir + "/od_veh_trips_" + vis_purp + "_" + period + ".mtx"
+            vis_mtx = CreateObject("Matrix", vis_mtx_file)
 
-        idx = mObj.AddIndex({IndexName: "NodeID", ViewName: NodeLayer, Dimension: "Both",
-                                OriginalID: "Centroid", NewID: "ID", Filter: "Centroid <> null"})
-        mObj = null
-        mExt = null
+            od_mtx.drivealone := nz(od_mtx.drivealone) + nz(vis_mtx.sov)
+            od_mtx.carpool := nz(od_mtx.carpool) + nz(vis_mtx.hov) + nz(vis_mtx.tnc)
+            if vis_purp <> "HBW" then do
+                od_mtx.w_bus := nz(od_mtx.w_bus) + vis_mtx.bus
+                core_names = vis_mtx.GetCoreNames()
+                if core_names.position("rail") > 0
+                    then od_mtx.w_rail := nz(od_mtx.w_rail) + vis_mtx.rail
+            end
+        end
+    end
+endmacro
+
+
+Macro "Add Truck OD"(Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    cv_dir = out_dir + "/cv"
+    periods = {"AM", "PM", "OP"}
+
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+        cv_mtx_file = cv_dir + "/cv_gravity_" + period + ".mtx"
+        cv_mtx = CreateObject("Matrix", cv_mtx_file)
+
+        od_mtx.LTRK := nz(od_mtx.LTRK) + nz(cv_mtx.CV)
+        od_mtx.MTRK := nz(od_mtx.MTRK) + nz(cv_mtx.SUT)
+        od_mtx.HTRK := nz(od_mtx.HTRK) + nz(cv_mtx.MUT)
+    end
+endMacro
+
+Macro "Add Airport OD"(Args)
+    out_dir = Args.[Output Folder]
+    od_dir = out_dir + "/OD"
+    air_dir = out_dir + "/airport"
+    periods = {"AM", "PM", "OP"}
+
+    for period in periods do
+        od_mtx_file = Args.(period + "_OD")
+        od_mtx = CreateObject("Matrix", od_mtx_file)
+        air_mtx_file = air_dir + "/air_trips_od_veh_" + period + ".mtx"
+        air_mtx = CreateObject("Matrix", air_mtx_file)
+
+        od_mtx.carpool := nz(od_mtx.carpool) + nz(air_mtx.air_vis) + nz(air_mtx.air_res)
     end
 endMacro
 
 Macro "Create Daily OD Matrix"(Args)
     ret_value = 1
-    // periods = {'AM', 'MD', 'PM', 'NT'}
     periods = {'AM', 'PM', 'OP'}
     CopyFile(Args.AM_OD, Args.DAY_OD)
     day = CreateObject("Matrix", Args.DAY_OD)

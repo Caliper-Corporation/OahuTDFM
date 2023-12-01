@@ -1,0 +1,9 @@
+
+52
+"ID",I,1,4,0,10,0,,"","",,"Sum",
+"ABAMCongestedTime",R,5,8,0,12,2,,"","",,"Sum",
+"BAAMCongestedTime",R,13,8,0,12,2,,"","",,"Sum",
+"ABPMCongestedTime",R,21,8,0,12,2,,"","",,"Sum",
+"BAPMCongestedTime",R,29,8,0,12,2,,"","",,"Sum",
+"ABOPCongestedTime",R,37,8,0,12,2,,"","",,"Sum",
+"BAOPCongestedTime",R,45,8,0,12,2,,"","",,"Sum",

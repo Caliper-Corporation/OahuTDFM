@@ -57,19 +57,19 @@
                                               {Name: "Not Attend", Type: "boolean", "Align":"center"}}
                                     })
   
-  Styles.[Nesting Structure] = Pme.Table({Height: 6, Autosize: "True", Values: "Columns",
+  Styles.[Nesting Structure] = Pme.Table({Height: 10, Autosize: "True", Values: "Columns",
                                             Columns: {{Name: "Parent", Type: "string",  Fixed: "false"},
                                                       {Name: "Alternatives", Type: "string",  Fixed: "false", Width:  300},
 														                          {Name: "ParentNestCoeff", Type: "real",    Fixed: "false"}}
                                         })
 
-  Styles.[Nesting Structure S] = Pme.Table({Height: 4, Autosize: "True", Values: "Columns",
+  Styles.[Nesting Structure S] = Pme.Table({Height: 10, Autosize: "True", Values: "Columns",
                                             Columns: {{Name: "Parent", Type: "string",  Fixed: "false"},
                                                       {Name: "Alternatives", Type: "string",  Fixed: "false", Width:  300},
 														                          {Name: "ParentNestCoeff", Type: "real",    Fixed: "false"}}
                                         })
 
-  Styles.Availability = Pme.Table({Height: 10, Autosize: "True", Values: "Columns",
+  Styles.Availability = Pme.Table({Height: 15, Autosize: "True", Values: "Columns",
                                                 Columns: {{Name: "Alternative", Type: "string",  Fixed: "false", Width:  "40%"},
 														                              {Name: "Expression", Type: "string",    Fixed: "false"}}
                                 })
@@ -182,17 +182,33 @@
                                                             {Name: "9 - 18",   Type: "real",    Fixed: "false","Decimals":"4"}}
                                         })
 
-  Styles.MandModeUtility = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
+  Styles.MandModeUtilityAuto = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
                                                 Columns: {{Name: "Description", Type: "string", Width:  "15%"},
 														                              {Name: "Expression", Type: "string", Width:  "30%"},
                                                           {"Name":"Coefficient","Type":"real","Width":"10%","Decimals":"4"},
                                                           {"Name":"DriveAlone","Type":"boolean","Align":"center"},
                                                           {"Name":"Carpool","Type":"boolean","Align":"center"},
-                                                          {"Name":"Walk","Type":"boolean","Align":"center"},
-                                                          {"Name":"Bike","Type":"boolean","Align":"center"},
-                                                          {"Name":"PTWalk","Type":"boolean","Align":"center"},
-                                                          {"Name":"PTDrive","Type":"boolean","Align":"center"},
                                                           {"Name":"Other","Type":"boolean","Align":"center"}}
+                                            })
+
+  Styles.MandModeUtilityNM = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
+                                                Columns: {{Name: "Description", Type: "string", Width:  "15%"},
+														                              {Name: "Expression", Type: "string", Width:  "30%"},
+                                                          {"Name":"Coefficient","Type":"real","Width":"10%","Decimals":"4"},
+                                                          {"Name":"Walk","Type":"boolean","Align":"center"},
+                                                          {"Name":"Bike","Type":"boolean","Align":"center"}}
+                                            })
+
+  Styles.MandModeUtilityPT = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
+                                                Columns: {{Name: "Description", Type: "string", Width:  "15%"},
+														                              {Name: "Expression", Type: "string", Width:  "30%"},
+                                                          {"Name":"Coefficient","Type":"real","Width":"10%","Decimals":"4"},
+                                                          {"Name":"W_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"W_Rail","Type":"boolean","Align":"center"},
+                                                          {"Name":"PNR_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"PNR_Rail","Type":"boolean","Align":"center"},
+                                                          {"Name":"KNR_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"KNR_Rail","Type":"boolean","Align":"center"}}
                                             })
 
   Styles.SchModeUtility = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
@@ -203,8 +219,9 @@
                                                           {"Name":"Carpool","Type":"boolean","Align":"center"},
                                                           {"Name":"Walk","Type":"boolean","Align":"center"},
                                                           {"Name":"Bike","Type":"boolean","Align":"center"},
-                                                          {"Name":"PTWalk","Type":"boolean","Align":"center"},
-                                                          {"Name":"SchoolBus","Type":"boolean","Align":"center"}}
+                                                          {"Name":"W_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"SchoolBus","Type":"boolean","Align":"center"},
+                                                          {"Name":"NonHHAuto","Type":"boolean","Align":"center"}}
                                             })
 
     Styles.ModeUtilityLS = Pme.Table({Height: 13, MaxRows: 12, Values: "Columns",  
@@ -214,7 +231,7 @@
                                               {Name: "Carpool",   Type: "real",    Fixed: "false"},
                                               {Name: "Walk",   Type: "real",    Fixed: "false"},
                                               {Name: "Bike",   Type: "real",    Fixed: "false"},
-                                              {Name: "Bus",   Type: "real",    Fixed: "false"},
+                                              {Name: "W_Bus",   Type: "real",    Fixed: "false"},
                                               {Name: "Other",   Type: "real",    Fixed: "false"}}
                                   })
 
@@ -236,6 +253,14 @@
                                 Columns:    {{Name: "Industry", Type: "real",  Fixed: "false", Width:  "10%"},
                                             {Name: "Description", Type: "string",  Fixed: "false", Width:  "55%"},
                                             {Name: "Attractions Field",   Type: "string",    Fixed: "false"}}
+                            })
+
+    Styles.SizeVar2 = Pme.Table({Height: 13, Autosize: "True", Values: "Columns", 
+                                Columns:    {{Name: "Industry", Type: "real",  Fixed: "false", Width:  "10%"},
+                                            {Name: "Description", Type: "string",  Fixed: "false", Width:  "55%"},
+                                            {Name: "Attractions Field",   Type: "string",    Fixed: "false"},
+                                            {Name: "Coefficient",   Type: "real",    Fixed: "false"}
+                                            }
                             })
 
    Styles.DestUtilityWithFilter = Pme.Table({Height: 21, Autosize: "True", Values: "Columns",
@@ -350,7 +375,7 @@
                                                             {Name: "IJ",   Type: "boolean",    Fixed: "false"}}
                                     })
 
-    Styles.JointTourFreqUtility = Pme.Table({Height: 20, Autosize: "True", Values: "Columns", 
+    Styles.JointTourFreqUtility = Pme.Table({Height: 25, Autosize: "True", Values: "Columns", 
                                                 Columns:    {{Name: "Description", Type: "string",  Fixed: "false", Width:  "20%"},
 															                              {Name: "Expression", Type: "string",  Fixed: "false", Width:  "30%"},
                                                             {Name: "Coefficient", Type: "real", Width: "10%", Decimals:"4"},
@@ -435,7 +460,8 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                             })
 
@@ -454,7 +480,7 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"}}
                                                 })
 
   Styles.NMStopsDurUtility = Pme.Table({Height: 21, Autosize: "True", Values: "Columns", 
@@ -527,7 +553,8 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                             })
 
@@ -539,7 +566,7 @@
                                                             {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "PTWalk",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "W_Bus",   Type: "boolean",    Fixed: "false"}}
                                             })
 
   Styles.PctSlider  = Pme.RealSlider({Min: 0.0, Max: 100.0})

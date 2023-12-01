@@ -1,8 +1,7 @@
 ABM_Utilities.rsc
 LongTermChoices.rsc
 Accessibilities.rsc
-Initialization.rsc
-Skimming.rsc
+Network Calculations.rsc
 ModeDestinationAccessibilities.rsc
 MandatoryTours.rsc
 MandatoryStops.rsc
@@ -19,17 +18,17 @@ NonMandatoryStops.rsc
 TimeManager.rsc
 NonresidentDistribution.rsc
 HighwayAssignment.rsc
-../src/utils/utils.rsc
-../src/utils/RoadwayProjectManagement.rsc
-../src/utils/TransitProjectManagement.rsc
-../src/utils/mc.rsc
-../src/CreateScenario.rsc
-../src/Network Calculations.rsc
-../src/Oahu Steps.rsc
-../src/PopulationSynthesis.rsc
-../src/Skimming.rsc
-../src/Visitors.rsc
-../src/utils/NestedDC.rsc
-../src/Airport.rsc
-../src/TransitAssignment.rsc
-../src/Reports.rsc
+Commercial Vehicles.rsc
+utils/utils.rsc
+utils/RoadwayProjectManagement.rsc
+utils/TransitProjectManagement.rsc
+utils/mc.rsc
+utils/df.rsc
+utils/NestedDC.rsc
+CreateScenario.rsc
+PopulationSynthesis.rsc
+Skimming.rsc
+Visitors.rsc
+Airport.rsc
+TransitAssignment.rsc
+Reports.rsc

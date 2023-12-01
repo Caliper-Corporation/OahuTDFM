@@ -3,7 +3,7 @@ Macro "Calibrate DriverLicense"(Args)
     opts = null
     opts.ModelName = "DriverLicense"
     opts.MacroName = "Driver License"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\DriverLicense.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\LongTerm\\DriverLicense.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -12,7 +12,7 @@ Macro "Calibrate AutoOwnership"(Args)
     opts = null
     opts.ModelName = "AutoOwnership"
     opts.MacroName = "Auto Ownership"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\AutoOwnership.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\LongTerm\\AutoOwnership.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -21,7 +21,7 @@ Macro "Calibrate WorkerCategory"(Args)
     opts = null
     opts.ModelName = "WorkerCategory"
     opts.MacroName = "Worker Category"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\WorkerCategory.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\LongTerm\\WorkerCategory.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -30,7 +30,7 @@ Macro "Calibrate DaycareStatus"(Args)
     opts = null
     opts.ModelName = "Daycare Participation"
     opts.MacroName = "Daycare Participation"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\DaycareStatus.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\LongTerm\\DaycareStatus.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -39,7 +39,7 @@ Macro "Calibrate UniversityStatus"(Args)
     opts = null
     opts.ModelName = "Univ Participation"
     opts.MacroName = "Univ Participation"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\UniversityStatus.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\LongTerm\\UniversityStatus.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -49,7 +49,7 @@ Macro "Calibrate WorkTourFreq"(Args)
     opts = null
     opts.ModelName = "Work Tours Frequency"
     opts.MacroName = "Work Tours Frequency"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\WorkTourFrequency.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\WorkTourFrequency.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -58,7 +58,7 @@ Macro "Calibrate UnivTourFreq"(Args)
     opts = null
     opts.ModelName = "Univ Tours Frequency"
     opts.MacroName = "Univ Tours Frequency"
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\UnivTourFrequency.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\UnivTourFrequency.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -79,7 +79,7 @@ Macro "Calibrate FTWorkDuration"(Args)
                         Utility: Args.FTWorkDurUtility,
                         ChoiceField: "Work1_DurChoice",
                         RandomSeed: 1499977}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\FullTimeWorkDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\FullTimeWorkDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -99,7 +99,7 @@ Macro "Calibrate PTWorkDuration"(Args)
                         Utility: Args.PTWorkDurUtility,
                         ChoiceField: "Work1_DurChoice",
                         RandomSeed: 1899983}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\PartTimeWorkDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\PartTimeWorkDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -119,7 +119,7 @@ Macro "Calibrate UnivDuration"(Args)
                         Utility: Args.UnivDurUtility,
                         ChoiceField: "Univ1_DurChoice",
                         RandomSeed: 1699993}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\UnivDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\UnivDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -139,7 +139,7 @@ Macro "Calibrate SchoolDuration"(Args)
                         Utility: Args.SchDurUtility,
                         ChoiceField: "School_DurChoice",
                         RandomSeed: 2099963}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\SchoolDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\SchoolDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -161,7 +161,7 @@ Macro "Calibrate FTWorkStart"(Args)
                         Utility: Args.FTWorkStartUtility,
                         ChoiceField: "Work1_StartInt",
                         RandomSeed: 2199979} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\FullTimeWorkStart.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\FullTimeWorkStart.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -182,7 +182,7 @@ Macro "Calibrate PTWorkStart"(Args)
                         Utility: Args.PTWorkStartUtility,
                         ChoiceField: "Work1_StartInt",
                         RandomSeed: 2699999}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\PartTimeWorkStart.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\PartTimeWorkStart.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -203,7 +203,7 @@ Macro "Calibrate UnivStart"(Args)
                         Utility: Args.UnivStartUtility,
                         ChoiceField: "Univ1_StartInt",
                         RandomSeed: 2399993}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\UnivStart.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\UnivStart.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -223,7 +223,7 @@ Macro "Calibrate SchoolStart"(Args)
                         Utility: Args.SchStartUtility,
                         ChoiceField: "School_StartInt",
                         RandomSeed: 2899997}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\SchoolStart.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\SchoolStart.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -240,7 +240,7 @@ Macro "Calibrate WorkStopsFreq"(Args)
                         ChoicesField: "StopsChoice",
                         RandomSeed: 3599969,
                         LeaveDataOpen: 1} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\WorkStopsFrequency.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryStops\\WorkStopsFrequency.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -257,7 +257,7 @@ Macro "Calibrate UnivStopsFreq"(Args)
                         ChoicesField: "StopsChoice",
                         RandomSeed: 3699961,
                         LeaveDataOpen: 1} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\UnivStopsFrequency.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryStops\\UnivStopsFrequency.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -273,7 +273,7 @@ Macro "Calibrate WorkStopsDuration"(Args)
                        ToursView: objTours.GetView(),
                        RandomSeed: 4099992,
                        LeaveDataOpen: 1} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\WorkStopsDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryStops\\WorkStopsDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -289,7 +289,7 @@ Macro "Calibrate UnivStopsDuration"(Args)
                        ToursView: objTours.GetView(),
                        RandomSeed: 4100102,
                        LeaveDataOpen: 1} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\UnivStopsDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryStops\\UnivStopsDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -302,7 +302,7 @@ Macro "Calibrate SubTourFrequency"(Args)
     opts.ModelName = "SubTour Choice"
     opts.MacroName = "Eval Sub Tour Choice"
     opts.MacroArgs = {ToursView: objTours.GetView(), LeaveDataOpen: 1}
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\SubTourFrequency.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\SubTours\\SubTourFrequency.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -325,7 +325,7 @@ Macro "Calibrate SubTourDuration"(Args)
                         ChoiceField: "SubTourActDurInt",
                         RandomSeed: 4399987,
                         LeaveDataOpen: 1} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\SubTourDuration.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\SubTours\\SubTourDuration.bin"
     RunMacro("Calibrate Model", Args, opts)
 endMacro
 
@@ -353,8 +353,268 @@ Macro "Calibrate SubTourStart"(Args)
                         ChoiceField: "SubTourActStartInt",
                         RandomSeed: 4499969,
                         LeaveDataOpen: 1} 
-    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\SubTourStart.bin"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\SubTours\\SubTourStart.bin"
     RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate SubTourMode"(Args)
+    objTours = CreateObject("Table", Args.MandatoryTours)
+
+    // Sub Tour Models calibration
+    opts = null
+    opts.ModelName = "SubTour Mode"
+    opts.MacroName = "SubTour Mode"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\SubTours\\SubTourMode.bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate PatternChoice"(Args)
+    opts = null
+    opts.ModelName = "SubPattern"
+    opts.MacroName = "Sub Pattern Choice"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\PatternChoice\\PatternChoice.bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JTFreq"(Args)
+    opts = null
+    opts.ModelName = "JointTours Frequency"
+    opts.MacroName = "JointTours Frequency"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_Frequency.bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JT Composition"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update 
+    tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
+    TimeManager = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    opts = null
+    opts.ModelName = "JointTours " + purp + " Composition"
+    opts.MacroName = "JointTours Composition"
+    opts.MacroArgs = {abmManager: abm, ModelType: p}
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_Composition_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JT Participation Adult"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update
+    tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
+    TimeManager = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    freqFld = "Joint_" + p + "_nAdults"
+    filter = "Age < 18 and " + freqFld + " > 0 and " + freqFld + " < Adults"
+    macroArgs = {Purpose: purp,
+                 PersonType: 'Adult',
+                 Filter: filter,
+                 UtilityFunction: Args.("Participation" + purp + "AdultsUtility"),
+                 ProbabilityField: "Probability_" + p + "_Adult",
+                 TourNo: 1,
+                 abmManager: abm
+                 }
+    
+    opts = null
+    opts.ModelName = "JT Adult " + purp + " Participation"
+    opts.MacroName = "Participation Probability Model"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_ParticipationAdult_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JT Participation Child"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
+    TimeManager = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    freqFld = "Joint_" + p + "_nKids"
+    filter = "Age < 18 and " + freqFld + " > 0 and " + freqFld + " < Kids"
+    macroArgs = {Purpose: purp,
+                 PersonType: 'Child',
+                 Filter: filter,
+                 UtilityFunction: Args.("Participation" + purp + "KidsUtility"),
+                 ProbabilityField: "Probability_" + purp + "_Child",
+                 TourNo: 1,
+                 abmManager: abm
+                 }
+    
+    opts = null
+    opts.ModelName = "JT Child " + purp + " Participation"
+    opts.MacroName = "Participation Probability Model"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_ParticipationChild_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JT Duration"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update 
+    tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
+    tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    macroArgs = {ModelType: p, abmManager: abm, TimeManager: tm}
+
+    opts = null
+    opts.ModelName = "Joint Tours Duration " + purp
+    opts.MacroName = "JointTours Duration"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_Duration_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JT StartTime"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update 
+    tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
+    tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    macroArgs = {ModelType: p, abmManager: abm, TimeManager: tm, LeaveDataOpen: 1}
+
+    opts = null
+    opts.ModelName = "Joint Tours StartTime " + purp
+    opts.MacroName = "JointTours StartTime"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\JointTours\\JointTours_StartTime_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate JT Mode"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update 
+    tmOpts =  {abmManager: abm, Type: 'Joint', Purpose: purp}
+    tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
+    opts = {Type: "Joint_" + purp, 
+            Category: "Joint_" + purp, 
+            Filter: "Joint_" + p + "_Composition <> null and Joint_" + p + "_Destination <> null"}
+    RunMacro("Calibrate NonMandatory MC", Args, opts)
+endMacro
+
+
+Macro "Calibrate NM StopFrequency"(Args, Opts)
+    abm = RunMacro("Get ABM Manager", Args)
+    type = Opts.Type
+    p = Opts.Purpose
+    macroArgs = {Type: type, Purpose: p, abmManager: abm, LeaveDataOpen: 1}
+
+    opts = null
+    opts.ModelName = p + " " + type + " Stops Frequency"
+    opts.MacroName = "Discretionary Stops Freq Eval"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = printf("%s\\Calibration\\NonMandatory\\%sTourStops\\%sTourStops_Frequency_%s.bin", 
+                                    {Args.[Scenario Folder], type, type, p})
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate NM StopDuration"(Args, Opts)
+    abm = RunMacro("Get ABM Manager", Args)
+    type = Opts.Type
+    p = Opts.Purpose
+    objT = CreateObject("Table", Args.("NonMandatory" + type + "Tours"))
+    filter = printf("ReturnStop > 0 and TourPurpose = '%s'", {p})
+
+    macroArgs = {Type: type, 
+                    Purpose: p, 
+                    Direction: 'Return', 
+                    abmManager: abm,
+                    ToursObj: objT,
+                    IntegerChoiceField: "ReturnStopDurChoice",
+                    Filter: filter,
+                    LeaveDataOpen: 1}
+
+    opts = null
+    opts.ModelName = type + "Stops_" + p + "_R Duration"
+    opts.MacroName = "Stops Duration Eval"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = printf("%s\\Calibration\\NonMandatory\\%sTourStops\\%sTourStops_Duration_%s.bin", 
+                                    {Args.[Scenario Folder], type, type, p})
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate SoloFreq"(Args)
+    opts = null
+    opts.ModelName = "SoloTours Frequency"
+    opts.MacroName = "SoloTours Frequency"
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\SoloTours\\SoloTours_Frequency.bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate Solo Duration"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update
+    tmOpts =  {abmManager: abm, Type: 'Solo', Purpose: purp}
+    tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts) 
+
+    macroArgs = {ModelType: p, abmManager: abm, TimeManager: tm}
+    opts = null
+    opts.ModelName = "Solo Tours Duration " + purp
+    opts.MacroName = "SoloTours Duration"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\SoloTours\\SoloTours_Duration_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate Solo StartTime"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    tm = RunMacro("Get Time Manager", abm)
+    purp = Left(p, Stringlength(p) - 1)
+    
+    // Make sure to use the time manager to update
+    tmOpts =  {abmManager: abm, Type: 'Solo', Purpose: purp}
+    tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    macroArgs = {ModelType: p, abmManager: abm, TimeManager: tm, LeaveDataOpen: 1}
+    opts = null
+    opts.ModelName = "Solo Tours StartTime " + purp
+    opts.MacroName = "SoloTours StartTime"
+    opts.MacroArgs = macroArgs
+    opts.CalibrationFile = Args.[Scenario Folder] + "\\Calibration\\NonMandatory\\SoloTours\\SoloTours_StartTime_" + purp + ".bin"
+    RunMacro("Calibrate Model", Args, opts)
+endMacro
+
+
+Macro "Calibrate Solo Mode"(Args, p)
+    abm = RunMacro("Get ABM Manager", Args)
+    purp = Left(p, Stringlength(p) - 1)
+
+    // Make sure to use the time manager to update 
+    tmOpts =  {abmManager: abm, Type: 'Solo', Purpose: purp}
+    tm = RunMacro("Init TimeManager for Calibration", Args, tmOpts)
+
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
+    opts = {Type: "Solo_" + purp, 
+            Category: "Solo_" + purp, 
+            Filter: "Solo_" + p + "_Destination <> null"}
+    RunMacro("Calibrate NonMandatory MC", Args, opts)
 endMacro
 
 
@@ -362,6 +622,9 @@ Macro "Calibrate Model"(Args, Opts)
     abm = RunMacro("Get ABM Manager", Args)
     objT = CreateObject("Table", Args.AccessibilitiesOutputs)
     objDC = CreateObject("Table", Args.MandatoryDestAccessibility)
+
+    if GetFileInfo(Args.NonMandatoryDestAccessibility) then
+        objDCNM = CreateObject("Table", Args.NonMandatoryDestAccessibility)
     
     modelName = Opts.ModelName
     calibrationFile = Opts.CalibrationFile
@@ -385,12 +648,25 @@ Macro "Calibrate Model"(Args, Opts)
     // Call macro to Adjust ASC
     RunMacro("Calibrate ASCs", Opts, modelSpec)
 
+    RunMacro("Export ABM Data", Args, {Overwrite: 1})
+
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
+
+    // Close all other views
+    vws = GetViews()
+    if vws <> null then do
+        for vw in vws[1] do
+            CloseView(vw)
+        end
+    end
+    
     // Open calibration file in an editor
     shared d_edit_options
     pth = SplitPath(calibrationFile)
     vw = OpenTable("Table", "FFB", {calibrationFile})
     ed = CreateEditor(pth[3], vw + "|",,d_edit_options)
-    
+
     Return(1)
 endMacro
 
@@ -511,13 +787,330 @@ Macro "Generate Model Shares"(alts, outFile, isAggregate, shares)
 endMacro
 
 
-// ***** Generic macros used by all calibration macros *****
+/* 
+    The calibration of the mandatory tour mode choice requires special handling because:
+    A. The models are split by time period, although only overall target shares are available.
+    B. Mode choice has a lot of dependencies based on previous mode choice decisions. For example,
+       before calibrating the univ choice model, the work choice models have to be calibrated and run.
+       The vehicle availability for the higherEd model for example depends on work mode choices.
+*/ 
+Macro "Calibrate Mandatory MC"(Args, mSpec)
+    type = mSpec.Type
+    dir = mSpec.Direction
+    abm = RunMacro("Get ABM Manager", Args)
+    mSpec.abmManager = abm
+
+    objT = CreateObject("Table", Args.AccessibilitiesOutputs)
+    objD = CreateObject("Table", Args.DemographicOutputs)
+
+    periods = null
+    periods.AM.StartTime = 360 // 6 AM
+    periods.AM.EndTime = 540   // 9 AM
+    periods.PM.StartTime = 900 // 3 PM
+    periods.PM.EndTime = 1140  // 7 PM
+    Args.TimePeriods = periods
+
+    // First run the mandatory model until the required point
+    // The flag set while calling this macro will quit the macro at the correct location (i.e. after the previous MC model has finished)
+    RunMacro("Mandatory Mode Choice", Args)
+
+    if type <> 'School' then
+        RunMacro("Vehicle Allocation", mSpec)
+    
+    if type = 'School' and dir <> 'Return' then
+        RunMacro("School Carpool Eligibility", abm)
+
+    // Evaluate mode choice first to get all the model specs
+    RunMacro("Evaluate Mode Choice", Args, mSpec)
+
+    // Start loop for model ASC adjustments
+    calibrationFile = Args.[Scenario Folder] + "\\Calibration\\Mandatory\\MandatoryTours\\" + type + dir + "_MC.bin"
+    RunMacro("Calibrate MC ASCs", Args, mSpec, calibrationFile)
+
+    shared d_edit_options
+    pth = SplitPath(calibrationFile)
+    vw = OpenTable("Table", "FFB", {calibrationFile})
+    ed = CreateEditor(pth[3], vw + "|",,d_edit_options)
+
+    Return(1)
+endMacro
+
+
+Macro "Calibrate NonMandatory MC"(Args, mSpec)
+    type = mSpec.Type
+    parts = ParseString(type, "_ ")
+    nmType = parts[1] // 'Joint' or 'Solo'
+    purp = parts[2] + "1" // 'Other1' or 'Shop1'
+
+    abm = RunMacro("Get ABM Manager", Args)
+    mSpec.abmManager = abm
+
+    periods = null
+    periods.AM.StartTime = 360 // 6 AM
+    periods.AM.EndTime = 540   // 9 AM
+    periods.PM.StartTime = 900 // 3 PM
+    periods.PM.EndTime = 1140  // 7 PM
+    Args.TimePeriods = periods
+
+    // Evaluate mode choice first to get all the model specs
+    RunMacro(nmType + "Tours Mode", Args, {ModelType: purp, abmManager: abm})
+
+    // Start loop for model ASC adjustments
+    calibrationFile = printf("%s\\Calibration\\NonMandatory\\%sTours\\%sTours_MC_%s.bin", 
+                                {Args.[Scenario Folder], nmType, nmType, parts[2]})
+    RunMacro("Calibrate MC ASCs", Args, mSpec, calibrationFile)
+
+    shared d_edit_options
+    pth = SplitPath(calibrationFile)
+    vw = OpenTable("Table", "FFB", {calibrationFile})
+    ed = CreateEditor(pth[3], vw + "|",,d_edit_options)
+
+    RunMacro("ReleaseSingleton", "ABM_Manager")
+    RunMacro("ReleaseSingleton", "ABM.TimeManager")
+    Return(1)
+endMacro
+
+
+/* 
+    Macro to calibrate ASCs for the mandatory MC models.
+    There are three mdl files to handle (as opposed to one)
+
+    The loop for the ASC adjustment:
+    A. Gets the initial ASCs
+    B. Run three choice models, once for each period with appropriate selection set
+    C. Combine results from all three models to get model shares
+    D. Calculate the ASC adjustments
+    E. Update ASCs of all three models
+*/ 
+Macro "Calibrate MC ASCs"(Args, mSpec, calibrationFile)
+    periods = {"AM", "PM", "OP"}
+    type = mSpec.Type
+    category = mSpec.Category
+    dir = mSpec.Direction
+
+    // Get initial ASCs, create calibration file
+    if !GetFileInfo(calibrationFile) then
+        Throw("Calibration file for " + modelName + " not found in the 'Calibration' folder.")
+
+    objTable = CreateObject("AddTables", {TableName: calibrationFile})
+    vwC = objTable.TableView
+    vecs = GetDataVectors(vwC + "|", {'Alternative', 'TargetShare'}, {OptArray: 1})
+
+    alts = v2a(vecs.Alternative)    
+    targets = v2a(vecs.TargetShare)
+    thresholds = targets.Map(do (f) Return(0.02*f) end)
+    
+    // Add output fields
+    modify = CreateObject("CC.ModifyTableOperation", vwC)
+    modify.FindOrAddField("InitialShare", "Real", 12, 2,)
+    modify.FindOrAddField("InitialASC", "Real", 12, 4,)
+    modify.FindOrAddField("AdjustedShare", "Real", 12, 2,)
+    modify.FindOrAddField("AdjustedASC", "Real", 12, 4,)
+    modify.Apply()
+
+    // Copy input model files into output model files
+    for p in periods do
+        tag = category + "_" + p + "_Mode" + dir
+        modelSpec = Args.(tag + " Spec")
+        isAggregate = modelSpec.isAggregateModel
+        if modelSpec = null then
+            continue
+        inputModel = modelSpec.ModelFile
+        pth = SplitPath(inputModel)
+        outputModel = pth[1] + pth[2] + pth[3] + "_out" + pth[4]
+        outputModels.(p) = outputModel
+        CopyFile(inputModel, outputModel)
+    end
+    
+    dim shares[alts.length]
+    convergence = 0
+    iters = 0
+    max_iters = 20
+
+    // Get Initial ASCs (from any one of the time period models)
+    initialAscs = RunMacro("GetASCs", outputModels[1][2], alts)
+    
+    pbar = CreateObject("G30 Progress Bar", "Calibration Iterations...", true, max_iters)
+    while convergence = 0 and iters <= max_iters do
+        // Run Model
+        outFiles = RunMacro("Evaluate MC Models", Args, mSpec, outputModels)
+        if outFiles = null then
+            Throw("Evaluating models for calibration failed")
+            
+        // Get Model Shares
+        RunMacro("Generate MC Model Shares", alts, outFiles, isAggregate, &shares)
+        if iters = 0 then
+            initialShares = CopyArray(shares)
+
+        // Check convergence
+        convergence = RunMacro("Convergence", shares, targets, thresholds)
+        if convergence = null then
+            Throw("Error in checking convergence")
+            
+        // Modify Model ASCs for next loop
+        if convergence = 0 then
+            RunMacro("Modify MC Models", outputModels, alts, shares, targets)
+
+        iters = iters + 1
+
+        if pbar.Step() then
+            Return()
+    end
+    pbar.Destroy()
+
+    // Get Final ASCs
+    finalAscs = RunMacro("GetASCs", outputModels[1][2], alts)
+
+    vecsSet = null
+    vecsSet.InitialShare = a2v(initialShares)
+    vecsSet.AdjustedShare = a2v(shares)
+    vecsSet.InitialASC = a2v(initialAscs)
+    vecsSet.AdjustedASC = a2v(finalAscs)
+    SetDataVectors(vwC + "|", vecsSet,)
+
+    if convergence = 0 then
+        ShowMessage("ASC Adjustment did not converge after " + i2s(max_iters) + " iterations")
+    else
+        ShowMessage("ASC Adjustment converged after " + i2s(iters) + " iterations")
+
+    // Open calibration file in an editor
+    /*shared d_edit_options
+    pth = SplitPath(calibrationFile)
+    vw = OpenTable("Table", "FFB", {calibrationFile})
+    ed = CreateEditor(pth[3], vw + "|",,d_edit_options)*/
+endMacro
+
+
+/* 
+    Loop over periods, run the mandatory MC models and return an option array of output probability files.  
+*/ 
+Macro "Evaluate MC Models"(Args, mSpec, outputModels)
+    periods = {"AM", "PM", "OP"}
+    type = mSpec.Type
+    category = mSpec.Category
+    dir = mSpec.Direction
+    filter = mSpec.Filter
+    abm = mSpec.AbmManager
+    vwPHH = abm.PersonHHView
+    
+    purp = type 
+    if (Lower(type) <> 'school') then
+        purp = type + "1"
+
+    // Create Dep Time Fields
+    timePeriods = Args.TimePeriods
+    amStart = timePeriods.AM.StartTime
+    amEnd = timePeriods.AM.EndTime
+    pmStart = timePeriods.PM.StartTime
+    pmEnd = timePeriods.PM.EndTime
+
+    if type contains 'Solo' or type contains 'Joint' then
+        depTimeExpr = printf("%s_StartTime", {purp})
+    else if dir = 'Return' then
+        depTimeExpr = printf("%s_StartTime + %s_Duration", {purp, purp})
+    else
+        depTimeExpr = printf("%s_StartTime - HomeTo%sTime", {purp, type})
+    
+    depTime = CreateExpression(vwPHH, "DepTime", depTimeExpr,)
+    amQry = printf("(%s >= %s and %s < %s)", {depTime, String(amStart), depTime, String(amEnd)})
+    pmQry = printf("(%s >= %s and %s < %s)", {depTime, String(pmStart), depTime, String(pmEnd)})
+    exprStr = printf("if %s then 'AM' else if %s then 'PM' else 'OP'", {amQry, pmQry})
+    depPeriod = CreateExpression(vwPHH, "DepPeriod", exprStr,)
+
+    // Evaluate each period model, one at a time
+    outFiles = null
+    for p in periods do
+        // Get Model details
+        tag = category + "_" + p + "_Mode" + dir
+        modelSpec = Args.(tag + " Spec")
+        outputModel = outputModels.(p)
+
+        // Open Matrix Sources
+        for src in modelSpec.MatrixSources do
+            mObjs.(src.Label) = CreateObject("Matrix", src.FileName)
+        end
+
+        // Make appropriate selection set (only for Mandatory mode choice models)
+        todFilter = printf("%s = '%s'", {depPeriod, p})
+        finalFilter = printf("(%s) and (%s)", {filter, todFilter})
+        
+        SetView(vwPHH)
+        n = SelectByQuery("___Selection", "several", "Select * where " + finalFilter,)
+        if n = 0 then
+            goto next_period
+
+        // Run model
+        outFiles.(p) = RunMacro("Evaluate Model", modelSpec, outputModel)
+     
+     next_period:
+    end
+    DestroyExpression(GetFieldFullSpec(vwPHH, depPeriod))
+    DestroyExpression(GetFieldFullSpec(vwPHH, depTime))
+
+    Return(outFiles)
+endMacro
+
+
+Macro "Generate MC Model Shares"(alts, outFiles, isAggregate, shares)
+    periods = {"AM", "PM", "OP"}
+
+    shares = shares.Map(do (f) Return(0) end)
+    if isAggregate then do
+        for p in periods do
+            outFile = outFiles.(p)
+            if !GetFileInfo(outFile) then
+                continue
+            m = OpenMatrix(outFile,)
+            cores = GetMatrixCoreNames(m)
+            stats = MatrixStatistics(m,)
+            for i = 1 to alts.length do
+                shares[i] = shares[i] + nz(stats.(alts[i]).Sum)
+            end
+            m = null
+        end
+    end
+    else do
+        for p in periods do
+            dmP = CreateObject("DataManager")
+            outFile = outFiles.(p)
+            if !GetFileInfo(outFile) then
+                continue
+            vwP = dmP.AddDataSource("Prob" + p, {FileName: outFile})
+            probFlds = alts.Map(do (f) Return("[" + f + " Probability]") end)
+            vecs = GetDataVectors(vwP + "|", probFlds,)
+            for i = 1 to vecs.length do // Note vecs array same length as alts
+                shares[i] = shares[i] + VectorStatistic(vecs[i], "Sum",)
+            end
+        end
+    end
+
+    tSum = Sum(shares)
+    if tSum = 0 then
+        Throw("Mode Choice calibration failed. Model shares are all zero.")
+    shares = shares.Map(do (f) Return(f*100/tSum) end)
+    dmP = null
+endMacro
+
+
+Macro "Modify MC Models"(outputModels, alts, shares, targets)
+    periods = {"AM", "PM", "OP"}
+    for p in periods do
+        outputModel = outputModels.(p)
+        if !GetFileInfo(outputModel) then
+            continue
+        RunMacro("Modify Model", outputModel, alts, shares, targets)
+    end
+endMacro
+
+
+// ******************** Generic macros used by all calibration macros ********************
 // Run Model. Uses the modelSpec array. Note that all relevant files are open at this point.
 Macro "Evaluate Model"(modelSpec, outputModel)
     isAggregate = modelSpec.isAggregateModel
 
     o = CreateObject("Choice.Mode")
     o.ModelFile = outputModel
+    o.UtilityScaling = "By Parent Theta"
     
     if isAggregate then do
         probFile = GetRandFileName("Probability*.mtx")
@@ -557,7 +1150,7 @@ Macro "Modify Model"(model_file, alts, shares, targets)
 
     for i = 1 to alts.length do
         alt = seg.GetAlternative(alts[i])
-        if targets[i] > 0 then
+        if shares[i] > 0 and targets[i] > 0 then
             alt.ASC.Coeff = nz(alt.ASC.Coeff) + 0.5*log(targets[i]/shares[i])
         model.Write(model_file)
     end
@@ -579,4 +1172,31 @@ Macro "GetASCs"(model_file, alts)
 
     model.Clear()
     Return(ascs)         
+endMacro
+
+
+Macro "Init TimeManager for Calibration"(Args, opts) //{abmManager: abm, Type: 'Joint' or 'Solo', Purpose: 'Other' or 'Shop'}
+    abm = opts.abmManager
+    TimeManager = RunMacro("Get Time Manager", abm)
+
+    if Lower(opts.Type) = 'joint' then do
+        TimeManager.LoadTimeUseMatrix({MatrixFile: Args.MandTimeUseMatrix})
+
+        if Lower(opts.Purpose) = 'shop' then do
+            spec = {ModelType: 'Other1', abmManager: abm, TimeManager: TimeManager}
+            RunMacro("JT Update TimeManager", Args, spec)
+        end
+    end
+    else if Lower(opts.Type) = 'solo' then do
+        TimeManager.LoadTimeUseMatrix({MatrixFile: Args.JointTimeUseMatrix})
+
+        if Lower(opts.Purpose) = 'shop' then do
+            spec = {ModelType: 'Other1', abmManager: abm, TimeManager: TimeManager}
+            RunMacro("Solo Update TimeManager", Args, spec)
+        end
+    end
+    else
+        Throw("Option 'Type' sent to 'Init TimeManager for Calibration' is neither 'Joint' nor 'Solo'")
+
+    Return(TimeManager)
 endMacro

@@ -105,6 +105,14 @@ create_pa <- attach_tazs %>%
 create_pa %>%
   group_by(AccMode) %>%
   summarize(count = n())
+
+create_pa %>%
+  group_by(EgrMode) %>%
+  summarize(count = n())
+
+create_pa %>%
+  group_by(HHVeh) %>%
+  summarize(count = n())
 ```
 
 
@@ -116,10 +124,10 @@ test_assn <- create_pa %>%
   filter(!is.na(AccMode)) %>%
   group_by(AccMode, DAYPART, ProdTAZ, AttrTAZ) %>%
   summarize(weight = sum(WeightLinked))
-write_csv(test_assn, "data/_private/obs_survey/output/test_assignment.csv")  
+write_csv(test_assn, "data/_private/obs_survey/output/test_assignment.csv", na = "")  
 ```
 
 ```{r, eval=FALSE}
-write_csv(create_pa, "data/_private/obs_survey/output/output_obs.csv")
+write_csv(create_pa, "data/_private/obs_survey/output/output_obs.csv", na = "")
 ```
 

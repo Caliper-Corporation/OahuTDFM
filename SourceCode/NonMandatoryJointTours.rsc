@@ -84,12 +84,13 @@ endMacro
 //=================================================================================================
 Macro "JointTours Frequency"(Args)
     abm = RunMacro("Get ABM Manager", Args)
+    objDC = CreateObject("Table", Args.NonMandatoryDestAccessibility)
 
     // Run Model for all HH whose SubPattern contains J and populate output fields
     obj = CreateObject("PMEChoiceModel", {ModelName: "Joint Tours Frequency"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursFrequency.mdl"
     obj.AddTableSource({SourceName: "HH", View: abm.HHView, IDField: abm.HHID})
-    obj.AddTableSource({SourceName: "DCLogsums", File: Args.NonMandatoryDestAccessibility, IDField: "TAZID"})
+    obj.AddTableSource({SourceName: "DCLogsums", View: objDC.GetView(), IDField: "TAZID"})
     obj.AddPrimarySpec({Name: "HH", Filter: "Lower(SubPattern) contains 'j'", OField: "TAZID"})
     obj.AddUtility({UtilityFunction: Args.JointTourFrequencyUtility})
     obj.AddOutputSpec({ChoicesField: "JointTourPattern"})
@@ -98,7 +99,7 @@ Macro "JointTours Frequency"(Args)
     ret = obj.Evaluate()
     if !ret then
         Throw("Model Run failed for Joint Tours Frequency")
-    Args.[Joint Tours Frequency Spec] = CopyArray(ret)
+    Args.[JointTours Frequency Spec] = CopyArray(ret)
     obj = null
 
     // Writing the choice from JointTourPattern into number of other and shop tours
@@ -633,8 +634,10 @@ Macro "JointTours StartTime"(Args, spec)
                 MinimumDuration: 10,
                 RandomSeed: 5502175 + 6*id}
     RunMacro("NonMandatory Activity Time", Args, JtOpts)
-    CloseView(vwJ)
-    objA = null
+    if !spec.LeaveDataOpen then do
+        CloseView(vwJ)
+        objA = null
+    end
 
     // Fill Activity end time (used in setting avails)
     setInfo = abm.CreateHHSet({Filter: HHFilter, Activate: 1})
@@ -694,21 +697,37 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     purpose = MCOpts.Purpose
     tod = MCOpts.TimePeriod
     abm = MCOpts.abmManager
-    modelName = "Joint Tours Mode " + purpose
+    modelName = "Joint_" + purpose + "_" + tod + "_Mode"
     ptSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
+
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+    railPresent = RunMacro("Is value in array", activeTransitModes, "Rail")
+    if railPresent then do
+        WalkRailSkimFile = printf("%s\\output\\skims\\transit\\%s_w_rail.mtx", {Args.[Scenario Folder], tod})
+    end
     
     obj = null
-    obj = CreateObject("PMEChoiceModel", {SourcesObject: Args.SourcesObject, ModelName: modelName})
-    obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursMode" + purpose + ".mdl"
+    obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
+    obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursMode" + purpose + tod + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-    obj.AddMatrixSource({SourceName: "PTSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "W_BusSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    if railPresent then do
+        obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    end
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddTableSource({SourceName: "TAZData", View: objTAZ.GetView(), IDField: "TAZ"})
     obj.AddTableSource({SourceName: "HH", View: abm.HHView, IDField: abm.HHID})
     obj.AddPrimarySpec({Name: "HH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Joint_" + p + "_Destination"})
     
+    // filter out rail modes if rail is not present
+    if !railPresent then do
+        util = RunMacro("Filter Rail Utility Spec", Args.("JointTourMode" + purpose + "Utility"))
+    end
+
     utilOpts = null
-    utilOpts.UtilityFunction = Args.("JointTourMode" + purpose + "Utility")
+    utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<purp>", p}}
     utilOpts.AvailabilityExpressions = Args.("JointTourMode" + purpose + "Avail")
     obj.AddUtility(utilOpts)
@@ -928,10 +947,10 @@ Macro "NonMandatory Activity Time"(Args, Opts)
     // Simulate time after choice of interval is made
     simFld = Opts.SimulatedTimeField
     if simFld <> null then do
-        if primarySpec.Name = "HH" then
-            set = abm.CreateHHSet({Filter: filter, Activate: 1})
-        else
+        if primarySpec.Name contains "Person" then
             set = abm.CreatePersonSet({Filter: filter, Activate: 1, UsePersonHHView: 1})
+        else
+            set = abm.CreateHHSet({Filter: filter, Activate: 1})
 
         if set.Size > 0 then do
             // Simulate duration in minutes for duration choice predicted above
@@ -948,10 +967,10 @@ Macro "NonMandatory Activity Time"(Args, Opts)
     minDur = Opts.MinimumDuration
     if minDur > 0 then do
         qry = printf("(%s) and (%s < %s)", {filter, Opts.SimulatedTimeField, string(minDur)})
-        if primarySpec.Name = "HH" then
-            set = abm.CreateHHSet({Filter: qry, Activate: 1})
-        else
+        if primarySpec.Name contains "Person" then
             set = abm.CreatePersonSet({Filter: qry, Activate: 1, UsePersonHHView: 1})
+        else
+            set = abm.CreateHHSet({Filter: qry, Activate: 1})
         
         if set.Size > 0 then do
             v = Vector(set.Size, "Long", {{"Constant", minDur}})

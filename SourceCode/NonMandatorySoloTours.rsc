@@ -63,12 +63,13 @@ endMacro
 //==================================================================================================
 Macro "SoloTours Frequency"(Args)
     abm = RunMacro("Get ABM Manager", Args)
+    objDC = CreateObject("Table", Args.NonMandatoryDestAccessibility)
 
     // Run Model for all HH whose SubPattern contains J and populate output fields
     obj = CreateObject("PMEChoiceModel", {ModelName: "Joint Tours Frequency"})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SoloToursFrequency.mdl"
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
-    obj.AddTableSource({SourceName: "DCLogsums", File: Args.NonMandatoryDestAccessibility, IDField: "TAZID"})
+    obj.AddTableSource({SourceName: "DCLogsums", View: objDC.GetView(), IDField: "TAZID"})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: "Lower(SubPattern) contains 'i'", OField: "TAZID"})
     obj.AddUtility({UtilityFunction: Args.SoloTourFrequencyUtility, AvailabilityExpressions: Args.SoloTourFreqAvailability})
     obj.AddOutputSpec({ChoicesField: "SoloTourPattern"})
@@ -77,7 +78,7 @@ Macro "SoloTours Frequency"(Args)
     ret = obj.Evaluate()
     if !ret then
         Throw("Model Run failed for Joint Tours Frequency")
-    Args.[Joint Tours Frequency Spec] = CopyArray(ret)
+    Args.[SoloTours Frequency Spec] = CopyArray(ret)
     obj = null
     
     // Writing the choice from SoloTourPattern into number of other and shop tours
@@ -288,8 +289,10 @@ Macro "SoloTours StartTime"(Args, spec)
                 MinimumDuration: 10,
                 RandomSeed: 6099983 + StringLength(p) + s2i(tourNo)}
     RunMacro("NonMandatory Activity Time", Args, StOpts)
-    CloseView(vwJ)
-    objA = null
+    if !spec.LeaveDataOpen then do
+        CloseView(vwJ)
+        objA = null
+    end
 
     // Fill Activity end time (used in setting avails)
     setInfo = abm.CreatePersonSet({Filter: tourFilter, Activate: 1})
@@ -351,21 +354,37 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     tod = MCOpts.TimePeriod
     abm = MCOpts.abmManager
     tourNo = Right(p,1)
-    modelName = "Solo Tours Mode " + purpose
+    modelName = "Solo_" + purpose + "_" + tod + "_Mode"
     ptSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
+    objTAZ = CreateObject("Table", Args.DemographicOutputs)
+
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+    railPresent = RunMacro("Is value in array", activeTransitModes, "Rail")
+    if railPresent then do
+        WalkRailSkimFile = printf("%s\\output\\skims\\transit\\%s_w_rail.mtx", {Args.[Scenario Folder], tod})
+    end
 
     obj = null
     obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
-    obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SoloToursMode" + purpose + ".mdl"
+    obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SoloToursMode" + purpose + tod + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
-    obj.AddMatrixSource({SourceName: "PTSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddMatrixSource({SourceName: "W_BusSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    if railPresent then do
+        obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    end
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    obj.AddTableSource({SourceName: "TAZData", View: objTAZ.GetView(), IDField: "TAZ"})
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Solo_" + p + "_Destination"})
     
+    // filter out rail modes if rail is not present
+    if !railPresent then do
+        util = RunMacro("Filter Rail Utility Spec", Args.("SoloTourMode" + purpose + "Utility"))
+    end
+
     utilOpts = null
-    utilOpts.UtilityFunction = Args.("SoloTourMode" + purpose + "Utility")
+    utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<tourno>", tourNo}}
     utilOpts.AvailabilityExpressions = Args.("SoloTourMode" + purpose + "Avail")
     obj.AddUtility(utilOpts)
