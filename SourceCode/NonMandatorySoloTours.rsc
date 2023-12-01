@@ -358,19 +358,33 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     ptSkimFile = printf("%s\\output\\skims\\transit\\%s_w_bus.mtx", {Args.[Scenario Folder], tod})
     objTAZ = CreateObject("Table", Args.DemographicOutputs)
 
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+    railPresent = RunMacro("Is value in array", activeTransitModes, "Rail")
+    if railPresent then do
+        WalkRailSkimFile = printf("%s\\output\\skims\\transit\\%s_w_rail.mtx", {Args.[Scenario Folder], tod})
+    end
+
     obj = null
     obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SoloToursMode" + purpose + tod + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "W_BusSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    if railPresent then do
+        obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    end
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddTableSource({SourceName: "TAZData", View: objTAZ.GetView(), IDField: "TAZ"})
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Solo_" + p + "_Destination"})
     
+    // filter out rail modes if rail is not present
+    if !railPresent then do
+        util = RunMacro("Filter Rail Utility Spec", Args.("SoloTourMode" + purpose + "Utility"))
+    end
+
     utilOpts = null
-    utilOpts.UtilityFunction = Args.("SoloTourMode" + purpose + "Utility")
+    utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<tourno>", tourNo}}
     utilOpts.AvailabilityExpressions = Args.("SoloTourMode" + purpose + "Avail")
     obj.AddUtility(utilOpts)

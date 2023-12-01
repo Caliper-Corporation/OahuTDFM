@@ -461,6 +461,7 @@
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                             })
 
@@ -553,6 +554,7 @@
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Other",   Type: "boolean",    Fixed: "false"}}
                                             })
 

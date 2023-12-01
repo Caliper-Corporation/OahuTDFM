@@ -1971,7 +1971,7 @@ Macro "Summarize Transit" (MacroOpts)
   // Get agency name and route name
   rts_bin = Substitute(scen_rts, ".rts", "R.bin", 1)
   rts = CreateObject("df", rts_bin)
-  rts.select({"Route_ID", "Route_Name", "Agency"})
+  rts.select({"Route_ID", "Route_Name"})
 
   // Summarize total ridership (total boardings)
   onoff = tables.onoff
@@ -1993,7 +1993,7 @@ Macro "Summarize Transit" (MacroOpts)
   daily.mutate("mode", "All")
   daily.mutate("period", "Daily")
   daily.left_join(rts, "route", "Route_ID")
-  daily.select({"route", "Route_Name", "Agency", "access", "mode", "period"} + cols_to_summarize)
+  daily.select({"route", "Route_Name", "access", "mode", "period"} + cols_to_summarize)
   daily.write_csv(output_dir + "/boardings_and_alightings_daily.csv")
 
   // aggregate transit flow by link and join to layer
@@ -2069,7 +2069,7 @@ Macro "Get Transit Output Tables" (transit_asn_dir)
     if Position(file, "onoff") <> 0 then do
       if onoff = null then onoff = df.copy()
       else onoff.bind_rows(df)
-    end else if Position(file, "linkflow") <> 0 then do
+    end else if Position(file, "agg") <> 0 then do
       if agg = null then agg = df.copy()
       else agg.bind_rows(df)
     end else if Position(file, "walkflow") <> 0 then do

@@ -6,6 +6,7 @@ Macro "Reports" (Args)
     RunMacro("Speed Maps", Args)
     RunMacro("Count PRMSEs", Args)
     RunMacro("Summarize Links", Args)
+    RunMacro("Transit Summary", Args)
     return(1)
 endmacro
 
@@ -543,4 +544,23 @@ Macro "Summarize Links" (Args)
       tbl = null
     end
   end
+EndMacro
+
+/*
+Summarizes transit assignment.
+*/
+
+Macro "Transit Summary" (Args)
+  
+  out_dir  = Args.[Output Folder]
+  assn_dir = out_dir + "/assignment/transit"
+  
+  opts = null
+  RunMacro("Summarize Transit", {
+    transit_asn_dir: assn_dir,
+    TransModeTable: Args.TransitModeTable,
+    output_dir: out_dir + "/_reports/transit",
+    loaded_network: Args.HighwayDatabase,
+    scen_rts: Args.TransitRoutes
+  })
 EndMacro
