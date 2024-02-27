@@ -3027,12 +3027,12 @@
 	
         Args.[Vis Hotel Occ Rate] = {
             "Type":"double",
-            "Caption":"Occupancy rate",
+            "Caption":"Hotel occupancy rate",
             "Value":0.846
         }
         Args.[Vis Condo Occ Rate] = {
             "Type":"double",
-            "Caption":"Occupancy rate",
+            "Caption":"Condo occupancy rate",
             "Value":0.846
         }
         Args.[Vis HH Occ Rate] = {
