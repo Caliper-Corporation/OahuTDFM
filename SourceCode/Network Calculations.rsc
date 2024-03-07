@@ -949,6 +949,11 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
          OnlyCombineSameMode: true,
          FreeTransfers:       2
         })
+    
+    o.ModeTimeFields({
+        DwellOn: "DwellOn",
+        DwellOff: "DwellOff"
+    })
 
     o.RouteWeights(
         {
