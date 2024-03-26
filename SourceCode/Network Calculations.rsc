@@ -169,7 +169,8 @@ Macro "Expand DTWB" (Args)
 endmacro
 
 /*
-
+Marks nodes with bus stops as KNR. Also marks KNR nodes within microtransit
+districts as MT nodes.
 */
 
 Macro "Mark KNR Nodes" (Args)
@@ -196,6 +197,56 @@ Macro "Mark KNR Nodes" (Args)
     node.ChangeSet("knr")
     node.KNR = v
 
+    // Transfer MT dist number to the TAZ layer
+    mt_exists = RunMacro("Do MT Districts Exist?", Args)
+    taz = CreateObject("Table", Args.TAZGeography)
+    taz.AddField({
+        FieldName: "MTDist",
+        Description: "The microtransit district number"
+    })
+    taz_specs = taz.GetFieldSpecs({NamedArray: TRUE})
+    se = CreateObject("Table", Args.DemographicOutputs)
+    se_specs = se.GetFieldSpecs({NamedArray: TRUE})
+    join = taz.Join({
+        Table: se,
+        LeftFields: "TAZID",
+        RightFields: "TAZ"
+    })
+    join.(taz_specs.MTDist) = join.(se_specs.MTDist)
+    join = null
+    node.AddField({
+        FieldName: "MTDist",
+        Description: "The microtransit district number"
+    })
+    // If there are no MT districts, don't bother with the rest of this macro
+    if !mt_exists then return()
+    
+    // Mark nodes within MT districts as MT nodes
+    {tlyr} = map.AddLayer({FileName: Args.TAZGeography})
+    tazs = CreateObject("Table", tlyr)
+    tazs.SelectByQuery({
+        SetName: "mt_tazs",
+        Query: "Select * where MTDist > 0"
+    })
+    SetLayer(nlyr)
+    n = SelectByVicinity ("mt_knr", "several", tlyr + "|mt_tazs", 0, {"Source And": "knr"})
+    if n = 0 then Throw("No knr nodes found in MT districts")
+    TagLayer("Value", nlyr + "|mt_knr", nlyr + ".MTDist", tlyr + "|mt_tazs", tlyr + ".MTDist")
+endmacro
+
+/*
+Determines if MT districts exist on the se data file.
+*/
+
+Macro "Do MT Districts Exist?" (Args)
+    se = CreateObject("Table", Args.DemographicOutputs)
+    v_dists = se.MTDist
+    se = null
+    v_dists = nz(v_dists)
+    v_dists = SortVector(v_dists, {Unique: TRUE})
+    if v_dists[v_dists.length] = 0
+        then return(0)
+        else return(1)
 endmacro
 
 /*
