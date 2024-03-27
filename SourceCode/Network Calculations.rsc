@@ -197,12 +197,20 @@ Macro "Mark KNR Nodes" (Args)
     node.ChangeSet("knr")
     node.KNR = v
 
-    // Transfer MT dist number to the TAZ layer
+    // Transfer MT dist info to the TAZ layer
     mt_exists = RunMacro("MT Districts Exist?", Args)
     taz = CreateObject("Table", Args.TAZGeography)
     taz.AddField({
         FieldName: "MTDist",
         Description: "The microtransit district number"
+    })
+    taz.AddField({
+        FieldName: "MTFare",
+        Description: "The microtransit district fare"
+    })
+    taz.AddField({
+        FieldName: "MTHeadway",
+        Description: "The microtransit district headway"
     })
     taz_specs = taz.GetFieldSpecs({NamedArray: TRUE})
     se = CreateObject("Table", Args.DemographicOutputs)
@@ -213,10 +221,20 @@ Macro "Mark KNR Nodes" (Args)
         RightFields: "TAZ"
     })
     join.(taz_specs.MTDist) = join.(se_specs.MTDist)
+    join.(taz_specs.MTFare) = join.(se_specs.MTFare)
+    join.(taz_specs.MTHeadway) = join.(se_specs.MTHeadway)
     join = null
     node.AddField({
         FieldName: "MTDist",
         Description: "The microtransit district number"
+    })
+    node.AddField({
+        FieldName: "MTFare",
+        Description: "The microtransit district fare"
+    })
+    node.AddField({
+        FieldName: "MTHeadway",
+        Description: "The microtransit district headway"
     })
     // If there are no MT districts, don't bother with the rest of this macro
     if !mt_exists then return()
@@ -232,21 +250,8 @@ Macro "Mark KNR Nodes" (Args)
     n = SelectByVicinity ("mt_knr", "several", tlyr + "|mt_tazs", 0, {"Source And": "knr"})
     if n = 0 then Throw("No knr nodes found in MT districts")
     TagLayer("Value", nlyr + "|mt_knr", nlyr + ".MTDist", tlyr + "|mt_tazs", tlyr + ".MTDist")
-endmacro
-
-/*
-Determines if MT districts exist on the se data file.
-*/
-
-Macro "MT Districts Exist?" (Args)
-    se = CreateObject("Table", Args.DemographicOutputs)
-    v_dists = se.MTDist
-    se = null
-    v_dists = nz(v_dists)
-    v_dists = SortVector(v_dists, {Unique: TRUE})
-    if v_dists[v_dists.length] = 0
-        then return(0)
-        else return(1)
+    TagLayer("Value", nlyr + "|mt_knr", nlyr + ".MTFare", tlyr + "|mt_tazs", tlyr + ".MTFare")
+    TagLayer("Value", nlyr + "|mt_knr", nlyr + ".MTHeadway", tlyr + "|mt_tazs", tlyr + ".MTHeadway")
 endmacro
 
 /*
@@ -748,11 +753,11 @@ macro "BuildNetworks Oahu" (Args, Result)
 
     RunMacro("BuildHighwayNetwork Oahu", Args)
     RunMacro("Check Highway Network", Args)
-    RunMacro("Create Transit Networks", Args)
     if RunMacro("MT Districts Exist?", Args) then do
         RunMacro("Create Microtransit Access Matrix", Args)
-        RunMacro("Create Microtransit Networks", Args)
+        // RunMacro("Create Microtransit Networks", Args)
     end
+    RunMacro("Create Transit Networks", Args)
     return(1)
 EndMacro
 
@@ -848,6 +853,10 @@ Macro "Create Transit Networks" (Args)
     AccessModes = Args.AccessModes
     skim_dir = Args.OutputSkims
 
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then AccessModes = ExcludeArrayElements(AccessModes, AccessModes.position("mt"), 1)
+
     objLyrs = CreateObject("AddRSLayers", {FileName: rsFile})
     rtLyr = objLyrs.RouteLayer
 
@@ -906,6 +915,12 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     skim_dir = Args.OutputSkims
     tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
 
+    // If this is microtransit access, open the parking/access matrix file
+    if acceMode = "mt" then do
+        mt_access_mtx = Args.("MTAccessMatrix" + period)
+        mt_park = CreateObject("Matrix", mt_access_mtx)
+    end
+
     o = CreateObject("Network.SetPublicPathFinder", {RS: rsFile, NetworkName: tnwFile})
 
     // define user classes
@@ -921,7 +936,7 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     transit_modes = RunMacro("Get Transit Net Def Col Names", modeTable)
     if acceMode = "w" 
         then TransModes = transit_modes
-        // if "pnr" or "knr" remove 'all'
+        // if "pnr", "knr", "mt" remove 'all'
         else TransModes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
 
     for transMode in TransModes do
@@ -941,7 +956,14 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
 
             if acceMode = "knr" 
                 then ParkFilter = ParkFilter + {"KNR = 1"}
-                else ParkFilter = ParkFilter + {"PNR = 1"}
+            if acceMode = "pnr" 
+                then ParkFilter = ParkFilter + {"PNR = 1"}
+            if acceMode = "mt" then do
+                // ParkFilter = ParkFilter + {"MTDist <> null"}
+                ParkTimeMatrix = ParkTimeMatrix + {mt_park.TotalTime}
+                ParkCostMatrix = ParkCostMatrix + {mt_park.Fare}
+                ParkDistanceMatrix = ParkDistanceMatrix + {mt_park.Distance}
+            end
         end // else (if acceMode)
     end // for transMode
 
@@ -953,6 +975,9 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     DrvOpts.PermitAllWalk = PermitAllW
     DrvOpts.AllowWalkAccess = AllowWacc
     DrvOpts.ParkingNodes = ParkFilter
+    DrvOpts.ParkTimeMatrix = ParkTimeMatrix
+    DrvOpts.ParkCostMatrix = ParkCostMatrix
+    DrvOpts.ParkDistanceMatrix = ParkDistanceMatrix
     if period = "PM" then
         o.DriveEgress(DrvOpts)
     else
@@ -1064,9 +1089,16 @@ Macro "Create Microtransit Access Matrix" (Args)
     periods = {"AM", "PM", "OP"}
     
     se = CreateObject("Table", Args.DemographicOutputs)
-    mt_ids = se.MTDist
-    mt_fare = se.MTFare
-    mt_headway = se.MTHeadway
+    centroid_mt_ids = se.MTDist
+    se = null
+    nodes = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
+    nodes.SelectByQuery({
+        SetName: "mt",
+        Query: "MTDist <> null"
+    })
+    node_mt_ids = nodes.MTDist
+    node_mt_fare = nodes.MTFare
+    node_mt_headway = nodes.MTHeadway
 
     for period in periods do
         netfile = net_dir + "/highwaynet_" + period + ".net"
@@ -1076,7 +1108,7 @@ Macro "Create Microtransit Access Matrix" (Args)
         obj.LoadNetwork (netfile)
         obj.LayerDB = LineDB
         obj.Origins ="Centroid <> null"
-        obj.Destinations = "Centroid <> null"
+        obj.Destinations = "MTDist <> null"
         obj.Minimize = skimvar
         obj.AddSkimField({"Length", "All"})
         obj.OutputMatrix({MatrixFile: out_file, Matrix: "Microtransit Access Matrix"})
@@ -1084,15 +1116,12 @@ Macro "Create Microtransit Access Matrix" (Args)
         m = CreateObject("Matrix", out_file)
         m.RenameCores({CurrentNames: {"Length (Skim)"}, NewNames: {"Distance"}})
         m.AddCores({"Fare", "Headway", "TotalTime", "OrigDist", "DestDist", "IntraDist"})
-        mt_fare.rowbased = "false"
-        m.Fare := mt_fare
-        mt_headway.rowbased = "false"
-        m.Headway := mt_headway
+        m.Fare := node_mt_fare
+        m.Headway := node_mt_headway
         m.TotalTime := m.Time + m.Headway
-        mt_ids.rowbased = "false"
-        m.OrigDist := mt_ids
-        mt_ids.rowbased = "true"
-        m.DestDist := mt_ids
+        centroid_mt_ids.rowbased = "false"
+        m.OrigDist := centroid_mt_ids
+        m.DestDist := node_mt_ids
         m.IntraDist := if m.OrigDist = m.DestDist then 1 else 0
         m.IntraDist := if m.OrigDist = null then null else m.IntraDist
         m.IntraDist := if m.DestDist = null then null else m.IntraDist

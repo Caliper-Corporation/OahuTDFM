@@ -358,7 +358,7 @@
         Args.AccessModes = {
             "Type":"hidden",
             "Value":
-            {"w","pnr","knr"}
+            {"w","pnr","knr", "mt"}
         }
         Args.TransitModeTransferTable = {
             "Type":"File",
