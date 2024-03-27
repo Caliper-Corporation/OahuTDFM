@@ -198,7 +198,7 @@ Macro "Mark KNR Nodes" (Args)
     node.KNR = v
 
     // Transfer MT dist number to the TAZ layer
-    mt_exists = RunMacro("Do MT Districts Exist?", Args)
+    mt_exists = RunMacro("MT Districts Exist?", Args)
     taz = CreateObject("Table", Args.TAZGeography)
     taz.AddField({
         FieldName: "MTDist",
@@ -238,7 +238,7 @@ endmacro
 Determines if MT districts exist on the se data file.
 */
 
-Macro "Do MT Districts Exist?" (Args)
+Macro "MT Districts Exist?" (Args)
     se = CreateObject("Table", Args.DemographicOutputs)
     v_dists = se.MTDist
     se = null
@@ -749,6 +749,10 @@ macro "BuildNetworks Oahu" (Args, Result)
     RunMacro("BuildHighwayNetwork Oahu", Args)
     RunMacro("Check Highway Network", Args)
     RunMacro("Create Transit Networks", Args)
+    if RunMacro("MT Districts Exist?", Args) then do
+        RunMacro("Create Microtransit Access Matrix", Args)
+        RunMacro("Create Microtransit Networks", Args)
+    end
     return(1)
 EndMacro
 
@@ -1046,3 +1050,65 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
   quit:
     return(ok)
 endMacro
+
+/*
+The microtransit network use an origin-to-parking matrix to restrict
+access to only those nodes within the same MT district. This creates that
+matrix.
+*/
+
+Macro "Create Microtransit Access Matrix" (Args)
+
+    LineDB = Args.HighwayDatabase
+    net_dir = Args.[Output Folder] + "/skims"
+    periods = {"AM", "PM", "OP"}
+    
+    se = CreateObject("Table", Args.DemographicOutputs)
+    mt_ids = se.MTDist
+    mt_fare = se.MTFare
+    mt_headway = se.MTHeadway
+
+    for period in periods do
+        netfile = net_dir + "/highwaynet_" + period + ".net"
+        out_file = Args.("MTAccessMatrix" + period)
+        skimvar = "Time"
+        obj = CreateObject("Network.Skims")
+        obj.LoadNetwork (netfile)
+        obj.LayerDB = LineDB
+        obj.Origins ="Centroid <> null"
+        obj.Destinations = "Centroid <> null"
+        obj.Minimize = skimvar
+        obj.AddSkimField({"Length", "All"})
+        obj.OutputMatrix({MatrixFile: out_file, Matrix: "Microtransit Access Matrix"})
+        ok = obj.Run()
+        m = CreateObject("Matrix", out_file)
+        m.RenameCores({CurrentNames: {"Length (Skim)"}, NewNames: {"Distance"}})
+        m.AddCores({"Fare", "Headway", "TotalTime", "OrigDist", "DestDist", "IntraDist"})
+        mt_fare.rowbased = "false"
+        m.Fare := mt_fare
+        mt_headway.rowbased = "false"
+        m.Headway := mt_headway
+        m.TotalTime := m.Time + m.Headway
+        mt_ids.rowbased = "false"
+        m.OrigDist := mt_ids
+        mt_ids.rowbased = "true"
+        m.DestDist := mt_ids
+        m.IntraDist := if m.OrigDist = m.DestDist then 1 else 0
+        m.IntraDist := if m.OrigDist = null then null else m.IntraDist
+        m.IntraDist := if m.DestDist = null then null else m.IntraDist
+        core_names = m.GetCoreNames()
+        for core in core_names do
+            m.(core) := m.(core) * m.IntraDist
+        end
+    end
+endmacro
+
+/*
+This creates a microtransit-to-transit network. It's similar to knr,
+but uses an origin-to-parking matrix to restrict knr access to only
+those nodes within the same MT district.
+*/
+
+Macro "Create Microtransit Networks" (Args)
+
+endmacro

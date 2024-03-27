@@ -365,6 +365,21 @@
             "Description":"Transit Mode Transfer Table",
             "Value":"%Common Folder%\\ModeTransferTable.bin"
         }
+        Args.MTAccessMatrixAM = {
+            "Type":"File",
+            "Description":"Describes which ij pairs can use the microtransit access mode for transit",
+            "Value":"%Output Folder%\\Skims\\MtAccessAM.mtx"
+        }
+        Args.MTAccessMatrixOP = {
+            "Type":"File",
+            "Description":"Describes which ij pairs can use the microtransit access mode for transit",
+            "Value":"%Output Folder%\\Skims\\MtAccessOP.mtx"
+        }
+        Args.MTAccessMatrixPM = {
+            "Type":"File",
+            "Description":"Describes which ij pairs can use the microtransit access mode for transit",
+            "Value":"%Output Folder%\\Skims\\MtAccessPM.mtx"
+        }
 	
 	Section = "GEO Scenario"
 	
