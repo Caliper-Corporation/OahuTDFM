@@ -755,7 +755,6 @@ macro "BuildNetworks Oahu" (Args, Result)
     RunMacro("Check Highway Network", Args)
     if RunMacro("MT Districts Exist?", Args) then do
         RunMacro("Create Microtransit Access Matrix", Args)
-        // RunMacro("Create Microtransit Networks", Args)
     end
     RunMacro("Create Transit Networks", Args)
     return(1)
@@ -1129,15 +1128,16 @@ Macro "Create Microtransit Access Matrix" (Args)
         for core in core_names do
             m.(core) := m.(core) * m.IntraDist
         end
+        
+        // Transpose PM matrix (which is a drive egress network)
+        if period = "PM" then do
+            t_file = Substitute(out_file, ".mtx", "_transposed.mtx", )
+            t = m.Transpose({OutputFile: t_file})
+            t = null
+            m = null
+            obj = null
+            DeleteFile(out_file)
+            RenameFile(t_file, out_file)
+        end
     end
-endmacro
-
-/*
-This creates a microtransit-to-transit network. It's similar to knr,
-but uses an origin-to-parking matrix to restrict knr access to only
-those nodes within the same MT district.
-*/
-
-Macro "Create Microtransit Networks" (Args)
-
 endmacro
