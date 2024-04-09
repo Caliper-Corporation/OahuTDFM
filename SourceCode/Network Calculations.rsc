@@ -185,7 +185,7 @@ Macro "Calculate Toll Cost" (Args)
     v_tolltype = tbl.TollType
     v_tollrate = tbl.TollRate
     v_length = tbl.Length
-    v_tollcost = v_tollrate * v_length
+    v_tollcost = nz(v_tollrate) * v_length
     tbl.TollCostSOV = if v_tolltype = "Free" then 0 else v_tollcost
     tbl.TollCostHOV = if v_tolltype = "Free" or v_tolltype = "HOT" 
         then 0 else v_tollcost

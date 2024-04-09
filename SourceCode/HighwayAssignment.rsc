@@ -56,31 +56,36 @@ Macro "Highway Assignment" (Args, periods)
             Demand: "drivealone",
             PCE: 1,
             VOI: voi,
-            ExclusionFilter: "HOV = 'HOV'"
+            ExclusionFilter: "HOV = 'HOV'",
+            LinkTollField: "TollCostSOV"
         })
         // hov
         o.AddClass({
             Demand: "carpool",
             PCE: 1,
-            VOI: voi
+            VOI: voi,
+            LinkTollField: "TollCostHOV"
         })
         // Light Trucks
         o.AddClass({
             Demand: "LTRK",
             PCE: 1,
-            VOI: voi
+            VOI: voi,
+            LinkTollField: "TollCostSOV"
         })
         // Medium Trucks
         o.AddClass({
             Demand: "MTRK",
             PCE: 1.5,
-            VOI: voi
+            VOI: voi,
+            LinkTollField: "TollCostSOV"
         })
         // Heavy Trucks
         o.AddClass({
             Demand: "HTRK",
             PCE: 2.5,
-            VOI: voi
+            VOI: voi,
+            LinkTollField: "TollCostSOV"
         })
 
         ret_value = o.Run()
