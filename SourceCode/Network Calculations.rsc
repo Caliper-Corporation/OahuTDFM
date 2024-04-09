@@ -6,6 +6,7 @@ Macro "Network Calculations" (Args)
     RunMacro("CopyDataToOutputFolder", Args)
     RunMacro("Filter Transit Modes", Args)
     RunMacro("Expand DTWB", Args)
+    RunMacro("Calculate Toll Cost", Args)
     RunMacro("Mark KNR Nodes", Args)
     RunMacro("Determine Area Type", Args)
     RunMacro("Add Cluster Info to SE Data", Args)
@@ -166,6 +167,28 @@ Macro "Expand DTWB" (Args)
     set.W = if Position(v_dtwb, "W") <> 0 then 1 else 0
     set.B = if Position(v_dtwb, "B") <> 0 then 1 else 0
     tbl.SetDataVectors({FieldData: set})
+endmacro
+
+/*
+Converts toll rates ($/mi) into the toll cost for using a link. These
+total cost fields are what is used in skimming.
+*/
+
+Macro "Calculate Toll Cost" (Args)
+
+    hwy_dbd = Args.HighwayDatabase
+
+    tbl = CreateObject("Table", {FileName: hwy_dbd, Layer: 2})
+    tbl.AddField("TollCostSOV")
+    tbl.AddField("TollCostHOV")
+
+    v_tolltype = tbl.TollType
+    v_tollrate = tbl.TollRate
+    v_length = tbl.Length
+    v_tollcost = v_tollrate * v_length
+    tbl.TollCostSOV = if v_tolltype = "Free" then 0 else v_tollcost
+    tbl.TollCostHOV = if v_tolltype = "Free" or v_tolltype = "HOT" 
+        then 0 else v_tollcost
 endmacro
 
 /*
