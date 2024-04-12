@@ -1234,7 +1234,9 @@
                 {"Female (Carpool)","PersonHH.Gender = 2",0.309,0,1,0},
                 {"Female (Other)","PersonHH.Gender = 2",1.48,0,0,1},
                 {"Low parking cost","nz(TAZDems.ParkingCost.D < 5)",0.478,1,0,0},
-                {"Low parking availability","nz(TAZDems.ParkingSpaces.D) + nz(TAZDems.FreeParkingSpaces.D) < 50",0.356,0,1,0}}
+                {"Low parking availability","nz(TAZDems.ParkingSpaces.D) + nz(TAZDems.FreeParkingSpaces.D) < 50",0.356,0,1,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.2756,1,0,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.3675,0,1,0}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|Work|UtilityNM"
@@ -1324,10 +1326,12 @@
             "Value":{
                 {"ASC (DriveAlone)","Constant",2.7665,1,0,0},
                 {"ASC (Carpool)","Constant",-0.0763,0,1,0},
-                {"ASC (Other)","Constant",-99,0,0,1},
+                {"ASC (Other)","Constant",-99.0,0,0,1},
                 {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0},
-                {"Auto Time","AutoSkim.Time",-0.0631,1,1,0}}
+                {"Auto Time","AutoSkim.Time",-0.0631,1,1,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.2366,1,0,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.3155,0,1,0}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|University|UtilityNM"

@@ -73,7 +73,13 @@ macro "HighwayNetworkSkim Oahu" (Args)
                     ViewName: NodeLayer, Dimension: "Both",
                     // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
                     OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
-            
+
+        // Fill the diagonals of the toll cores with zeroes
+        v = m.GetVector({Core: "TollCostSOV", Diagonal: "Row"})
+        m.SetVector({Core: "TollCostSOV", Vector: nz(v), Diagonal: 1})
+        
+        v = m.GetVector({Core: "TollCostHOV", Diagonal: "Row"})
+        m.SetVector({Core: "TollCostHOV", Vector: nz(v), Diagonal: 1})
     end
 
 

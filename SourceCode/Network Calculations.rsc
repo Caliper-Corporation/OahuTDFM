@@ -750,6 +750,8 @@ macro "BuildHighwayNetwork Oahu" (Args)
         netObj.AddLinkField({Name: "BikeTime", Field: {"ABBikeTime", "BABikeTime"}})
         netObj.AddLinkField({Name: "Alpha", Field: {"ABAlpha", "BAAlpha"}})
         netObj.AddLinkField({Name: "Beta", Field: {"ABBeta", "BABeta"}})
+        netObj.AddLinkField({Name: "TollCostSOV", Field: {"TollCostSOV", "TollCostSOV"}})
+        netObj.AddLinkField({Name: "TollCostHOV", Field: {"TollCostHOV", "TollCostHOV"}})
         netObj.OutNetworkName = netfile
         netObj.Run()
         
