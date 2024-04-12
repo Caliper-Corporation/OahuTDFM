@@ -1236,7 +1236,7 @@
                 {"Low parking cost","nz(TAZDems.ParkingCost.D < 5)",0.478,1,0,0},
                 {"Low parking availability","nz(TAZDems.ParkingSpaces.D) + nz(TAZDems.FreeParkingSpaces.D) < 50",0.356,0,1,0},
                 {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.2756,1,0,0},
-                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.3675,0,1,0}}
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.2756,0,1,0}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|Work|UtilityNM"
@@ -1330,7 +1330,7 @@
                 {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0},
                 {"Auto Time","AutoSkim.Time",-0.0631,1,1,0},
-                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.2366,1,0,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.3155,1,0,0},
                 {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.3155,0,1,0}}
         }
 	
@@ -2174,7 +2174,8 @@
                 {"Number Kids on Tour","HH.Joint_<purp>_nKids",0.9362,1,0,0,0,0,0},
                 {"Has Workers on Tour","HH.Joint_<purp>_HasWorkers",1.532,1,0,0,0,0,0},
                 {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",1.976,1,0,0,0,0,0},
-                {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",-1.245,1,0,0,0,0,0}}
+                {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",-1.245,1,0,0,0,0,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-1.109,1,0,0,0,0,0}}
         }
         Args.JointTourModeOtherAvail = {
             "Type":"array",
@@ -2199,7 +2200,8 @@
                 {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",1.738,1,0},
                 {"Walk Distance","WalkSkim.Distance",-7.928,0,1},
                 {"Walk Distance > 2 miles","WalkSkim.Distance > 2",-99,0,1},
-                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0}}
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-1.109,1,0}}
         }
         Args.JointTourModeShopAvail = {
             "Type":"array",
@@ -2736,7 +2738,9 @@
                 {"ActivityDuration > 3 hrs","PersonHH.Solo_Other<tourno>_Duration > 180",1.0511,0,1,0,0,0,0,0},
                 {"Parking Cost","nz(TAZData.ParkingCost.D)",-0.0525,1,0,0,0,0,0,0},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.009,0,0,0,0,1,0,0},
-                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.009,0,0,0,0,0,1,0}}
+                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.009,0,0,0,0,0,1,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.045,1,0,0,0,0,0,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.045,0,1,0,0,0,0,0}}
         }
         Args.SoloTourModeOtherAvail = {
             "Type":"array",
@@ -2778,7 +2782,9 @@
                 {"ActivityDuration (0-30) min","PersonHH.Solo_Shop<tourno>_Duration > 0 and PersonHH.Solo_Shop<tourno>_Duration < 30",0.7377,0,0,1,0,0,0,0},
                 {"Parking Cost","nz(TAZData.ParkingCost.D)",-0.0216,1,0,0,0,0,0,0},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.0037,0,0,0,0,1,0,0},
-                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.009,0,0,0,0,0,1,0}}
+                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.009,0,0,0,0,0,1,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.045,1,0,0,0,0,0,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.045,0,1,0,0,0,0,0}}
         }
         Args.SoloTourModeShopAvail = {
             "Type":"array",
