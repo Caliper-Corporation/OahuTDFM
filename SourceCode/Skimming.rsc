@@ -38,6 +38,8 @@ macro "HighwayNetworkSkim Oahu" (Args)
         obj.Destinations = "Centroid <> null"
         obj.Minimize = skimvar
         obj.AddSkimField({"Length", "All"})
+        obj.AddSkimField({"TollCostSOV", "All"})
+        obj.AddSkimField({"TollCostHOV", "All"})
         obj.OutputMatrix({MatrixFile: hwyskimfile, Matrix: "HighwaySkim"})
         ok = obj.Run()
 
@@ -62,6 +64,8 @@ macro "HighwayNetworkSkim Oahu" (Args)
 
         m = CreateObject("Matrix", hwyskimfile)
         m.RenameCores({CurrentNames: "Length (Skim)", NewNames: "Distance"})
+        m.RenameCores({CurrentNames: "TollCostSOV (Skim)", NewNames: "TollCostSOV"})
+        m.RenameCores({CurrentNames: "TollCostHOV (Skim)", NewNames: "TollCostHOV"})
         idx = m.AddIndex({IndexName: "TAZ",
                     ViewName: NodeLayer, Dimension: "Both",
                     OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
@@ -69,7 +73,13 @@ macro "HighwayNetworkSkim Oahu" (Args)
                     ViewName: NodeLayer, Dimension: "Both",
                     // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
                     OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
-            
+
+        // Fill the diagonals of the toll cores with zeroes
+        v = m.GetVector({Core: "TollCostSOV", Diagonal: "Row"})
+        m.SetVector({Core: "TollCostSOV", Vector: nz(v), Diagonal: 1})
+        
+        v = m.GetVector({Core: "TollCostHOV", Diagonal: "Row"})
+        m.SetVector({Core: "TollCostHOV", Vector: nz(v), Diagonal: 1})
     end
 
 

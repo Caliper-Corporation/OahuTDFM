@@ -359,7 +359,9 @@ Macro "Mode Choice PostProcess"(Args, spec)
     outputFld = spec.ChoiceCodeField
     vecs = abm.GetPersonVectors({inputFld})
     arrMode = v2a(vecs.(inputFld))
-    arrModeCode = arrMode.Map(do (f) Return(codeMap.(f)) end)
+    arrModeCode = arrMode.Map(do (f) 
+                                if f = null then Return(7) else Return(codeMap.(f)) 
+                                end)
     vecsSet.(outputFld) = a2v(arrModeCode)
     abm.SetPersonVectors(vecsSet)
 endMacro
