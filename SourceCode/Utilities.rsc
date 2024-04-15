@@ -13,7 +13,7 @@ Macro "Create Empty Matrix"(mSpec)
     vID = GetDataVector(vwTAZ + "|", "TAZID",)
     tazIDs = SortArray(v2a(vID))
 
-    obj = CreateObject("Matrix") 
+    obj = CreateObject("Matrix", {Empty: TRUE}) 
     obj.SetMatrixOptions({Compressed: 1, DataType: mSpec.DataType, MatrixLabel: mSpec.Label})
     obj.MatrixFileName = mSpec.OutputFile
     opts = {RowIDs: tazIDs, ColIDs: tazIDs, MatrixNames: mSpec.Cores, RowIndexName: "TAZ", ColIndexName: "TAZ"}
