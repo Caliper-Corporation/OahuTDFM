@@ -3179,6 +3179,21 @@
             "Caption":"PM External OD Matrix",
             "Value":"%Input Folder%\\ExternalTrips\\External_PM.mtx"
         }
+        Args.auto_vot = {
+            "Type":"double",
+            "Caption":"Auto value of time ($/hr)",
+            "Value":16
+        }
+        Args.mtrk_vot = {
+            "Type":"double",
+            "Caption":"Medium truck value of time ($/hr)",
+            "Value":26.82
+        }
+        Args.htrk_vot = {
+            "Type":"double",
+            "Caption":"Heavy truck value of time ($/hr)",
+            "Value":40.48
+        }
 	
 	Section = "AssignmentOutputs"
 	

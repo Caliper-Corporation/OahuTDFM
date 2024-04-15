@@ -49,13 +49,10 @@ Macro "Highway Assignment" (Args, periods)
         o.FlowTable = Args.(period + "Flows")  
         
         // Add classes for each combination of vehicle type and VOT
-
-        // TODO: set VOI for auto classes
-        voi = 1
         o.AddClass({
             Demand: "drivealone",
             PCE: 1,
-            VOI: voi,
+            VOI: Args.auto_vot,
             ExclusionFilter: "HOV = 'HOV'",
             LinkTollField: "TollCostSOV"
         })
@@ -63,28 +60,28 @@ Macro "Highway Assignment" (Args, periods)
         o.AddClass({
             Demand: "carpool",
             PCE: 1,
-            VOI: voi,
+            VOI: Args.auto_vot,
             LinkTollField: "TollCostHOV"
         })
         // Light Trucks
         o.AddClass({
             Demand: "LTRK",
             PCE: 1,
-            VOI: voi,
+            VOI: Args.auto_vot,
             LinkTollField: "TollCostSOV"
         })
         // Medium Trucks
         o.AddClass({
             Demand: "MTRK",
             PCE: 1.5,
-            VOI: voi,
+            VOI: Args.mtrk_vot,
             LinkTollField: "TollCostSOV"
         })
         // Heavy Trucks
         o.AddClass({
             Demand: "HTRK",
             PCE: 2.5,
-            VOI: voi,
+            VOI: Args.htrk_vot,
             LinkTollField: "TollCostSOV"
         })
 
