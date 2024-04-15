@@ -35,7 +35,7 @@ Macro "GenerateTransitOD" (Args)
         mODT.SetRowIndex("Rows")
         mODT.SetColIndex("Columns")
         if i = 1 then do
-            o = CreateObject("Matrix")
+            o = CreateObject("Matrix", {Empty: TRUE})
             mOut = o.CloneMatrixStructure({MatrixLabel: "TransitTrips", CloneSource: mODT.w_bus, MatrixFile: transitod, Matrices: cores })
             mo = CreateObject("Matrix", mOut)
         end
