@@ -1229,7 +1229,7 @@
                 {"W_Rail","W_RailSkim.[In-Vehicle Time] <= 60 and W_RailSkim.[Total Time] <= 90"},
                 {"PNR_Rail","PNR_RailSkim.[In-Vehicle Time] <= 60 and PNR_RailSkim.[Total Time] <= 90"},
                 {"KNR_Rail","KNR_RailSkim.[In-Vehicle Time] <= 60 and KNR_RailSkim.[Total Time] <= 90"},
-                {"MT","TAZDems.MTDist.O <> null"},
+                {"MT","TAZDems.MTDist.O <> null and TAZDems.MTDist.O = TAZDems.MTDist.D"},
                 {"MT_Bus","TAZDems.MTDist.O <> null"},
                 {"MT_Rail","TAZDems.MTDist.O <> null"},
                 {"Other","PersonHH.VehicleAvail = 0"}}
@@ -1242,19 +1242,22 @@
             "Caption":"Work Mode Utility",
             "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",3.441,1,0,0},
-                {"ASC (Carpool)","Constant",1.5921,0,1,0},
-                {"ASC (Other/TNC)","Constant",0.9884,0,0,1},
-                {"Highway Time (Auto)","AutoSkim.Time",-0.0735,1,1,0},
-                {"Highway Time (Other)","AutoSkim.Time",-0.204,0,0,1},
-                {"HH has vehicle(s) (Drive Alone)","PersonHH.Vehicles > 0",2.6,1,0,0},
-                {"HH has vehicle(s) (Carpool)","PersonHH.Vehicles > 0",2.55,0,1,0},
-                {"Female (Carpool)","PersonHH.Gender = 2",0.309,0,1,0},
-                {"Female (Other)","PersonHH.Gender = 2",1.48,0,0,1},
-                {"Low parking cost","nz(TAZDems.ParkingCost.D < 5)",0.478,1,0,0},
-                {"Low parking availability","nz(TAZDems.ParkingSpaces.D) + nz(TAZDems.FreeParkingSpaces.D) < 50",0.356,0,1,0},
-                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.2756,1,0,0},
-                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.2756,0,1,0}}
+                {"ASC (DriveAlone)","Constant",3.441,1,0,0,0},
+                {"ASC (Carpool)","Constant",1.5921,0,1,0,0},
+                {"ASC (Other/TNC)","Constant",0.9884,0,0,1,1},
+                {"Highway Time (Auto)","AutoSkim.Time",-0.0735,1,1,0,0},
+                {"Highway Time (Other)","AutoSkim.Time",-0.204,0,0,0,1},
+                {"HH has vehicle(s) (Drive Alone)","PersonHH.Vehicles > 0",2.6,1,0,0,0},
+                {"HH has vehicle(s) (Carpool)","PersonHH.Vehicles > 0",2.55,0,1,0,0},
+                {"Female (Carpool)","PersonHH.Gender = 2",0.309,0,1,0,0},
+                {"Female (Other)","PersonHH.Gender = 2",1.48,0,0,1,1},
+                {"Low parking cost","nz(TAZDems.ParkingCost.D < 5)",0.478,1,0,0,0},
+                {"Low parking availability","nz(TAZDems.ParkingSpaces.D) + nz(TAZDems.FreeParkingSpaces.D) < 50",0.356,0,1,0,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.2756,1,0,1,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.2756,0,1,0,0},
+                {"MT Fare","nz(TAZDems.MTFare.O)",-0.2756,0,0,1,0},
+                {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.0259,0,0,1,0},
+                {"MT IVTT","AutoSkim.Time",-0.0259,0,0,1,0}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|Work|UtilityNM"
@@ -1315,11 +1318,11 @@
             "Caption":"University Modes",
             "Style":"Nesting Structure",
             "Value":{
-                {"Root","DriveAlone, Carpool, Walk, Bike, Transit, Other",null},
+                {"Root","DriveAlone, Carpool, MT, Walk, Bike, Transit, Other",null},
                 {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
                 {"PT_Walk","W_Bus, W_Rail",0.5},
                 {"PT_PNR","PNR_Bus, PNR_Rail",0.5},
-                {"PT_KNR","KNR_Bus, KNR_Rail",0.5}}
+                {"PT_KNR","KNR_Bus, KNR_Rail, MT_Bus, MT_Rail",0.5}}
         }
         Args.UnivModeAvailability = {
             "Type":"array",
@@ -1335,6 +1338,9 @@
                 {"W_Rail","W_RailSkim.[Total Time] <= 90"},
                 {"PNR_Rail","PNR_RailSkim.[Total Time] <= 90"},
                 {"KNR_Rail","KNR_RailSkim.[Total Time] <= 90"},
+                {"MT","TAZDems.MTDist.O <> null and TAZDems.MTDist.O = TAZDems.MTDist.D"},
+                {"MT_Bus","TAZDems.MTDist.O <> null"},
+                {"MT_Rail","TAZDems.MTDist.O <> null"},
                 {"Other","PersonHH.VehicleAvail = 0"}}
         }
 	
@@ -1344,14 +1350,17 @@
             "Type":"array",
             "Style":"MandModeUtilityAuto",
             "Value":{
-                {"ASC (DriveAlone)","Constant",2.7665,1,0,0},
-                {"ASC (Carpool)","Constant",-0.0763,0,1,0},
-                {"ASC (Other)","Constant",-99,0,0,1},
-                {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0},
-                {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0},
-                {"Auto Time","AutoSkim.Time",-0.0631,1,1,0},
-                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.3155,1,0,0},
-                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.3155,0,1,0}}
+                {"ASC (DriveAlone)","Constant",2.7665,1,0,0,0},
+                {"ASC (Carpool)","Constant",-0.0763,0,1,0,0},
+                {"ASC (Other)","Constant",-99.0,0,0,0,1},
+                {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0,0},
+                {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0,0},
+                {"Auto Time","AutoSkim.Time",-0.0631,1,1,0,0},
+                {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.3155,1,0,1,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.3155,0,1,0,0},
+                {"MT Fare","nz(TAZDems.MTFare.O)",-0.3155,0,0,1,0},
+                {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.0259,0,0,1,0},
+                {"MT IVTT","AutoSkim.Time",-0.0259,0,0,1,0}}
         }
 	
 	Section = "MandatoryTours|Tour Mode|University|UtilityNM"
@@ -1391,7 +1400,7 @@
                 {"Low Access-Egress Time (PNR_Rail)","PNR_RailSkim.[Access Walk Time] + PNR_RailSkim.[Egress Walk Time] < 15",1.1846,0,0,0,1,0,0,0,0},
                 {"Low Access-Egress Time (KNR_Bus)","KNR_BusSkim.[Access Walk Time] + KNR_BusSkim.[Egress Walk Time] < 15",1.1846,0,0,0,0,1,0,1,0},
                 {"Low Access-Egress Time (KNR_Rail)","KNR_RailSkim.[Access Walk Time] + KNR_RailSkim.[Egress Walk Time] < 15",1.1846,0,0,0,0,0,1,0,1},
-                {"Income below 50K","PersonHH.IncomeLevel = 1",1.5234,1,1,1,1,1,1,0,0},
+                {"Income below 50K","PersonHH.IncomeLevel = 1",1.5234,1,1,1,1,1,1,1,1},
                 {"MT Fare","nz(TAZDems.MTFare.O)",-0.352,0,0,0,0,0,0,1,1},
                 {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.0259,0,0,0,0,0,0,1,1}}
         }
