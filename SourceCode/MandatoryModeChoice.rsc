@@ -551,8 +551,7 @@ Macro "Construct MC Spec"(Args, spec)
     finalAvail = null
     for i = 1 to alts.length do
         alt = alts[i]
-        present = RunMacro("Is value in array", finalAlts, alt)
-        if present then do // Keep term
+        if finalAlts.Position(alt) > 0 then do // Keep term
             finalAvail.Alternative = finalAvail.Alternative + {alt}
             finalAvail.Expression = finalAvail.Expression + {exprs[i]}
         end 
