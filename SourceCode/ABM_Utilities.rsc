@@ -595,6 +595,7 @@ Macro "Write ABM OD"(Args)
         // Update 'drivealone' core to 'drivealone' + 'Other' + 'nonhhauto'and remove 'Other' and 'nonhhauto' core. 
         // Note Carpool core already contains vehicle trips.
         mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other) + nz(mObj.nonhhauto)
+        mObj.carpool := nz(mObj.carpool) + nz(mObj.mt)
         mObj.DropCores("other")
         mObj.DropCores("nonhhauto")
         mObj = null

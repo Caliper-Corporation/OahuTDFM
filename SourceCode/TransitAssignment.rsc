@@ -11,7 +11,11 @@ endmacro
 Macro "GenerateTransitOD" (Args)
     ret_value = 1
     periods = {"AM", "PM", "OP"}
-    accessModes = {"w", "pnr", "knr"}
+    accessModes = Args.AccessModes
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then ExcludeArrayElements(accessModes, accessModes.position("mt"), 1)
+        
     transit_modes = RunMacro("Get Transit Net Def Col Names", Args.TransitModeTable)
     transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
     

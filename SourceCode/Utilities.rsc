@@ -55,11 +55,11 @@ Macro "MT Districts Exist?" (Args)
     field_names = se.GetFieldNames()
     if field_names.position("MTDist") = 0
         then return(0)
-    v_dists = se.MTDist
-    se = null
-    v_dists = nz(v_dists)
-    v_dists = SortVector(v_dists, {Unique: TRUE})
-    if v_dists[v_dists.length] = 0
+    n = se.SelectByQuery({
+        SetName: "MTDist",
+        Query: "MTDist > 0"
+    })
+    if n = 0
         then return(0)
         else return(1)
 endmacro
