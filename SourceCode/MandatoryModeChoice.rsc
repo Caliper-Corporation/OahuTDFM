@@ -293,6 +293,8 @@ Macro "Evaluate Mode Choice"(Args, spec)
             PNRRailSkimFile = printf("%s\\output\\skims\\transit\\%s_pnr_rail.mtx", {Args.[Scenario Folder], tod})
             KNRRailSkimFile = printf("%s\\output\\skims\\transit\\%s_knr_rail.mtx", {Args.[Scenario Folder], tod})
         end
+        MTBusSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_bus.mtx", {Args.[Scenario Folder], tod})
+        MTRailSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_rail.mtx", {Args.[Scenario Folder], tod})
         
         // Run Model and populate results
         tag = category + "_" + tod + "_Mode" + direction
@@ -307,10 +309,13 @@ Macro "Evaluate Mode Choice"(Args, spec)
         obj.AddMatrixSource({SourceName: "W_BusSkim", File: WalkBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "PNR_BusSkim", File: PNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "KNR_BusSkim", File: KNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        mtPresent = RunMacro("MT Districts Exist?", Args)
+        if mtPresent then obj.AddMatrixSource({SourceName: "MT_BusSkim", File: MTBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         if railPresent then do
             obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
             obj.AddMatrixSource({SourceName: "PNR_RailSkim", File: PNRRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
             obj.AddMatrixSource({SourceName: "KNR_RailSkim", File: KNRRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+            if mtPresent then obj.AddMatrixSource({SourceName: "MT_RailSkim", File: MTRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         end
         obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
