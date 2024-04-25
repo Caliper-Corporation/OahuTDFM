@@ -71,7 +71,10 @@ macro "PTAssign" (Args)
     // Get the main transit modes from the mode table. Exclude the all-transit network from assignment.
     transit_modes = RunMacro("Get Transit Net Def Col Names", Args.TransitModeTable)
     transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
-    access_modes = {"w", "pnr", "knr"}
+    access_modes = Args.AccessModes
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then access_modes = ExcludeArrayElements(access_modes, access_modes.position("mt"), 1)
     periods = {"AM", "PM", "OP"}
 
     for period in periods do
