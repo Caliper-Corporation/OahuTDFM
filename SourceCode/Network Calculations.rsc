@@ -177,18 +177,20 @@ total cost fields are what is used in skimming.
 Macro "Calculate Toll Cost" (Args)
 
     hwy_dbd = Args.HighwayDatabase
+    periods = {"AM", "PM", "OP"}
 
     tbl = CreateObject("Table", {FileName: hwy_dbd, Layer: 2})
-    tbl.AddField("TollCostSOV")
-    tbl.AddField("TollCostHOV")
-
-    v_tolltype = tbl.TollType
-    v_tollrate = tbl.TollRate
-    v_length = tbl.Length
-    v_tollcost = nz(v_tollrate) * v_length
-    tbl.TollCostSOV = if v_tolltype = "Free" then 0 else v_tollcost
-    tbl.TollCostHOV = if v_tolltype = "Free" or v_tolltype = "HOT" 
-        then 0 else v_tollcost
+    for period in periods do
+        tbl.AddField("TollCostSOV" + period)
+        tbl.AddField("TollCostHOV" + period)
+        v_tolltype = tbl.TollType
+        v_tollrate = tbl.("TollRate" + period)
+        v_length = tbl.Length
+        v_tollcost = nz(v_tollrate) * v_length
+        tbl.("TollCostSOV" + period) = if v_tolltype = "Free" then 0 else v_tollcost
+        tbl.("TollCostHOV" + period) = if v_tolltype = "Free" or v_tolltype = "HOT" 
+            then 0 else v_tollcost
+    end
 endmacro
 
 /*
@@ -809,8 +811,8 @@ macro "BuildHighwayNetwork Oahu" (Args)
         netObj.AddLinkField({Name: "BikeTime", Field: {"ABBikeTime", "BABikeTime"}})
         netObj.AddLinkField({Name: "Alpha", Field: {"ABAlpha", "BAAlpha"}})
         netObj.AddLinkField({Name: "Beta", Field: {"ABBeta", "BABeta"}})
-        netObj.AddLinkField({Name: "TollCostSOV", Field: {"TollCostSOV", "TollCostSOV"}})
-        netObj.AddLinkField({Name: "TollCostHOV", Field: {"TollCostHOV", "TollCostHOV"}})
+        netObj.AddLinkField({Name: "TollCostSOV", Field: {"TollCostSOV" + period, "TollCostSOV" + period}})
+        netObj.AddLinkField({Name: "TollCostHOV", Field: {"TollCostHOV" + period, "TollCostHOV" + period}})
         netObj.OutNetworkName = netfile
         netObj.Run()
         
