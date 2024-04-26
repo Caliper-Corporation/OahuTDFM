@@ -52,9 +52,26 @@ Macro "Create Mandatory Tour File"(Args)
     vwT = OpenTable("Tours", "FFB", {Args.MandatoryTours})
     v = GetDataVector(vwT + "|", "TourID",)
     v1 = Vector(v.length, "Long", {{"Sequence", 1, 1}})
-    
     sortOrder = {{'HID', 'Ascending'}, {'PerID', 'Ascending'}, {'ActivityStartTime', 'Ascending'}}
     SetDataVector(vwT + "|", "TourID", v1, {SortOrder: sortOrder})
+    // Flip forward/return modes for microtransit acces by TOD
+    // E.g. AM network files (tnw) are drive access. This means that any AM
+    // return trips (that are walk access and drive egress) won't get assigned
+    // properly. Change them to W_Bus/Rail. Not perfect, but this will make
+    // sure they are assigned.
+    v_fwd_mode = GetDataVector(vwT + "|", "ForwardMode",)
+    v_ret_mode = GetDataVector(vwT + "|", "ReturnMode",)
+    v_fwd_tod = GetDataVector(vwT + "|", "TODForward",)
+    v_ret_tod = GetDataVector(vwT + "|", "TODReturn",)
+    v_fwd_mode = if v_fwd_tod = "PM" and Left(Lower(v_fwd_mode), 2) = "mt" 
+        then Substitute(v_fwd_mode, "MT_", "W_", 1)
+        else v_fwd_mode
+    v_ret_mode = if (v_ret_tod = "AM" or v_ret_tod = "MD" or v_ret_tod = "NT") and Left(Lower(v_ret_mode), 2) = "mt" 
+        then Substitute(v_ret_mode, "MT_", "W_", 1) 
+        else v_ret_mode
+    SetDataVector(vwT + "|", "ForwardMode", v_fwd_mode, )
+    SetDataVector(vwT + "|", "ReturnMode", v_ret_mode, )
+        
     CloseView(vwT)
     Return(true)
 endMacro

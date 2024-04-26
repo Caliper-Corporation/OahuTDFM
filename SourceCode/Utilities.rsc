@@ -45,3 +45,21 @@ Macro "NotImplemented"(Args)
     ShowMessage("Not yet implemented")
     Return(1)
 endMacro
+
+/*
+Determines if MT districts exist on the se data file.
+*/
+
+Macro "MT Districts Exist?" (Args)
+    se = CreateObject("Table", Args.DemographicOutputs)
+    field_names = se.GetFieldNames()
+    if field_names.position("MTDist") = 0
+        then return(0)
+    n = se.SelectByQuery({
+        SetName: "MTDist",
+        Query: "MTDist > 0"
+    })
+    if n = 0
+        then return(0)
+        else return(1)
+endmacro

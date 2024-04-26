@@ -293,6 +293,8 @@ Macro "Evaluate Mode Choice"(Args, spec)
             PNRRailSkimFile = printf("%s\\output\\skims\\transit\\%s_pnr_rail.mtx", {Args.[Scenario Folder], tod})
             KNRRailSkimFile = printf("%s\\output\\skims\\transit\\%s_knr_rail.mtx", {Args.[Scenario Folder], tod})
         end
+        MTBusSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_bus.mtx", {Args.[Scenario Folder], tod})
+        MTRailSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_rail.mtx", {Args.[Scenario Folder], tod})
         
         // Run Model and populate results
         tag = category + "_" + tod + "_Mode" + direction
@@ -307,10 +309,13 @@ Macro "Evaluate Mode Choice"(Args, spec)
         obj.AddMatrixSource({SourceName: "W_BusSkim", File: WalkBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "PNR_BusSkim", File: PNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "KNR_BusSkim", File: KNRBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        mtPresent = RunMacro("MT Districts Exist?", Args)
+        if mtPresent then obj.AddMatrixSource({SourceName: "MT_BusSkim", File: MTBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         if railPresent then do
             obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
             obj.AddMatrixSource({SourceName: "PNR_RailSkim", File: PNRRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
             obj.AddMatrixSource({SourceName: "KNR_RailSkim", File: KNRRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+            if mtPresent then obj.AddMatrixSource({SourceName: "MT_RailSkim", File: MTRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         end
         obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
         obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
@@ -352,7 +357,8 @@ Macro "Mode Choice PostProcess"(Args, spec)
 
     // Attach Mode Codes
     codeMap = {DriveAlone: 1, Carpool: 2, Walk: 3, Bike: 4, Other: 7, SchoolBus: 8, NonHHAuto: 9, 
-                W_Bus: 21, W_Rail: 22, PNR_Bus: 31, PNR_Rail: 32, KNR_Bus: 41, KNR_Rail: 42}
+                W_Bus: 21, W_Rail: 22, PNR_Bus: 31, PNR_Rail: 32, KNR_Bus: 41, KNR_Rail: 42,
+                MT: 51, MT_Bus: 52, MT_Rail: 53}
     abm = spec.abmManager
     set = abm.CreatePersonSet({Filter: spec.Filter, Activate: 1})
     inputFld = spec.ChoiceField
@@ -551,8 +557,7 @@ Macro "Construct MC Spec"(Args, spec)
     finalAvail = null
     for i = 1 to alts.length do
         alt = alts[i]
-        present = RunMacro("Is value in array", finalAlts, alt)
-        if present then do // Keep term
+        if finalAlts.Position(alt) > 0 then do // Keep term
             finalAvail.Alternative = finalAvail.Alternative + {alt}
             finalAvail.Expression = finalAvail.Expression + {exprs[i]}
         end 

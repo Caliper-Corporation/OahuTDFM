@@ -188,6 +188,10 @@ Macro "transit skim" (Args)
     rsFile = Args.TransitRoutes
     skim_dir = Args.OutputSkims
 
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then access_modes = ExcludeArrayElements(access_modes, access_modes.position("mt"), 1)
+
     Line = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Line"})
     Node = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Node"})
     NodeLayer = Node.GetView()
@@ -200,7 +204,7 @@ Macro "transit skim" (Args)
         tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
         if acceMode = "w" 
             then TransModes = transit_modes
-            // if "pnr" or "knr" remove 'all'
+            // if "pnr" or "knr" or "mt" remove 'all'
             else TransModes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
 
             for transMode in TransModes do

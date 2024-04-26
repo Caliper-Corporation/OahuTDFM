@@ -597,6 +597,12 @@ Macro "Write ABM OD"(Args)
         mObj.drivealone := nz(mObj.drivealone) + nz(mObj.other) + nz(mObj.nonhhauto)
         mObj.DropCores("other")
         mObj.DropCores("nonhhauto")
+        // Add mt trips to carpool core. Instead of dropping the mt core,
+        // rename it. This will let planners easily see where MT trips are
+        // happening while avoiding confusion as to why mt isn't a class in
+        // assignment.
+        mObj.carpool := nz(mObj.carpool) + nz(mObj.mt)
+        mObj.RenameCores({CurrentNames: {"mt"}, NewNames: {"mt_added2CP"}})
         mObj = null
     end
     DestroyExpression(GetFieldFullSpec(vwTrips, odPeriod))
