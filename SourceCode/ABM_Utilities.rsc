@@ -575,6 +575,9 @@ Macro "Write ABM OD"(Args)
     mSkimObj = CreateObject("Matrix", Args.HighwaySkimAM)
     mSkimObj.SetIndex("TAZ")
     mcSkim = mSkimObj.Time
+
+    // Check if microtransit districts are defined
+    mtExists = RunMacro("MT Districts Exist?", Args)
     
     periods = {'AM', 'PM', 'OP'}
     for p in periods do
@@ -598,11 +601,13 @@ Macro "Write ABM OD"(Args)
         mObj.DropCores("other")
         mObj.DropCores("nonhhauto")
         // Add mt trips to carpool core. Instead of dropping the mt core,
-        // rename it. This will let planners easily see where MT trips are
+        // rename it. This will let modelers see where MT trips are
         // happening while avoiding confusion as to why mt isn't a class in
         // assignment.
-        mObj.carpool := nz(mObj.carpool) + nz(mObj.mt)
-        mObj.RenameCores({CurrentNames: {"mt"}, NewNames: {"mt_added2CP"}})
+        if mtExists then do
+            mObj.carpool := nz(mObj.carpool) + nz(mObj.mt)
+            mObj.RenameCores({CurrentNames: {"mt"}, NewNames: {"mt_added2CP"}})
+        end
         mObj = null
     end
     DestroyExpression(GetFieldFullSpec(vwTrips, odPeriod))
