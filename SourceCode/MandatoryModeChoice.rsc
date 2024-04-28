@@ -545,7 +545,7 @@ Macro "Construct MC Spec"(Args, spec)
         Throw("No bus mode in mode choice utility for: " + type)
 
     // Now remove non essential cols from the transit utility
-    trUtil = RunMacro("Filter Transit Utility Spec", Args.(type + "ModeUtilityPT"), activeTransitModes)
+    trUtil = RunMacro("Filter Transit Utility Spec", Args.(type + "ModeUtilityPT"), activeTransitModes, Args)
     ret = RunMacro("Append Utility", AutoNMUtil, trUtil)
     finalUtil = ret.Utility
     finalAlts = ret.Alternatives
@@ -626,7 +626,7 @@ endMacro
 
 
 // Remove non active transit modes from the transit utility spec
-Macro "Filter Transit Utility Spec"(util, activeTransitModes)
+Macro "Filter Transit Utility Spec"(util, activeTransitModes, Args)
     commonCols = {"Description", "Expression", "Coefficient"}
     colNames = util.Map(do (f) Return(f[1]) end)
 
@@ -636,6 +636,11 @@ Macro "Filter Transit Utility Spec"(util, activeTransitModes)
         if commonCols.Position(col) > 0 then // Retain the common cols
             trUtil.(col) = CopyArray(util.(col))
         
+        // Skip microtransit modes if no districts are defined
+        mtPresent = RunMacro("MT Districts Exist?", Args)
+        if !mtPresent and Left(Lower(col), 3) = "mt_" then
+            continue
+
         // Check if col is contained in the active transit modes
         retainCol = RunMacro("Is value in array", activeTransitModes, col)
         if retainCol then do
