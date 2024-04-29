@@ -561,7 +561,10 @@
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT_Rail",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT",   Type: "boolean",    Fixed: "false"}}
                                             })
 
   Styles.SoloTourModeLSUtility = Pme.Table({Height: 11, Autosize: "True", Values: "Columns", 
