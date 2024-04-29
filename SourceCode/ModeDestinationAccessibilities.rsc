@@ -37,7 +37,7 @@ Macro "NonMandatory Joint Accessibility"(Args)
             ModeGroups: modeGroups,
             OutputFile: Args.NonMandJointModeAccessOther,
             UtilityFunction: Args.JointOtherAggMCUtility,
-            Availability: Args.JointTourModeOtherAvail
+            Availability: Args.AggModeAvail
             }
     RunMacro("MC Accessibility", Args, spec)
 
@@ -73,7 +73,7 @@ Macro "NonMandatory Solo Accessibility"(Args)
                 ModeGroups: modeGroups,
                 OutputFile: Args.("NonMandSoloModeAccess" + p),
                 UtilityFunction: Args.("Solo" + p + "AggMCUtility"),
-                Availability: Args.("SoloTourMode" + p + "Avail")
+                Availability: Args.AggModeAvail
                 }
         RunMacro("MC Accessibility", Args, spec)
 

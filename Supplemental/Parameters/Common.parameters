@@ -2001,6 +2001,16 @@
                 {"Walk Skim Length","WalkSkim.Distance",-0.6549,0,1,0,0},
                 {"Bike Skim Length","BikeSkim.Distance",-1.614,0,0,1,0}}
         }
+
+        Args.AggModeAvail = {
+            "Type":"array",
+            "Caption":"Aggregate Tour Mode Availability - Solo and Joint",
+            "Style":"Availability",
+            "Value":{
+                {"Walk","WalkSkim.Distance <= 2"},
+                {"Bike","BikeSkim.Distance <= 5"},
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}
+        }}
 	
 	Section = "JointTours|Destination|Other|Size Variable"
 	
