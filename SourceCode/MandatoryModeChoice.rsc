@@ -632,14 +632,14 @@ Macro "Filter Transit Utility Spec"(util, activeTransitModes, Args)
 
     trUtil = null
     retainedAlts = null
+    mtPresent = RunMacro("MT Districts Exist?", Args)
     for col in colNames do
         if commonCols.Position(col) > 0 then // Retain the common cols
             trUtil.(col) = CopyArray(util.(col))
         
         // Skip microtransit modes if no districts are defined
-        mtPresent = RunMacro("MT Districts Exist?", Args)
-        if !mtPresent and Left(Lower(col), 3) = "mt_" then
-            continue
+        is_mt = Left(Lower(col), 2) = "mt" 
+        if is_mt and !mtPresent then continue
 
         // Check if col is contained in the active transit modes
         retainCol = RunMacro("Is value in array", activeTransitModes, col)
@@ -672,16 +672,21 @@ Macro "Filter Transit Utility Spec"(util, activeTransitModes, Args)
 endMacro
 
 /*
-Kyle: this is a copy of the above macro that I'm using to remove rail
+Kyle: this is a copy of the above macro that I'm using to filter rail/microtransit
 from the non-mandatory tours.
-TODO: improve the original macro to work for both mandatory and non-mandatory.
+TODO: create a single macro to work for both mandatory and non-mandatory.
 
 Remove non active transit modes from the transit utility spec
 */
 
-Macro "Filter Rail Utility Spec"(util)
+Macro "Filter Mode Utility Spec"(util, Args)
     commonCols = {"Description", "Expression", "Coefficient"}
     colNames = util.Map(do (f) Return(f[1]) end)
+
+    // Determine if rail and microtransit are present
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+    railPresent = RunMacro("Is value in array", activeTransitModes, "Rail")
+    mtPresent = RunMacro("MT Districts Exist?", Args)
 
     trUtil = null
     retainedAlts = null
@@ -690,13 +695,17 @@ Macro "Filter Rail Utility Spec"(util)
             trUtil.(col) = CopyArray(util.(col))
             continue
         end
-        
-        // Check if col is a variant of rail
+
+        // Skip microtransit modes if no districts are defined
+        is_mt = Left(Lower(col), 2) = "mt" 
+        if is_mt and !mtPresent then continue
+
+        // Skip rail if no rail routes in scenario
         is_rail = RunMacro("Is value in array", {"rail"}, col)
-        if !is_rail then do
-            retainedAlts = retainedAlts + {col}
-            trUtil.(col) = CopyArray(util.(col))
-        end
+        if is_rail and !railPresent then continue
+        
+        retainedAlts = retainedAlts + {col}
+        trUtil.(col) = CopyArray(util.(col))
     end
 
     // Now remove rows that do not have the utilty term checked for all remaining alternatives

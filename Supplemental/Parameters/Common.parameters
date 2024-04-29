@@ -1359,7 +1359,7 @@
             "Value":{
                 {"ASC (DriveAlone)","Constant",2.7665,1,0,0,0},
                 {"ASC (Carpool)","Constant",-0.0763,0,1,0,0},
-                {"ASC (Other)","Constant",-99.0,0,0,0,1},
+                {"ASC (Other)","Constant",-99,0,0,0,1},
                 {"HH has vehicle(s) - Drive Alone","PersonHH.Vehicles > 0",0.7151,1,1,0,0},
                 {"HH has vehicle(s) - Carpool","PersonHH.Vehicles > 0",1.1044,0,1,0,0},
                 {"Auto Time","AutoSkim.Time",-0.0631,1,1,0,0},
@@ -2202,23 +2202,27 @@
             "Caption":"Joint Tour Mode Other Utility",
             "Style":"JointTourOtherModeUtility",
             "Value":{
-                {"ASC (Auto)","Constant",3.9124,1,0,0,0,0,0},
-                {"ASC (Walk)","Constant",3.2247,0,1,0,0,0,0},
-                {"ASC (W_Transit)","Constant",2.3723,0,0,0,1,1,0},
-                {"ASC (Rail)","Constant",0.31,0,0,0,0,1,0},
-                {"ASC (Other)","Constant",-1.2456,0,0,0,0,0,1},
-                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0,0},
-                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.2218,0,0,0,0,1,0},
-                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0,0,0,0,0},
-                {"IntraTAZ Tour","HH.TAZID = HH.Joint_<purp>_Destination",2.774,0,1,0,0,0,0},
-                {"Auto Distance > 5 miles","AutoSkim.Distance > 5",2.148,1,0,0,0,0,0},
-                {"HH Income Mid","HH.IncomeLevel = 2",-0.8002,1,0,0,0,0,0},
-                {"HH Income High","HH.IncomeLevel = 3",-0.5611,1,0,0,0,0,0},
-                {"Number Kids on Tour","HH.Joint_<purp>_nKids",0.9362,1,0,0,0,0,0},
-                {"Has Workers on Tour","HH.Joint_<purp>_HasWorkers",1.532,1,0,0,0,0,0},
-                {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",1.976,1,0,0,0,0,0},
-                {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",-1.245,1,0,0,0,0,0},
-                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-1.109,1,0,0,0,0,0}}
+                {"ASC (Auto)","Constant",3.9124,1,0,0,0,0,0,0,0,0},
+                {"ASC (Walk)","Constant",3.2247,0,1,0,0,0,0,0,0,0},
+                {"ASC (W_Transit)","Constant",2.3723,0,0,0,1,1,0,0,0,0},
+                {"ASC (MT_Transit)","Constant",2.3723,0,0,0,0,0,0,1,1,0},
+                {"ASC (Rail)","Constant",0.31,0,0,0,0,1,0,0,0,0},
+                {"ASC (Other)","Constant",-1.2456,0,0,0,0,0,1,0,0,0},
+                {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0,0,0,0,0},
+                {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.2218,0,0,0,0,1,0,0,0,0},
+                {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0,0,0,0,0,0,0,0},
+                {"IntraTAZ Tour","HH.TAZID = HH.Joint_<purp>_Destination",2.774,0,1,0,0,0,0,0,0,0},
+                {"Auto Distance > 5 miles","AutoSkim.Distance > 5",2.148,1,0,0,0,0,0,0,0,0},
+                {"HH Income Mid","HH.IncomeLevel = 2",-0.8002,1,0,0,0,0,0,0,0,0},
+                {"HH Income High","HH.IncomeLevel = 3",-0.5611,1,0,0,0,0,0,0,0,0},
+                {"Number Kids on Tour","HH.Joint_<purp>_nKids",0.9362,1,0,0,0,0,0,0,0,0},
+                {"Has Workers on Tour","HH.Joint_<purp>_HasWorkers",1.532,1,0,0,0,0,0,0,0,0},
+                {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",1.976,1,0,0,0,0,0,0,0,0},
+                {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",-1.245,1,0,0,0,0,0,0,0,0},
+                {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-1.109,1,0,0,0,0,0,0,0,0},
+                {"MT Fare","nz(TAZDems.MTFare.O)",-1.2939,0,0,0,0,0,0,1,1,1},
+                {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.2218,0,0,0,0,0,0,1,1,1},
+                {"MT IVTT","AutoSkim.Time",-0.0259,0,0,0,0,0,0,0,0,1}}
         }
         Args.JointTourModeOtherAvail = {
             "Type":"array",
@@ -2227,7 +2231,10 @@
             "Value":{
                 {"Walk","WalkSkim.Distance <= 2"},
                 {"Bike","BikeSkim.Distance <= 5"},
-                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"},
+                {"MT","TAZDems.MTDist.O <> null and TAZDems.MTDist.O = TAZDems.MTDist.D"},
+                {"MT_Bus","TAZDems.MTDist.O <> null"},
+                {"MT_Rail","TAZDems.MTDist.O <> null"}}
         }
 	
 	Section = "JointTours|Mode|Shop"
