@@ -1210,9 +1210,9 @@
                 {"Auto","DriveAlone, Carpool, MT, Other",1},
                 {"NonAuto","Walk, Bike, Transit",0.688},
                 {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
-                {"PT_Walk","W_Bus, W_Rail",0.5},
+                {"PT_Walk","W_Bus, W_Rail, MT_Bus, MT_Rail",0.5},
                 {"PT_PNR","PNR_Bus, PNR_Rail",0.5},
-                {"PT_KNR","KNR_Bus, KNR_Rail, MT_Bus, MT_Rail",0.5}}
+                {"PT_KNR","KNR_Bus, KNR_Rail",0.5}}
         }
         Args.WorkModeAvailability = {
             "Type":"array",
@@ -1327,9 +1327,9 @@
             "Value":{
                 {"Root","DriveAlone, Carpool, MT, Walk, Bike, Transit, Other",null},
                 {"Transit","PT_Walk, PT_PNR, PT_KNR",0.66},
-                {"PT_Walk","W_Bus, W_Rail",0.5},
+                {"PT_Walk","W_Bus, W_Rail, MT_Bus, MT_Rail",0.5},
                 {"PT_PNR","PNR_Bus, PNR_Rail",0.5},
-                {"PT_KNR","KNR_Bus, KNR_Rail, MT_Bus, MT_Rail",0.5}}
+                {"PT_KNR","KNR_Bus, KNR_Rail",0.5}}
         }
         Args.UnivModeAvailability = {
             "Type":"array",
