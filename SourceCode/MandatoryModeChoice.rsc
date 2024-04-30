@@ -679,7 +679,7 @@ TODO: create a single macro to work for both mandatory and non-mandatory.
 Remove non active transit modes from the transit utility spec
 */
 
-Macro "Filter Mode Utility Spec"(util, Args)
+Macro "Filter NM Mode Utility Spec"(util, avail, Args)
     commonCols = {"Description", "Expression", "Coefficient"}
     colNames = util.Map(do (f) Return(f[1]) end)
 
@@ -727,7 +727,22 @@ Macro "Filter Mode Utility Spec"(util, Args)
             end
         end
     end
-    Return(CopyArray(outUtil))
+
+    // Deal with availability next
+    alts = avail.Alternative
+    exprs = avail.Expression
+    finalAvail = null
+    for i = 1 to alts.length do
+        alt = alts[i]
+        if retainedAlts.Position(alt) > 0 then do // Keep term
+            finalAvail.Alternative = finalAvail.Alternative + {alt}
+            finalAvail.Expression = finalAvail.Expression + {exprs[i]}
+        end 
+    end
+
+    util = CopyArray(outUtil)
+    avail = CopyArray(finalAvail)
+    Return({util, avail})
 endMacro
 
 

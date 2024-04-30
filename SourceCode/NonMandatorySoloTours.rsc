@@ -389,12 +389,17 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     //     else util = RunMacro("Filter Rail Utility Spec", Args.("SoloTourMode" + purpose + "Utility"))
 
     // Filter out modes that aren't present
-    util = RunMacro("Filter Mode Utility Spec", Args.("SoloTourMode" + purpose + "Utility"), Args)
+    {util, avail} = RunMacro(
+        "Filter NM Mode Utility Spec",
+        Args.("SoloTourMode" + purpose + "Utility"),
+        Args.("SoloTourMode" + purpose + "Avail"),
+        Args
+    )
 
     utilOpts = null
     utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<tourno>", tourNo}}
-    utilOpts.AvailabilityExpressions = Args.("SoloTourMode" + purpose + "Avail")
+    utilOpts.AvailabilityExpressions = avail
     obj.AddUtility(utilOpts)
 
     obj.AddOutputSpec({ChoicesField: "Solo_" + p + "_Mode"})

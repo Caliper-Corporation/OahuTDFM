@@ -732,12 +732,17 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     //     else util = RunMacro("Filter Rail Utility Spec", Args.("JointTourMode" + purpose + "Utility"))
     
     // Filter out modes that aren't present
-    util = RunMacro("Filter Mode Utility Spec", Args.("JointTourMode" + purpose + "Utility"), Args)
+    {util, avail} = RunMacro(
+        "Filter NM Mode Utility Spec",
+        Args.("JointTourMode" + purpose + "Utility"),
+        Args.("JointTourMode" + purpose + "Avail"),
+        Args
+    )
 
     utilOpts = null
     utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<purp>", p}}
-    utilOpts.AvailabilityExpressions = Args.("JointTourMode" + purpose + "Avail")
+    utilOpts.AvailabilityExpressions = avail
     obj.AddUtility(utilOpts)
     
     obj.AddOutputSpec({ChoicesField: "Joint_" + p + "_Mode"})
