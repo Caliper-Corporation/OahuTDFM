@@ -726,14 +726,9 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     obj.AddTableSource({SourceName: "HH", View: abm.HHView, IDField: abm.HHID})
     obj.AddPrimarySpec({Name: "HH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Joint_" + p + "_Destination"})
     
-    // filter out rail modes if rail is not present
-    // if railPresent 
-    //     then util = Args.("JointTourMode" + purpose + "Utility")
-    //     else util = RunMacro("Filter Rail Utility Spec", Args.("JointTourMode" + purpose + "Utility"))
-    
     // Filter out modes that aren't present
     {util, avail} = RunMacro(
-        "Filter NM Mode Utility Spec",
+        "Filter Mode Utility Spec",
         Args.("JointTourMode" + purpose + "Utility"),
         Args.("JointTourMode" + purpose + "Avail"),
         Args

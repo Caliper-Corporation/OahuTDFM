@@ -532,38 +532,27 @@ endMacro
 Macro "Construct MC Spec"(Args, spec)
     type = spec.Type
     
-    // Stitch Auto and NM utilities together
+    // Get utilities
     autoUtil = Args.(type + "ModeUtilityAuto")
     nmUtil = Args.(type + "ModeUtilityNM")
+    trUtil = Args.(type + "ModeUtilityPT")
+
+    // Stitch utilities together
     ret = RunMacro("Append Utility", autoUtil, nmUtil)
     AutoNMUtil = ret.Utility
     AutoNMAlts = ret.Alternatives
-
-    // Get the active transit modes
-    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
-    if activeTransitModes.Position('bus') = 0 then
-        Throw("No bus mode in mode choice utility for: " + type)
-
-    // Now remove non essential cols from the transit utility
-    trUtil = RunMacro("Filter Transit Utility Spec", Args.(type + "ModeUtilityPT"), activeTransitModes, Args)
     ret = RunMacro("Append Utility", AutoNMUtil, trUtil)
     finalUtil = ret.Utility
     finalAlts = ret.Alternatives
 
-    // Deal with availability next
+    // Filter utilities
     avail = Args.(type + "ModeAvailability")
-    alts = avail.Alternative
-    exprs = avail.Expression
-    finalAvail = null
-    for i = 1 to alts.length do
-        alt = alts[i]
-        if finalAlts.Position(alt) > 0 then do // Keep term
-            finalAvail.Alternative = finalAvail.Alternative + {alt}
-            finalAvail.Expression = finalAvail.Expression + {exprs[i]}
-        end 
-    end
+    {finalUtil, finalAvail} = RunMacro("Filter Mode Utility Spec", finalUtil, avail, Args)
 
     // Deal finally with the nesting structure
+    activeTransitModes = RunMacro("Get Active Transit Modes", Args)
+    if activeTransitModes.Position('bus') = 0 then
+        Throw("No bus mode in mode choice utility for: " + type)
     nests = Args.(type + "Modes")
     finalNests = CopyArray(nests)
     trMainAlts = {'PT_Walk', 'PT_PNR', 'PT_KNR'}
@@ -624,53 +613,6 @@ Macro "Append Utility"(util1, util2)
     Return({Utility: CopyArray(utilC), Alternatives: CopyArray(altsC)})
 endMacro
 
-
-// Remove non active transit modes from the transit utility spec
-Macro "Filter Transit Utility Spec"(util, activeTransitModes, Args)
-    commonCols = {"Description", "Expression", "Coefficient"}
-    colNames = util.Map(do (f) Return(f[1]) end)
-
-    trUtil = null
-    retainedAlts = null
-    mtPresent = RunMacro("MT Districts Exist?", Args)
-    for col in colNames do
-        if commonCols.Position(col) > 0 then // Retain the common cols
-            trUtil.(col) = CopyArray(util.(col))
-        
-        // Skip microtransit modes if no districts are defined
-        is_mt = Left(Lower(col), 2) = "mt" 
-        if is_mt and !mtPresent then continue
-
-        // Check if col is contained in the active transit modes
-        retainCol = RunMacro("Is value in array", activeTransitModes, col)
-        if retainCol then do
-            retainedAlts = retainedAlts + {col}
-            trUtil.(col) = CopyArray(util.(col))
-        end
-    end
-
-    // Now remove rows that do not have the utilty term checked for all remaining alternatives
-    vSum = nz(a2v(trUtil.(retainedAlts[1])))
-    for i = 2 to retainedAlts.length do
-        vCol = a2v(trUtil.(retainedAlts[i]))
-        vSum = vSum + nz(vCol)
-    end
-
-    // If vSum for any row is 0, then this row can be deleted
-    outUtil = null
-    nRows = vSum.length
-    for i = 1 to nRows do
-        if vSum[i] > 0 then do
-            for col in commonCols + retainedAlts do
-                vec = trUtil.(col)
-                val = vec[i]
-                outUtil.(col) = outUtil.(col) + {val}
-            end
-        end
-    end
-    Return(CopyArray(outUtil))
-endMacro
-
 /*
 Kyle: this is a copy of the above macro that I'm using to filter rail/microtransit
 from the non-mandatory tours.
@@ -679,7 +621,7 @@ TODO: create a single macro to work for both mandatory and non-mandatory.
 Remove non active transit modes from the transit utility spec
 */
 
-Macro "Filter NM Mode Utility Spec"(util, avail, Args)
+Macro "Filter Mode Utility Spec"(util, avail, Args)
     commonCols = {"Description", "Expression", "Coefficient"}
     colNames = util.Map(do (f) Return(f[1]) end)
 
@@ -688,11 +630,12 @@ Macro "Filter NM Mode Utility Spec"(util, avail, Args)
     railPresent = RunMacro("Is value in array", activeTransitModes, "Rail")
     mtPresent = RunMacro("MT Districts Exist?", Args)
 
-    trUtil = null
+    // Check each column in the utility spec and retain only those that are active
+    tempUtil = null
     retainedAlts = null
     for col in colNames do
         if commonCols.Position(col) > 0 then do // Retain the common cols
-            trUtil.(col) = CopyArray(util.(col))
+            tempUtil.(col) = CopyArray(util.(col))
             continue
         end
 
@@ -705,30 +648,31 @@ Macro "Filter NM Mode Utility Spec"(util, avail, Args)
         if is_rail and !railPresent then continue
         
         retainedAlts = retainedAlts + {col}
-        trUtil.(col) = CopyArray(util.(col))
+        tempUtil.(col) = CopyArray(util.(col))
     end
 
-    // Now remove rows that do not have the utilty term checked for all remaining alternatives
-    vSum = nz(a2v(trUtil.(retainedAlts[1])))
+    // Now remove rows (utility terms) that are not used in any of the
+    // retained alternatives
+    vSum = nz(a2v(tempUtil.(retainedAlts[1])))
     for i = 2 to retainedAlts.length do
-        vCol = a2v(trUtil.(retainedAlts[i]))
+        vCol = a2v(tempUtil.(retainedAlts[i]))
         vSum = vSum + nz(vCol)
     end
-
     // If vSum for any row is 0, then this row can be deleted
     outUtil = null
     nRows = vSum.length
     for i = 1 to nRows do
         if vSum[i] > 0 then do
             for col in commonCols + retainedAlts do
-                vec = trUtil.(col)
+                vec = tempUtil.(col)
                 val = vec[i]
                 outUtil.(col) = outUtil.(col) + {val}
             end
         end
     end
 
-    // Deal with availability next
+    // Deal with availability next removing rows (modes) that are not used
+    // in the utility spec
     alts = avail.Alternative
     exprs = avail.Expression
     finalAvail = null
