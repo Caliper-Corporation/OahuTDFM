@@ -2230,8 +2230,8 @@
                 {"Has Seniors on Tour","HH.Joint_<purp>_HasSeniors",1.976,1,0,0,0,0,0,0,0,0},
                 {"Number of excess people over 2 on tour","if (HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults) > 2 then HH.Joint_<purp>_nKids + HH.Joint_<purp>_nAdults - 2 else 0",-1.245,1,0,0,0,0,0,0,0,0},
                 {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-1.109,1,0,0,0,0,0,0,0,0},
-                {"MT Fare","nz(TAZDems.MTFare.O)",-1.2939,0,0,0,0,0,0,1,1,1},
-                {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.2218,0,0,0,0,0,0,1,1,1},
+                {"MT Fare","nz(TAZData.MTFare.O)",-1.2939,0,0,0,0,0,0,1,1,1},
+                {"MT Headway","nz(TAZData.MTHeadway.O)",-0.2218,0,0,0,0,0,0,1,1,1},
                 {"MT IVTT","AutoSkim.Time",-0.0259,0,0,0,0,0,0,0,0,1}}
         }
         Args.JointTourModeOtherAvail = {
@@ -2242,9 +2242,9 @@
                 {"Walk","WalkSkim.Distance <= 2"},
                 {"Bike","BikeSkim.Distance <= 5"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"},
-                {"MT","TAZDems.MTDist.O <> null and TAZDems.MTDist.O = TAZDems.MTDist.D"},
-                {"MT_Bus","TAZDems.MTDist.O <> null"},
-                {"MT_Rail","TAZDems.MTDist.O <> null"}}
+                {"MT","TAZData.MTDist.O <> null and TAZData.MTDist.O = TAZData.MTDist.D"},
+                {"MT_Bus","TAZData.MTDist.O <> null"},
+                {"MT_Rail","TAZData.MTDist.O <> null"}}
         }
 	
 	Section = "JointTours|Mode|Shop"
@@ -2802,8 +2802,8 @@
                 {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.009,0,0,0,0,0,1,0,0,0,0},
                 {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.045,1,0,0,0,0,0,0,0,0,0},
                 {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.045,0,1,0,0,0,0,0,0,0,0},
-                {"MT Fare","nz(TAZDems.MTFare.O)",-1.2939,0,0,0,0,0,0,0,1,1,1},
-                {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.2218,0,0,0,0,0,0,0,1,1,1},
+                {"MT Fare","nz(TAZData.MTFare.O)",-1.2939,0,0,0,0,0,0,0,1,1,1},
+                {"MT Headway","nz(TAZData.MTHeadway.O)",-0.2218,0,0,0,0,0,0,0,1,1,1},
                 {"MT IVTT","AutoSkim.Time",-0.0259,0,0,0,0,0,0,0,0,0,1}}
         }
         Args.SoloTourModeOtherAvail = {
@@ -2814,9 +2814,9 @@
                 {"Walk","WalkSkim.Distance <= 2"},
                 {"Bike","BikeSkim.Distance <= 5"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"},
-                {"MT","TAZDems.MTDist.O <> null and TAZDems.MTDist.O = TAZDems.MTDist.D"},
-                {"MT_Bus","TAZDems.MTDist.O <> null"},
-                {"MT_Rail","TAZDems.MTDist.O <> null"}}
+                {"MT","TAZData.MTDist.O <> null and TAZData.MTDist.O = TAZData.MTDist.D"},
+                {"MT_Bus","TAZData.MTDist.O <> null"},
+                {"MT_Rail","TAZData.MTDist.O <> null"}}
         }
 	
 	Section = "SoloTours|Mode|Shop"
@@ -2853,8 +2853,8 @@
                 {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.009,0,0,0,0,0,1,0,0,0,0},
                 {"Toll (DriveAlone)","AutoSkim.TollCostSOV",-0.045,1,0,0,0,0,0,0,0,0,0},
                 {"Toll (Carpool)","AutoSkim.TollCostHOV/2.25",-0.045,0,1,0,0,0,0,0,0,0,0},
-                {"MT Fare","nz(TAZDems.MTFare.O)",-1.2939,0,0,0,0,0,0,0,1,1,1},
-                {"MT Headway","nz(TAZDems.MTHeadway.O)",-0.2218,0,0,0,0,0,0,0,1,1,1},
+                {"MT Fare","nz(TAZData.MTFare.O)",-1.2939,0,0,0,0,0,0,0,1,1,1},
+                {"MT Headway","nz(TAZData.MTHeadway.O)",-0.2218,0,0,0,0,0,0,0,1,1,1},
                 {"MT IVTT","AutoSkim.Time",-0.0259,0,0,0,0,0,0,0,0,0,1}}
         }
         Args.SoloTourModeShopAvail = {
@@ -2865,9 +2865,9 @@
                 {"Walk","WalkSkim.Distance <= 1.5"},
                 {"Bike","BikeSkim.Distance <= 5"},
                 {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"},
-                {"MT","TAZDems.MTDist.O <> null and TAZDems.MTDist.O = TAZDems.MTDist.D"},
-                {"MT_Bus","TAZDems.MTDist.O <> null"},
-                {"MT_Rail","TAZDems.MTDist.O <> null"}}
+                {"MT","TAZData.MTDist.O <> null and TAZData.MTDist.O = TAZData.MTDist.D"},
+                {"MT_Bus","TAZData.MTDist.O <> null"},
+                {"MT_Rail","TAZData.MTDist.O <> null"}}
         }
 	
 	Section = "SoloTourStops|Frequency|Other"
