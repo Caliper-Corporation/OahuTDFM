@@ -559,7 +559,7 @@ Macro "Construct MC Spec"(Args, spec)
     for mainAlt in trMainAlts do
         pos = nests.Parent.Position(mainAlt)
         childAltString = nests.Alternatives[pos]
-        prunedAltString = RunMacro("Prune Transit Alt String", childAltString, activeTransitModes)
+        prunedAltString = RunMacro("Prune Transit Alt String", childAltString, activeTransitModes, Args)
         finalNests.Alternatives[pos] = prunedAltString
     end
 
@@ -701,10 +701,17 @@ Macro "Is value in array"(arr, val)
 endMacro
 
 
-Macro "Prune Transit Alt String"(str, activeTransitModes)
+Macro "Prune Transit Alt String"(str, activeTransitModes, Args)
+    
+    mtPresent = RunMacro("MT Districts Exist?", Args)
+    
     subModes = ParseString(str, " ,")
     outStr = null
     for mode in subModes do
+        // Skip microtransit modes if no districts are defined
+        is_mt = Left(Lower(mode), 2) = "mt" 
+        if is_mt and !mtPresent then continue
+        // skip rail if no rail routes in scenario
         if RunMacro("Is value in array", activeTransitModes, mode) then // Alternative present
             outStr = outStr + mode + ", "
     end
