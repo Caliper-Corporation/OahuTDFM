@@ -521,7 +521,7 @@ Macro "Discretionary Stops Dest"(Args, Opts)
 
         // Now that destinations have been computed, fill in the realized detour travel times
         opt = {ToursObj: objT, Filter: printf("%sStop > 0", {dir}), ODInfo: ODInfo, 
-                StopTAZField: "Stop" + dir + "TAZ", ModeField: "Mode", DepTimeField: depFld, 
+                StopTAZField: "Stop" + dir + "TAZ", ModeField: dir + "Mode", DepTimeField: depFld, 
                 OutputField: dir + "StopDeltaTT"}
         RunMacro("Calculate Detour TT", Args, opt)
 
@@ -650,7 +650,7 @@ Macro "Stop Scheduling Forward"(Args, opt)
 
         // Calculate arrival time at stop, departure time at stop and arrival time at main destination
         fillSpec = {View: vwT, OField: "HTAZ", DField: "StopForwardTAZ", FillField: "TimeToStopF", 
-                    Filter: MasterFilter, ModeField: "Mode", DepTimeField: "TourStartTime"}
+                    Filter: MasterFilter, ModeField: dir + "Mode", DepTimeField: "TourStartTime"}
         RunMacro("Fill Travel Times", Args, fillSpec)
 
         toursObj.ChangeSet({SetName: "__ForwardStops"})
@@ -661,7 +661,7 @@ Macro "Stop Scheduling Forward"(Args, opt)
 
         // Get travel time from stop to main destination
         fillSpec = {View: vwT, OField: "StopForwardTAZ", DField: "Destination", FillField: "TimeFromStopF", 
-                    Filter: MasterFilter, ModeField: "Mode", DepTimeField: "ForwardStopDeparture"}
+                    Filter: MasterFilter, ModeField: dir + "Mode", DepTimeField: "ForwardStopDeparture"}
         RunMacro("Fill Travel Times", Args, fillSpec)
 
         toursObj.ChangeSet({SetName: "__ForwardStops"})
@@ -704,7 +704,7 @@ Macro "Stop Scheduling Return"(Args, opt)
 
         // Calculate arrival time at stop, departure time at stop and arrival time at main destination
         fillSpec = {View: vwT, OField: "Destination", DField: "StopReturnTAZ", FillField: "TimeToStopR", 
-                    Filter: MasterFilter, ModeField: "Mode", DepTimeField: "DestDepTime"}
+                    Filter: MasterFilter, ModeField: dir + "Mode", DepTimeField: "DestDepTime"}
         RunMacro("Fill Travel Times", Args, fillSpec)
 
         toursObj.ChangeSet({SetName: "__ReturnStops"})
@@ -715,7 +715,7 @@ Macro "Stop Scheduling Return"(Args, opt)
 
         // Get travel time from stop to main destination
         fillSpec = {View: vwT, OField: "StopReturnTAZ", DField: "HTAZ", FillField: "TimeFromStopR", 
-                    Filter: MasterFilter, ModeField: "Mode", DepTimeField: "ReturnStopDeparture"}
+                    Filter: MasterFilter, ModeField: dir + "Mode", DepTimeField: "ReturnStopDeparture"}
         RunMacro("Fill Travel Times", Args, fillSpec)
 
         toursObj.ChangeSet({SetName: "__ReturnStops"})
