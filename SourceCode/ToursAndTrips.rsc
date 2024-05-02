@@ -1225,10 +1225,8 @@ Macro "Create InMemory Tour File"(type)
             {"ActivityEndTime", "Integer", 12, null, "No"},
             {"DestDepTime", "Integer", 12, null, "No"},
             {"TourEndTime", "Integer", 12, null, "No"},
-            {"Mode", "String", 15, null, "No"},
             {"ForwardMode", "String", 15, null, "No"},
             {"ReturnMode", "String", 15, null, "No"},
-            {"ModeCode", "Integer", 10, null, "No"},
             {"ForwardModeCode", "Integer", 10, null, "No"},
             {"ReturnModeCode", "Integer", 10, null, "No"},
             {"TODForward", "String", 2, null, "No"},
@@ -1297,12 +1295,10 @@ Macro "Get Joint Tour Segment"(spec)
     arrs.ActivityEndTime = v2a(vActEnd) 
     arrs.DestDepTime = v2a(vecs.("DepTimeFrom" + tag))
     arrs.TourEndTime = v2a(vecs.("ArrTimeFrom" + tag)) 
-    arrs.Mode = v2a(vMode)
     arrs.ForwardMode = v2a(vMode)
     arrs.ReturnMode = v2a(vMode)
-    arrs.ModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
-    arrs.ForwardModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
-    arrs.ReturnModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ForwardModeCode = arrs.ForwardMode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ReturnModeCode = arrs.ReturnMode.Map(do (f) Return(modeMap.(f)) end)
     arrs.IsAutoTour = v2a(vAutoTour) 
     arrs.AssignForwardHalf = v2a(Vector(n, "Short", {Constant: 1}))
     arrs.AssignReturnHalf = v2a(Vector(n, "Short", {Constant: 1}))  
@@ -1367,12 +1363,10 @@ Macro "Get Solo Tour Segment"(spec)
     arrs.ActivityEndTime = v2a(vActEnd) 
     arrs.DestDepTime = v2a(vecs.("DepTimeFrom" + tag))
     arrs.TourEndTime = v2a(vecs.("ArrTimeFrom" + tag)) 
-    arrs.Mode = v2a(vMode)
     arrs.ForwardMode = v2a(vMode)
     arrs.ReturnMode = v2a(vMode)
-    arrs.ModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
-    arrs.ForwardModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
-    arrs.ReturnModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ForwardModeCode = arrs.ForwardMode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ReturnModeCode = arrs.ReturnMode.Map(do (f) Return(modeMap.(f)) end)
     arrs.IsAutoTour = v2a(vAutoTour) 
     arrs.AssignForwardHalf = v2a(Vector(n, "Short", {Constant: 1}))
     arrs.AssignReturnHalf = v2a(Vector(n, "Short", {Constant: 1}))  
