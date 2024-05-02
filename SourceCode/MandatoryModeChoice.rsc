@@ -562,6 +562,12 @@ Macro "Construct MC Spec"(Args, spec)
         prunedAltString = RunMacro("Prune Transit Alt String", childAltString, activeTransitModes, Args)
         finalNests.Alternatives[pos] = prunedAltString
     end
+    // Check auto nest for MT
+    for i = 1 to finalNests.Alternatives.length do
+        childAltString = finalNests.Alternatives[i]
+        prunedAltString = RunMacro("Prune MT Alt String", childAltString, Args)
+        finalNests.Alternatives[i] = prunedAltString
+    end
 
     // Return
     ret = null
@@ -703,17 +709,33 @@ endMacro
 
 Macro "Prune Transit Alt String"(str, activeTransitModes, Args)
     
-    mtPresent = RunMacro("MT Districts Exist?", Args)
-    
     subModes = ParseString(str, " ,")
     outStr = null
     for mode in subModes do
-        // Skip microtransit modes if no districts are defined
-        is_mt = Left(Lower(mode), 2) = "mt" 
-        if is_mt and !mtPresent then continue
         // skip rail if no rail routes in scenario
         if RunMacro("Is value in array", activeTransitModes, mode) then // Alternative present
             outStr = outStr + mode + ", "
+    end
+    
+    // Remove final trailing ", "
+    if outStr = null or StringLength(outStr) < 3 then
+        Throw("Error processing transit alternatives. Please check nesting structure table.")
+    
+    outStr = Left(outStr, StringLength(outStr) - 2)
+    Return(outStr)
+endMacro
+
+// Removes MT if not present in scenario
+Macro "Prune MT Alt String"(str, Args)
+    
+    mtPresent = RunMacro("MT Districts Exist?", Args)
+
+    subModes = ParseString(str, " ,")
+    outStr = null
+    for mode in subModes do
+        is_mt = Left(Lower(mode), 2) = "mt" 
+        if is_mt and !mtPresent then continue
+        outStr = outStr + mode + ", "
     end
     
     // Remove final trailing ", "
