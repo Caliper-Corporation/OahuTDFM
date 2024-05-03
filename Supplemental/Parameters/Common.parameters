@@ -2001,7 +2001,6 @@
                 {"Walk Skim Length","WalkSkim.Distance",-0.6549,0,1,0,0},
                 {"Bike Skim Length","BikeSkim.Distance",-1.614,0,0,1,0}}
         }
-
         Args.AggModeAvail = {
             "Type":"array",
             "Caption":"Aggregate Tour Mode Availability - Solo and Joint",
@@ -2009,8 +2008,8 @@
             "Value":{
                 {"Walk","WalkSkim.Distance <= 2"},
                 {"Bike","BikeSkim.Distance <= 5"},
-                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}
-        }}
+                {"W_Bus","W_BusSkim.[In-Vehicle Time] <= 60 and W_BusSkim.[Total Time] <= 90"}}
+        }
 	
 	Section = "JointTours|Destination|Other|Size Variable"
 	
@@ -2212,12 +2211,12 @@
             "Caption":"Joint Tour Mode Other Utility",
             "Style":"JointTourOtherModeUtility",
             "Value":{
-                {"ASC (Auto)","Constant",3.9124,1,0,0,0,0,0,0,0,0},
+                {"ASC (Auto)","Constant",3.9124,1,0,0,0,0,0,0,0,1},
                 {"ASC (Walk)","Constant",3.2247,0,1,0,0,0,0,0,0,0},
                 {"ASC (W_Transit)","Constant",2.3723,0,0,0,1,1,0,0,0,0},
                 {"ASC (MT_Transit)","Constant",2.3723,0,0,0,0,0,0,1,1,0},
                 {"ASC (Rail)","Constant",0.31,0,0,0,0,1,0,0,0,0},
-                {"ASC (Other)","Constant",-1.2456,0,0,0,0,0,1,0,0,1},
+                {"ASC (Other)","Constant",-1.2456,0,0,0,0,0,1,0,0,0},
                 {"Walk Bus IVTT","W_BusSkim.[In-Vehicle Time]",-0.2218,0,0,0,1,0,0,0,0,0},
                 {"Walk Rail IVTT","W_RailSkim.[In-Vehicle Time]",-0.2218,0,0,0,0,1,0,0,0,0},
                 {"Parking Cost","nz(TAZData.ParkingCost.D)",-1.2939,1,0,0,0,0,0,0,0,0},
@@ -2768,13 +2767,13 @@
             "Caption":"Solo Tour Mode Other Utility",
             "Style":"SoloTourModeUtility",
             "Value":{
-                {"ASC (Driver)","Constant",2.4842,1,0,0,0,0,0,0,0,0,0},
+                {"ASC (Driver)","Constant",2.4842,1,0,0,0,0,0,0,0,0,1},
                 {"ASC (Passenger)","Constant",-0.5823,0,1,0,0,0,0,0,0,0,0},
                 {"ASC (Walk)","Constant",3.1893,0,0,1,0,0,0,0,0,0,0},
                 {"ASC (W_Transit)","Constant",0.5118,0,0,0,0,1,1,0,0,0,0},
                 {"ASC (MT_Transit)","Constant",0.5118,0,0,0,0,0,0,0,1,1,0},
                 {"ASC (Rail)","Constant",0.31,0,0,0,0,0,1,0,0,0,0},
-                {"ASC (Other)","Constant",-1.057,0,0,0,0,0,0,1,0,0,1},
+                {"ASC (Other)","Constant",-1.057,0,0,0,0,0,0,1,0,0,0},
                 {"HHVehicles >= 2","PersonHH.Vehicles >= 2",0.4959,1,0,0,0,0,0,0,0,0,0},
                 {"HHVehicles >= 3 (Driver)","PersonHH.Vehicles >= 3",0.4713,1,0,0,0,0,0,0,0,0,0},
                 {"HHVehicles >= 3 (Pass)","PersonHH.Vehicles >= 3",0.6404,0,1,0,0,0,0,0,0,0,0},
@@ -2826,13 +2825,13 @@
             "Caption":"Solo Tour Mode Shop Utility",
             "Style":"SoloTourModeUtility",
             "Value":{
-                {"ASC (Driver)","Constant",2.1538,1,0,0,0,0,0,0,0,0,0},
+                {"ASC (Driver)","Constant",2.1538,1,0,0,0,0,0,0,0,0,1},
                 {"ASC (Passenger)","Constant",0.8556,0,1,0,0,0,0,0,0,0,0},
                 {"ASC (Walk)","Constant",1.6659,0,0,1,0,0,0,0,0,0,0},
                 {"ASC (W_Transit)","Constant",-0.4978,0,0,0,0,1,1,0,0,0,0},
                 {"ASC (MT_Transit)","Constant",-0.4978,0,0,0,0,0,0,0,1,1,0},
                 {"ASC (Rail)","Constant",0.31,0,0,0,0,0,1,0,0,0,0},
-                {"ASC (Other)","Constant",-1.7846,0,0,0,0,0,0,1,0,0,1},
+                {"ASC (Other)","Constant",-1.7846,0,0,0,0,0,0,1,0,0,0},
                 {"HHVehicles >= 2 (Driver)","PersonHH.Vehicles >= 2",1.1466,1,0,0,0,0,0,0,0,0,0},
                 {"HHVehicles >= 2 (Passenger)","PersonHH.Vehicles >= 2",-0.8157,0,1,0,0,0,0,0,0,0,0},
                 {"HHVehicles >= 3","PersonHH.Vehicles >= 3",1.4326,1,0,0,0,0,0,0,0,0,0},
