@@ -363,14 +363,19 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     if railPresent then do
         WalkRailSkimFile = printf("%s\\output\\skims\\transit\\%s_w_rail.mtx", {Args.[Scenario Folder], tod})
     end
+    MTBusSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_bus.mtx", {Args.[Scenario Folder], tod})
+    MTRailSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_rail.mtx", {Args.[Scenario Folder], tod})
 
     obj = null
     obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\SoloToursMode" + purpose + tod + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "W_BusSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    mtPresent = RunMacro("MT Districts Exist?", Args)
+    if mtPresent then obj.AddMatrixSource({SourceName: "MT_BusSkim", File: MTBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     if railPresent then do
         obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        if mtPresent then obj.AddMatrixSource({SourceName: "MT_RailSkim", File: MTRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     end
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
@@ -378,15 +383,18 @@ Macro "SoloTours Mode Eval"(Args, MCOpts)
     obj.AddTableSource({SourceName: "PersonHH", View: abm.PersonHHView, IDField: abm.PersonID})
     obj.AddPrimarySpec({Name: "PersonHH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Solo_" + p + "_Destination"})
 
-    // filter out rail modes if rail is not present
-    if railPresent 
-        then util = Args.("SoloTourMode" + purpose + "Utility")
-        else util = RunMacro("Filter Rail Utility Spec", Args.("SoloTourMode" + purpose + "Utility"))
+    // Filter out modes that aren't present
+    {util, avail} = RunMacro(
+        "Filter Mode Utility Spec",
+        Args.("SoloTourMode" + purpose + "Utility"),
+        Args.("SoloTourMode" + purpose + "Avail"),
+        Args
+    )
 
     utilOpts = null
     utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<tourno>", tourNo}}
-    utilOpts.AvailabilityExpressions = Args.("SoloTourMode" + purpose + "Avail")
+    utilOpts.AvailabilityExpressions = avail
     obj.AddUtility(utilOpts)
 
     obj.AddOutputSpec({ChoicesField: "Solo_" + p + "_Mode"})

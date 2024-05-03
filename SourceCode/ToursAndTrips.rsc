@@ -54,23 +54,7 @@ Macro "Create Mandatory Tour File"(Args)
     v1 = Vector(v.length, "Long", {{"Sequence", 1, 1}})
     sortOrder = {{'HID', 'Ascending'}, {'PerID', 'Ascending'}, {'ActivityStartTime', 'Ascending'}}
     SetDataVector(vwT + "|", "TourID", v1, {SortOrder: sortOrder})
-    // Flip forward/return modes for microtransit acces by TOD
-    // E.g. AM network files (tnw) are drive access. This means that any AM
-    // return trips (that are walk access and drive egress) won't get assigned
-    // properly. Change them to W_Bus/Rail. Not perfect, but this will make
-    // sure they are assigned.
-    v_fwd_mode = GetDataVector(vwT + "|", "ForwardMode",)
-    v_ret_mode = GetDataVector(vwT + "|", "ReturnMode",)
-    v_fwd_tod = GetDataVector(vwT + "|", "TODForward",)
-    v_ret_tod = GetDataVector(vwT + "|", "TODReturn",)
-    v_fwd_mode = if v_fwd_tod = "PM" and Left(Lower(v_fwd_mode), 2) = "mt" 
-        then Substitute(v_fwd_mode, "MT_", "W_", 1)
-        else v_fwd_mode
-    v_ret_mode = if (v_ret_tod = "AM" or v_ret_tod = "MD" or v_ret_tod = "NT") and Left(Lower(v_ret_mode), 2) = "mt" 
-        then Substitute(v_ret_mode, "MT_", "W_", 1) 
-        else v_ret_mode
-    SetDataVector(vwT + "|", "ForwardMode", v_fwd_mode, )
-    SetDataVector(vwT + "|", "ReturnMode", v_ret_mode, )
+    RunMacro("Handle MT Access Mode Issues", vwT)
         
     CloseView(vwT)
     Return(true)
@@ -1166,6 +1150,7 @@ Macro "Write Joint Tour File"(Args)
         vecsOut.(arr[1]) = a2v(arr[2])
     end
     SetDataVectors(vwT + "|", vecsOut,)
+    RunMacro("Handle MT Access Mode Issues", vwT)
     exportOpts = {"Row Order": {{"HID", "Ascending"}, {"TourStartTime", "Ascending"}} }
     ExportView(vwT + "|", "FFB", Args.NonMandatoryJointTours,, exportOpts)
     CloseView(vwT)
@@ -1200,6 +1185,7 @@ Macro "Write Solo Tour File"(Args)
         vecsOut.(arr[1]) = a2v(arr[2])
     end
     SetDataVectors(vwT + "|", vecsOut,)
+    RunMacro("Handle MT Access Mode Issues", vwT)
     exportOpts = {"Row Order": {{"PerID", "Ascending"}, {"TourStartTime", "Ascending"}} }
     ExportView(vwT + "|", "FFB", Args.NonMandatorySoloTours,, exportOpts)
     CloseView(vwT)
@@ -1225,8 +1211,10 @@ Macro "Create InMemory Tour File"(type)
             {"ActivityEndTime", "Integer", 12, null, "No"},
             {"DestDepTime", "Integer", 12, null, "No"},
             {"TourEndTime", "Integer", 12, null, "No"},
-            {"Mode", "String", 15, null, "No"},
-            {"ModeCode", "Integer", 10, null, "No"},
+            {"ForwardMode", "String", 15, null, "No"},
+            {"ReturnMode", "String", 15, null, "No"},
+            {"ForwardModeCode", "Integer", 10, null, "No"},
+            {"ReturnModeCode", "Integer", 10, null, "No"},
             {"TODForward", "String", 2, null, "No"},
             {"TODReturn", "String", 2, null, "No"},
             {"IsAutoTour", "Integer", 2, null, "No"},
@@ -1293,8 +1281,10 @@ Macro "Get Joint Tour Segment"(spec)
     arrs.ActivityEndTime = v2a(vActEnd) 
     arrs.DestDepTime = v2a(vecs.("DepTimeFrom" + tag))
     arrs.TourEndTime = v2a(vecs.("ArrTimeFrom" + tag)) 
-    arrs.Mode = v2a(vMode)
-    arrs.ModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ForwardMode = v2a(vMode)
+    arrs.ReturnMode = v2a(vMode)
+    arrs.ForwardModeCode = arrs.ForwardMode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ReturnModeCode = arrs.ReturnMode.Map(do (f) Return(modeMap.(f)) end)
     arrs.IsAutoTour = v2a(vAutoTour) 
     arrs.AssignForwardHalf = v2a(Vector(n, "Short", {Constant: 1}))
     arrs.AssignReturnHalf = v2a(Vector(n, "Short", {Constant: 1}))  
@@ -1359,8 +1349,10 @@ Macro "Get Solo Tour Segment"(spec)
     arrs.ActivityEndTime = v2a(vActEnd) 
     arrs.DestDepTime = v2a(vecs.("DepTimeFrom" + tag))
     arrs.TourEndTime = v2a(vecs.("ArrTimeFrom" + tag)) 
-    arrs.Mode = v2a(vMode)
-    arrs.ModeCode = arrs.Mode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ForwardMode = v2a(vMode)
+    arrs.ReturnMode = v2a(vMode)
+    arrs.ForwardModeCode = arrs.ForwardMode.Map(do (f) Return(modeMap.(f)) end)
+    arrs.ReturnModeCode = arrs.ReturnMode.Map(do (f) Return(modeMap.(f)) end)
     arrs.IsAutoTour = v2a(vAutoTour) 
     arrs.AssignForwardHalf = v2a(Vector(n, "Short", {Constant: 1}))
     arrs.AssignReturnHalf = v2a(Vector(n, "Short", {Constant: 1}))  
@@ -1562,3 +1554,32 @@ Macro "Create Time Fields"(opt)
     end
     obj.SetDataVectors({FieldData: vecsSet})
 endMacro
+
+/*
+Flip forward/return modes for microtransit acces by TOD
+E.g. AM network files (tnw) are drive access. This means that any AM
+return trips trying to get back into the MT district won't get assigned.
+No MT is available to access on the return.
+Change these to walk access and walk egress. Not perfect, but this will make
+sure they are assigned.
+
+TODO: when we move to bi-directional transit networks by TOD, we can improve
+this.
+*/
+
+Macro "Handle MT Access Mode Issues" (vwT)
+    v_fwd_mode = GetDataVector(vwT + "|", "ForwardMode",)
+    v_ret_mode = GetDataVector(vwT + "|", "ReturnMode",)
+    v_fwd_tod = GetDataVector(vwT + "|", "TODForward",)
+    v_ret_tod = GetDataVector(vwT + "|", "TODReturn",)
+    // PM
+    v_fwd_mode = if v_fwd_tod = "PM" and Left(Lower(v_fwd_mode), 3) = "mt_"
+        then Substitute(v_fwd_mode, "MT_", "W_", 1)
+        else v_fwd_mode
+    // AM/MD/NT
+    v_ret_mode = if (v_fwd_tod <> "PM") and Left(Lower(v_ret_mode), 3) = "mt_"
+        then Substitute(v_ret_mode, "MT_", "W_", 1) 
+        else v_ret_mode
+    SetDataVector(vwT + "|", "ForwardMode", v_fwd_mode, )
+    SetDataVector(vwT + "|", "ReturnMode", v_ret_mode, )
+endmacro

@@ -706,14 +706,19 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     if railPresent then do
         WalkRailSkimFile = printf("%s\\output\\skims\\transit\\%s_w_rail.mtx", {Args.[Scenario Folder], tod})
     end
+    MTBusSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_bus.mtx", {Args.[Scenario Folder], tod})
+    MTRailSkimFile = printf("%s\\output\\skims\\transit\\%s_mt_rail.mtx", {Args.[Scenario Folder], tod})
     
     obj = null
     obj = CreateObject("PMEChoiceModel", {ModelName: modelName})
     obj.OutputModelFile = Args.[Output Folder] + "\\Intermediate\\JointToursMode" + purpose + tod + ".mdl"
     obj.AddMatrixSource({SourceName: "AutoSkim", File: Args.("HighwaySkim" + tod), RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "W_BusSkim", File: ptSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+    mtPresent = RunMacro("MT Districts Exist?", Args)
+    if mtPresent then obj.AddMatrixSource({SourceName: "MT_BusSkim", File: MTBusSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     if railPresent then do
         obj.AddMatrixSource({SourceName: "W_RailSkim", File: WalkRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
+        if mtPresent then obj.AddMatrixSource({SourceName: "MT_RailSkim", File: MTRailSkimFile, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     end
     obj.AddMatrixSource({SourceName: "WalkSkim", File: Args.WalkSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
     obj.AddMatrixSource({SourceName: "BikeSkim", File: Args.BikeSkim, RowIndex: "InternalTAZ", ColIndex: "InternalTAZ"})
@@ -721,15 +726,18 @@ Macro "JointTours Mode Eval"(Args, MCOpts)
     obj.AddTableSource({SourceName: "HH", View: abm.HHView, IDField: abm.HHID})
     obj.AddPrimarySpec({Name: "HH", Filter: MCOpts.Filter, OField: "TAZID", DField: "Joint_" + p + "_Destination"})
     
-    // filter out rail modes if rail is not present
-    if railPresent 
-        then util = Args.("JointTourMode" + purpose + "Utility")
-        else util = RunMacro("Filter Rail Utility Spec", Args.("JointTourMode" + purpose + "Utility"))
+    // Filter out modes that aren't present
+    {util, avail} = RunMacro(
+        "Filter Mode Utility Spec",
+        Args.("JointTourMode" + purpose + "Utility"),
+        Args.("JointTourMode" + purpose + "Avail"),
+        Args
+    )
 
     utilOpts = null
     utilOpts.UtilityFunction = util
     utilOpts.SubstituteStrings = {{"<purp>", p}}
-    utilOpts.AvailabilityExpressions = Args.("JointTourMode" + purpose + "Avail")
+    utilOpts.AvailabilityExpressions = avail
     obj.AddUtility(utilOpts)
     
     obj.AddOutputSpec({ChoicesField: "Joint_" + p + "_Mode"})
