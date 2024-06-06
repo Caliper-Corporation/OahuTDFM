@@ -257,7 +257,10 @@ Macro "transit skim" (Args)
                                     "WalkTime"
                                     }
                 obj.OutputMatrix({MatrixFile: outFile, MatrixLabel: label, Compression: True})
-
+                if acceMode <> "w" then do
+                    park_mtx = Substitute(outFile, ".mtx", "_parkaccess.mtx", )
+                    obj.ReportAccessParkMatrix({MatrixFile: park_mtx})
+                end
                 ok = obj.Run()
                 if !ok then goto quit
 
