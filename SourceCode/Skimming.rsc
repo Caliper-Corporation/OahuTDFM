@@ -215,6 +215,7 @@ Macro "transit skim" (Args)
                 if !ok then goto quit
 
                 // do skim
+                obj = null
                 obj = CreateObject("Network.PublicTransportSkims")
 
                 obj.Network = tnwFile
@@ -258,8 +259,10 @@ Macro "transit skim" (Args)
                                     }
                 obj.OutputMatrix({MatrixFile: outFile, MatrixLabel: label, Compression: True})
                 if acceMode <> "w" then do
-                    park_mtx = Substitute(outFile, ".mtx", "_parkaccess.mtx", )
-                    obj.ReportAccessParkMatrix({MatrixFile: park_mtx})
+                    park_mtx = Substitute(outFile, ".mtx", "_park.mtx", )
+                    if period = "PM"
+                        then obj.ReportEgressParkMatrix({MatrixFile: park_mtx})
+                        else obj.ReportAccessParkMatrix({MatrixFile: park_mtx})
                 end
                 ok = obj.Run()
                 if !ok then goto quit
