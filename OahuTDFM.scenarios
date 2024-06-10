@@ -2,3 +2,10 @@
     
 Scenario "Base Year"
 EndScenario    
+    
+Scenario "2045_baseline"
+    
+    [Scenario Folder] = "%Base Folder%\\Scenarios\\2045_baseline"
+    [Master SE] = "%Master Folder%\\sedata\\se_2045.bin"
+EndScenario
+    
