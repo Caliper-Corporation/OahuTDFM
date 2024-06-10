@@ -81,6 +81,7 @@ macro "PTAssign" (Args)
         for access in access_modes do
             tnet_file = net_dir + "/" + period + "_" + access + ".tnw"
             for transit_mode in transit_modes do
+                obj = null
                 obj = CreateObject("Network.PublicTransportAssignment", {RS: RouteSystem, NetworkName: tnet_file})
                 obj.ODLayerType = "Node"
                 obj.Method = "PFE"
