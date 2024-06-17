@@ -213,7 +213,7 @@ Macro "Mark KNR Nodes" (Args)
     links = CreateObject("Table", llyr)
     links.SelectByQuery({
         SetName: "drive_links",
-        Query: "Select * where D  = 1"
+        Query: "Select * where D  = 1 and HCMType <> 'Freeway'"
     })
     SetLayer(nlyr)
     SelectByLinks("drive nodes", "several", "drive_links", )
