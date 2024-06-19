@@ -38,6 +38,7 @@ Macro "GenerateTransitOD" (Args)
         mODT = CreateObject("Matrix", odmtx)
         mODT.SetRowIndex("Rows")
         mODT.SetColIndex("Columns")
+        mODT_cores = mODT.GetCoreNames()
         if i = 1 then do
             o = CreateObject("Matrix", {Empty: TRUE})
             mOut = o.CloneMatrixStructure({MatrixLabel: "TransitTrips", CloneSource: mODT.w_bus, MatrixFile: transitod, Matrices: cores })
@@ -47,6 +48,7 @@ Macro "GenerateTransitOD" (Args)
         for access in accessModes do
             for mode in transit_modes do
                 acc_mode = access + "_" + mode
+                if mODT_cores.position(acc_mode) = 0 then continue
                 mc = mODT.(acc_mode)
                 mo.(per + "_" + acc_mode + "_Trips") := mc
                 mo.("DAY_" + acc_mode + "_Trips") := nz(mo.("DAY_" + acc_mode + "_Trips")) + nz(mc)
