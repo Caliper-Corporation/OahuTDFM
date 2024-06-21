@@ -1113,28 +1113,43 @@ Macro "Create Microtransit Access Matrix" (Args)
     LineDB = Args.HighwayDatabase
     net_dir = Args.[Output Folder] + "/skims"
     periods = {"AM", "PM", "OP"}
+
+    map = CreateObject("Map", LineDB)
+    {nlyr, llyr} = map.GetLayerNames()
     
     se = CreateObject("Table", Args.DemographicOutputs)
     centroid_mt_ids = se.MTDist
     se = null
-    nodes = CreateObject("Table", {FileName: LineDB, LayerType: "Node"})
-    nodes.SelectByQuery({
-        SetName: "mt",
-        Query: "MTDist <> null"
-    })
-    node_mt_ids = nodes.MTDist
-    node_mt_fare = nodes.MTFare
-    node_mt_headway = nodes.MTHeadway
+    nodes = CreateObject("Table", nlyr)
 
     for period in periods do
         netfile = net_dir + "/highwaynet_" + period + ".net"
+
+        // MT nodes may not be reachable in all periods due to lane changes
+        // by time of day. Avoid errors by marking which MT nodes are reachable
+        // in the current period. This is then used to filter the origin-to-parking
+        // matrix.
+        nodes.AddField("in_network_" + period)
+        nh = ReadNetwork(netfile)
+        SetLayer(nlyr)
+        SelectFromNetwork("mt_in_net", "several", nh, )
+        nodes.ChangeSet("mt_in_net")
+        nodes.("in_network_" + period) = 1
+        nodes.SelectByQuery({
+            SetName: "mt",
+            Query: "MTDist <> null and in_network_" + period + " = 1"
+        })
+        node_mt_ids = nodes.MTDist
+        node_mt_fare = nodes.MTFare
+        node_mt_headway = nodes.MTHeadway
+
         out_file = Args.("MTAccessMatrix" + period)
         skimvar = "Time"
         obj = CreateObject("Network.Skims")
         obj.LoadNetwork (netfile)
         obj.LayerDB = LineDB
         obj.Origins ="Centroid <> null"
-        obj.Destinations = "MTDist <> null"
+        obj.Destinations = "MTDist <> null and in_network_" + period + " = 1"
         obj.Minimize = skimvar
         obj.AddSkimField({"Length", "All"})
         obj.OutputMatrix({MatrixFile: out_file, Matrix: "Microtransit Access Matrix"})
@@ -1156,7 +1171,8 @@ Macro "Create Microtransit Access Matrix" (Args)
             m.(core) := m.(core) * m.IntraDist
         end
         
-        // Transpose PM matrix (which is a drive egress network)
+        // Transpose PM matrix. The result of the above skim is a drive accesss
+        // matrix, but the PM network is set to drive egress. 
         if period = "PM" then do
             t_file = Substitute(out_file, ".mtx", "_transposed.mtx", )
             t = m.Transpose({OutputFile: t_file})
