@@ -1,5 +1,5 @@
 
-224
+240,codepage=1252
 "TAZ",I,1,4,0,11,0,,"","",,"Sum",
 "OccupiedHH",I,5,4,0,8,0,,"","Households|Occupied Housing Units as defined by Census",,"Sum",
 "Population",I,9,4,0,8,0,,"","Population living in households",,"Sum",
@@ -34,3 +34,6 @@
 "ParkingCost",R,209,8,0,10,2,,"","Hourly parking cost in dollars",,"Sum",
 "FreeParkingSpaces",I,217,4,0,8,0,,"","Number of free parking spaces",,"Sum",
 "AirportTrips",I,221,4,0,8,0,,"","Daily passengers (boarding + alighting) at the airport|https://www.transtats.bts.gov/airports.asp",,"Sum",
+"MTDist",I,225,4,0,8,0,,"","Microtransit district|Adjacent zones marked with the same MTDist value can use MT to transit|between zones in the district or to bus stops in the district.",,"Sum",
+"MTFare",R,229,8,0,10,2,,"","Microtransit Fare ($)|Fare paid for the MT vehicle",,"Sum",
+"MTHeadway",I,237,4,0,8,0,,"","Microtransit Headway (mins)|Time spent waiting for the MT vehicle",,"Sum",
