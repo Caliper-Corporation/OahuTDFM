@@ -2010,7 +2010,7 @@ Macro "Summarize Transit" (MacroOpts)
   
   // Passenger miles and hours
   flow = tables.flow
-  flow.mutate("pass_hours", flow.tbl.TransitFlow * flow.tbl.BaseIVTT)
+  flow.mutate("pass_hours", flow.tbl.TransitFlow * flow.tbl.BaseIVTT / 60)
   flow.mutate(
     "pass_miles", flow.tbl.TransitFlow * (flow.tbl.To_MP - flow.tbl.From_MP))
   flow.group_by("Route")
@@ -2328,7 +2328,7 @@ Macro "Create Intra Cluster Matrix"(Args)
 
   outMtx = Args.[Output Folder] + "/skims/IntraCluster.mtx"
   // Create empty matrix
-  obj = CreateObject("Matrix") 
+  obj = CreateObject("Matrix", {Empty: TRUE}) 
   obj.SetMatrixOptions({Compressed: 1, DataType: "Short", FileName: outMtx, MatrixLabel: "IntraCluster"})
   opts.RowIds = v2a(vTAZ) 
   opts.ColIds = v2a(vTAZ)

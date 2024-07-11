@@ -8,5 +8,6 @@ OahuABM.scenarios
 ui
 *.xml
 *.xsl
+*.bak
 OahuTDFM.scenarios
 Supplemental/Parameters/Common.parameters.bak

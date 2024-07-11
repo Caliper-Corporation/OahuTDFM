@@ -38,6 +38,8 @@ macro "HighwayNetworkSkim Oahu" (Args)
         obj.Destinations = "Centroid <> null"
         obj.Minimize = skimvar
         obj.AddSkimField({"Length", "All"})
+        obj.AddSkimField({"TollCostSOV", "All"})
+        obj.AddSkimField({"TollCostHOV", "All"})
         obj.OutputMatrix({MatrixFile: hwyskimfile, Matrix: "HighwaySkim"})
         ok = obj.Run()
 
@@ -62,6 +64,8 @@ macro "HighwayNetworkSkim Oahu" (Args)
 
         m = CreateObject("Matrix", hwyskimfile)
         m.RenameCores({CurrentNames: "Length (Skim)", NewNames: "Distance"})
+        m.RenameCores({CurrentNames: "TollCostSOV (Skim)", NewNames: "TollCostSOV"})
+        m.RenameCores({CurrentNames: "TollCostHOV (Skim)", NewNames: "TollCostHOV"})
         idx = m.AddIndex({IndexName: "TAZ",
                     ViewName: NodeLayer, Dimension: "Both",
                     OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
@@ -69,7 +73,13 @@ macro "HighwayNetworkSkim Oahu" (Args)
                     ViewName: NodeLayer, Dimension: "Both",
                     // OriginalID: "ID", NewID: "Centroid", Filter: "Centroid <> null and CentroidType = 'Internal'"})
                     OriginalID: "ID", NewID: "ID", Filter: "Centroid = 1"})
-            
+
+        // Fill the diagonals of the toll cores with zeroes
+        v = m.GetVector({Core: "TollCostSOV", Diagonal: "Row"})
+        m.SetVector({Core: "TollCostSOV", Vector: nz(v), Diagonal: 1})
+        
+        v = m.GetVector({Core: "TollCostHOV", Diagonal: "Row"})
+        m.SetVector({Core: "TollCostHOV", Vector: nz(v), Diagonal: 1})
     end
 
 
@@ -178,6 +188,10 @@ Macro "transit skim" (Args)
     rsFile = Args.TransitRoutes
     skim_dir = Args.OutputSkims
 
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then access_modes = ExcludeArrayElements(access_modes, access_modes.position("mt"), 1)
+
     Line = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Line"})
     Node = CreateObject("Table", {FileName: Args.HighwayDatabase, LayerType: "Node"})
     NodeLayer = Node.GetView()
@@ -190,7 +204,7 @@ Macro "transit skim" (Args)
         tnwFile = skim_dir + "\\transit\\" + period + "_" + acceMode + ".tnw"
         if acceMode = "w" 
             then TransModes = transit_modes
-            // if "pnr" or "knr" remove 'all'
+            // if "pnr" or "knr" or "mt" remove 'all'
             else TransModes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
 
             for transMode in TransModes do
@@ -201,6 +215,7 @@ Macro "transit skim" (Args)
                 if !ok then goto quit
 
                 // do skim
+                obj = null
                 obj = CreateObject("Network.PublicTransportSkims")
 
                 obj.Network = tnwFile
@@ -243,7 +258,12 @@ Macro "transit skim" (Args)
                                     "WalkTime"
                                     }
                 obj.OutputMatrix({MatrixFile: outFile, MatrixLabel: label, Compression: True})
-
+                if acceMode <> "w" then do
+                    park_mtx = Substitute(outFile, ".mtx", "_park.mtx", )
+                    if period = "PM"
+                        then obj.ReportEgressParkMatrix({MatrixFile: park_mtx})
+                        else obj.ReportAccessParkMatrix({MatrixFile: park_mtx})
+                end
                 ok = obj.Run()
                 if !ok then goto quit
 

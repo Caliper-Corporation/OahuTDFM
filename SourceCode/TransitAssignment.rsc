@@ -11,7 +11,11 @@ endmacro
 Macro "GenerateTransitOD" (Args)
     ret_value = 1
     periods = {"AM", "PM", "OP"}
-    accessModes = {"w", "pnr", "knr"}
+    accessModes = Args.AccessModes
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then ExcludeArrayElements(accessModes, accessModes.position("mt"), 1)
+        
     transit_modes = RunMacro("Get Transit Net Def Col Names", Args.TransitModeTable)
     transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
     
@@ -34,8 +38,9 @@ Macro "GenerateTransitOD" (Args)
         mODT = CreateObject("Matrix", odmtx)
         mODT.SetRowIndex("Rows")
         mODT.SetColIndex("Columns")
+        mODT_cores = mODT.GetCoreNames()
         if i = 1 then do
-            o = CreateObject("Matrix")
+            o = CreateObject("Matrix", {Empty: TRUE})
             mOut = o.CloneMatrixStructure({MatrixLabel: "TransitTrips", CloneSource: mODT.w_bus, MatrixFile: transitod, Matrices: cores })
             mo = CreateObject("Matrix", mOut)
         end
@@ -43,6 +48,7 @@ Macro "GenerateTransitOD" (Args)
         for access in accessModes do
             for mode in transit_modes do
                 acc_mode = access + "_" + mode
+                if mODT_cores.position(acc_mode) = 0 then continue
                 mc = mODT.(acc_mode)
                 mo.(per + "_" + acc_mode + "_Trips") := mc
                 mo.("DAY_" + acc_mode + "_Trips") := nz(mo.("DAY_" + acc_mode + "_Trips")) + nz(mc)
@@ -67,13 +73,17 @@ macro "PTAssign" (Args)
     // Get the main transit modes from the mode table. Exclude the all-transit network from assignment.
     transit_modes = RunMacro("Get Transit Net Def Col Names", Args.TransitModeTable)
     transit_modes = ExcludeArrayElements(transit_modes, transit_modes.position("all"), 1)
-    access_modes = {"w", "pnr", "knr"}
+    access_modes = Args.AccessModes
+    // Remove mt access modes if MT districts aren't defined
+    if !RunMacro("MT Districts Exist?", Args)
+        then access_modes = ExcludeArrayElements(access_modes, access_modes.position("mt"), 1)
     periods = {"AM", "PM", "OP"}
 
     for period in periods do
         for access in access_modes do
             tnet_file = net_dir + "/" + period + "_" + access + ".tnw"
             for transit_mode in transit_modes do
+                obj = null
                 obj = CreateObject("Network.PublicTransportAssignment", {RS: RouteSystem, NetworkName: tnet_file})
                 obj.ODLayerType = "Node"
                 obj.Method = "PFE"

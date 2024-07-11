@@ -188,6 +188,7 @@
                                                           {"Name":"Coefficient","Type":"real","Width":"10%","Decimals":"4"},
                                                           {"Name":"DriveAlone","Type":"boolean","Align":"center"},
                                                           {"Name":"Carpool","Type":"boolean","Align":"center"},
+                                                          {"Name":"MT","Type":"boolean","Align":"center"},
                                                           {"Name":"Other","Type":"boolean","Align":"center"}}
                                             })
 
@@ -208,7 +209,9 @@
                                                           {"Name":"PNR_Bus","Type":"boolean","Align":"center"},
                                                           {"Name":"PNR_Rail","Type":"boolean","Align":"center"},
                                                           {"Name":"KNR_Bus","Type":"boolean","Align":"center"},
-                                                          {"Name":"KNR_Rail","Type":"boolean","Align":"center"}}
+                                                          {"Name":"KNR_Rail","Type":"boolean","Align":"center"},
+                                                          {"Name":"MT_Bus","Type":"boolean","Align":"center"},
+                                                          {"Name":"MT_Rail","Type":"boolean","Align":"center"}}
                                             })
 
   Styles.SchModeUtility = Pme.Table({Height: 30, Autosize: "True", Values: "Columns", 
@@ -462,7 +465,10 @@
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT_Rail",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT",   Type: "boolean",    Fixed: "false"}}
                                             })
 
   Styles.JointTourShopModeUtility = Pme.Table({Height: 8, Autosize: "True", Values: "Columns", 
@@ -555,7 +561,10 @@
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Bus",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "W_Rail",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT_Bus",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT_Rail",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "MT",   Type: "boolean",    Fixed: "false"}}
                                             })
 
   Styles.SoloTourModeLSUtility = Pme.Table({Height: 11, Autosize: "True", Values: "Columns", 

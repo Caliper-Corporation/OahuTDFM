@@ -104,7 +104,7 @@ Class "ABM.TimeManager"(opts)
         vT = Vector(self.NumberTimeSlots, "Long", {{"Sequence", 1, 1}})
 
         // Create empty matrix: Current limitation of 'CreateFromArrays': Cannot accept InMemory Matrix
-        obj = CreateObject("Matrix")
+        obj = CreateObject("Matrix", {Empty: TRUE})
         obj.SetMatrixOptions({Compressed: 0, 
                                 DataType: "Short",
                                 FileName: GetTempPath() + "TimeUse1.mtx",

@@ -13,7 +13,7 @@ Macro "Create Empty Matrix"(mSpec)
     vID = GetDataVector(vwTAZ + "|", "TAZID",)
     tazIDs = SortArray(v2a(vID))
 
-    obj = CreateObject("Matrix") 
+    obj = CreateObject("Matrix", {Empty: TRUE}) 
     obj.SetMatrixOptions({Compressed: 1, DataType: mSpec.DataType, MatrixLabel: mSpec.Label})
     obj.MatrixFileName = mSpec.OutputFile
     opts = {RowIDs: tazIDs, ColIDs: tazIDs, MatrixNames: mSpec.Cores, RowIndexName: "TAZ", ColIndexName: "TAZ"}
@@ -45,3 +45,21 @@ Macro "NotImplemented"(Args)
     ShowMessage("Not yet implemented")
     Return(1)
 endMacro
+
+/*
+Determines if MT districts exist on the se data file.
+*/
+
+Macro "MT Districts Exist?" (Args)
+    se = CreateObject("Table", Args.DemographicOutputs)
+    field_names = se.GetFieldNames()
+    if field_names.position("MTDist") = 0
+        then return(0)
+    n = se.SelectByQuery({
+        SetName: "MTDist",
+        Query: "MTDist > 0"
+    })
+    if n = 0
+        then return(0)
+        else return(1)
+endmacro
