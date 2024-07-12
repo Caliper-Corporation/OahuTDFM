@@ -427,8 +427,8 @@ Macro "Import from GTFS" (MacroOpts)
   fields = {
     {FieldName: "shape_stop", Type: "integer"}//,
     // TODO: transfer these fields once they exist on the stop layer
-    // {FieldName: "dwell_on", Type: "real"},
-    // {FieldName: "dwell_off", Type: "real"},
+    {FieldName: "dwell_on", Type: "real"},
+    {FieldName: "dwell_off", Type: "real"},
     // {FieldName: "xfer_pen", Type: "real"}
   }
   stop_tbl.AddFields({Fields: fields})

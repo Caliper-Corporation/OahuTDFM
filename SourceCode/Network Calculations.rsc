@@ -906,6 +906,8 @@ Macro "Create Transit Networks" (Args)
 
             // stop attributes
             o.StopToNodeTagField = "Node_ID"
+            o.AddStopField({Name: "dwell_on", Field: "dwell_on"})
+            o.AddStopField({Name: "dwell_off", Field: "dwell_off"})
 
             // link attributes
             o.AddLinkField({Name: "bus_time", TransitFields: {"ABTransitTime" + period, "BATransitTime" + period},
@@ -1026,7 +1028,12 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     o.Combination(
         {CombinationFactor: .1
         })
-
+    o.StopTimeFields({
+        InitialPenalty: null,
+        //TransferPenalty: "xfer_pen",
+        DwellOn: "dwell_on",
+        DwellOff: "dwell_off"
+    })
     o.TimeGlobals(
         {Headway:         14,
          InitialPenalty:  0,
