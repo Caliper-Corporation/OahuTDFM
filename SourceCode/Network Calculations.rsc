@@ -1059,8 +1059,7 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
         // in turn point to the AB/BA fields on the link layer.
          TimeByMode:          "IVTT",
          ModesUsedField:      ModeUseFld,
-         OnlyCombineSameMode: true,
-         FreeTransfers:       2
+         OnlyCombineSameMode: "true"
         })
     
     o.ModeTimeFields({
@@ -1094,9 +1093,9 @@ Macro "Set Transit Network" (Args, period, acceMode, currTransMode)
     o.Fare(
         {Type:              "Flat",
          RouteFareField:    "Fare",
-         RouteXFareField:   "Fare",
-         FareValue:         0.0,
-         TransferFareValue: 0.0
+        //  RouteXFareField:   "XferFare",
+         FareValue:         0.0, // default value
+         TransferFareValue: 0.0 // defaul value
         })
 
     if currTransMode <> null then
