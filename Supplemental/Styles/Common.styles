@@ -366,7 +366,8 @@
 															                              {Name: "Carpool",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Walk",   Type: "boolean",    Fixed: "false"},
                                                             {Name: "Bike",   Type: "boolean",    Fixed: "false"},
-                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"}}
+                                                            {Name: "Other",   Type: "boolean",    Fixed: "false"},
+                                                            {Name: "W_Rail",   Type: "boolean",    Fixed: "false"}}
                                         })
 
     Styles.PatternChoice = Pme.Table({Height: 18, Autosize: "True", Values: "Columns", 
