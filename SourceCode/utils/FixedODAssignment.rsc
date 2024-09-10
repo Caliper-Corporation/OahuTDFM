@@ -123,7 +123,7 @@ dBox "FixedOD Multiple Projects" (Args) center, center, 50, 12 Title: "Fixed OD 
     static ref_scen_dir, sl_query, proj_list, add_rem_int, add_or_remove
     if add_rem_int = null then add_rem_int = 1
     if add_or_remove = null then add_or_remove = "add"
-    scen_dir = Args.[Scenarios Folder]
+    scen_dir = Args.[Scenario Folder]
   enditem
 
   close do
@@ -214,6 +214,8 @@ Macro "FixedOD Multiple Projects" (MacroOpts)
     data = proj_tbl.GetDataVectors()
     // for each row in the project list
     for i = 1 to data[1][2].length do
+      proj_ids = null
+
       // create an array of all project IDs in that row
       for j = 1 to data.length do
         proj_id = data[j][2][i]
@@ -222,6 +224,7 @@ Macro "FixedOD Multiple Projects" (MacroOpts)
         proj_ids = proj_ids + {proj_id}
       end
       
+    
       MacroOpts.proj_ids = proj_ids
       RunMacro("Create FixedOD Project Scenario", MacroOpts)
       RunMacro("Fixed OD Assignment", MacroOpts)
@@ -294,9 +297,6 @@ Macro "Create FixedOD Project Scenario" (MacroOpts)
       end
     end else do
       // Remove the project ID
-      // tbl = CreateObject("Table", file)
-      // ids = tbl.ProjID
-      // tbl = null
       for proj_id in proj_ids do
         if ids.position(proj_id) = 0 then Throw(
           "Project ID to remove ('" + proj_id + "') not found in project list\n" +
@@ -320,5 +320,7 @@ Macro "Create FixedOD Project Scenario" (MacroOpts)
     mr.SetScenario(new_scen_name_full)
 
     // Call the standard TRMG2 create scenario macro
-    ret = mr.RunCode("Create Scenario", mr.GetValues())
+    Args = mr.GetValues()
+    Args.silent = "true"
+    ret = mr.RunCode("Create Scenario", Args)
 endmacro

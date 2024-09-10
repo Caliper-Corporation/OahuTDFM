@@ -121,6 +121,11 @@ Menu "Oahu Menu"
         Args = mr.GetValues()
         mr.RunCode("Open Fixed OD Dbox", Args)
     enditem
+    MenuItem "fixed_od_multi" text: "FixedOD Multiple Projects" do
+        mr = CreateObject("Model.Runtime")
+        Args = mr.GetValues()
+        mr.RunCode("Open FixedOD Multiple Projects Dbox", Args)
+    enditem
     MenuItem "Calibrate" text: "Calibrate Choice Models" menu "MENU_Calibration"
 endMenu
 menu "MENU_Calibration"
