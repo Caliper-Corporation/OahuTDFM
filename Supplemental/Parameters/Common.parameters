@@ -1824,8 +1824,8 @@
                 {"ASC Rail","Constant",2.3405,0,0,0,0,0,1},
                 {"WorkTAZ same as StopTAZ","TourData.Destination = TourData.SubTourTAZ",2.872,0,0,1,1,0,0},
                 {"Distance if greater than 0.5 mile","(WalkSkim.Distance > 0.5)*WalkSkim.Distance",-3.088,0,0,1,0,0,0},
-                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99.0,0,0,1,0,0,0},
-                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99.0,0,0,0,1,0,0}}
+                {"Distance if greater than 1.5 mile","(WalkSkim.Distance > 1.5)*WalkSkim.Distance",-99,0,0,1,0,0,0},
+                {"Distance if greater than 5 mile","(WalkSkim.Distance > 5)*WalkSkim.Distance",-99,0,0,0,1,0,0}}
         }
         Args.SubTourDAPct = {
             "Type":"double",

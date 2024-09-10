@@ -9,7 +9,7 @@ dBox "FixedOD" (Args) center, center, 50, 8 Title: "Fixed OD Assignment" Help: "
 
   init do
     static ref_scen_dir, sl_query
-    scen_dir = Args.[Scenarios Folder]
+    scen_dir = Args.[Scenario Folder]
   enditem
 
   close do
@@ -69,18 +69,17 @@ Macro "Fixed OD Assignment" (MacroOpts)
 
     mr = CreateObject("Model.Runtime")
     Args = mr.GetValues()
-    ret = mr.RunStep("Create Initial Output Files", {Silent: "true"})
-    if !ret then Throw("Fixed OD: 'Create Initial Output Files' failed")
-    ret = mr.RunStep("Network Calculators", {Silent: "true"})
-    if !ret then Throw("Fixed OD: 'Network Calculators' failed")
+    Args.periods = Args.TimePeriods
+    // ret = mr.RunCode("Network Calculations", Args)
+    RunMacro("Network Calculations", Args)
+    RunMacro("BuildHighwayNetwork Oahu", Args)
+    RunMacro("Check Highway Network", Args)
     RunMacro("Copy Files for Fixed OD", Args, ref_scen_dir)
 
     // Run assignments
     Args.sl_query = sl_query
     periods = Args.periods
-    for period in periods do
-        RunMacro("Run Roadway Assignment", Args, {period: period})
-    end
+    RunMacro("Highway Assignment", Args, periods)
 
     // Run summary macros of interest
     RunMacro("Load Link Layer", Args)
@@ -90,7 +89,6 @@ Macro "Fixed OD Assignment" (MacroOpts)
     RunMacro("VOC Maps", Args)
     RunMacro("Speed Maps", Args)
     RunMacro("Summarize Links", Args)
-    RunMacro("VMT_Delay Summary", Args)
 endmacro
 
 /*
@@ -104,11 +102,11 @@ Macro "Copy Files for Fixed OD" (Args, ref_scen_dir)
     periods = Args.periods
 
     // OD matrices
-    from_od_dir = from_dir + "/output/assignment/roadway"
-    to_od_dir = to_dir + "/output/assignment/roadway/"
+    from_od_dir = from_dir + "/Output/OD"
+    to_od_dir = to_dir + "/Output/OD/"
     for period in periods do
-        from_file = from_od_dir + "/od_veh_trips_" + period + ".mtx"
-        to_file = to_od_dir + "/od_veh_trips_" + period + ".mtx"
+        from_file = from_od_dir + "/" + period + "_OD.mtx"
+        to_file = to_od_dir + "/" + period + "_OD.mtx"
         CopyFile(from_file, to_file)
     end
 endmacro
