@@ -3,7 +3,7 @@
 */
 
 Macro "Highway Assignment AM OP PM" (Args)
-    periods = Args.TimePeriods
+    periods = {"AM", "OP", "PM"}
     RunMacro("Highway Assignment", Args, periods)
     return(1)
 endmacro
