@@ -364,7 +364,7 @@ Macro "Speed Maps" (Args)
   hwy_dbd = Args.HighwayDatabase
   periods = {"AM", "PM", "OP"}
   output_dir = Args.[Output Folder] + "/_reports/maps"
-  RunMacro("Create Directory", output_dir)
+  if GetDirectoryInfo(output_dir, "All") = null then CreateDirectory(output_dir)
 
   for period in periods do
 
