@@ -50,8 +50,8 @@ Macro "Load Link Layer" (Args)
             })
 
             // Get data vectors
-            v_fft = nz(tbl.ABFreeFlowTime)
-            v_ct = nz(tbl.(dir + period + "Time"))
+            v_fft = nz(tbl.(dir + "FreeFlowTime"))
+            v_ct = nz(tbl.(dir + "_Time_" + period))
             v_vol = nz(tbl.(dir + "_Flow_" + period))
 
             // Calculate delay
