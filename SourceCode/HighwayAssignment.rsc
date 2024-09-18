@@ -53,7 +53,7 @@ Macro "Highway Assignment" (Args, periods)
             Demand: "drivealone",
             PCE: 1,
             VOI: Args.auto_vot,
-            ExclusionFilter: "HOV = 'HOV' and Toll <> 'HOT'",
+            ExclusionFilter: "HOV = 'HOV' and TollType <> 'HOT'",
             LinkTollField: "TollCostSOV"
         })
         // hov
