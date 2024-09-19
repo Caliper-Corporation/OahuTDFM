@@ -1789,11 +1789,15 @@ Macro "Link Summary" (MacroOpts)
   for field in summary_fields do
     fieldstats.(field) = "sum"
   end
-  hwy_tbl = hwy_tbl.Aggregate({
+  agg_tbl = hwy_tbl.Aggregate({
     GroupBy: grouping_fields,
     FieldStats: fieldstats
   })
-  hwy_tbl.Export({FileName: output_file})
+  export = agg_tbl.Export({FileName: output_file})
+
+  export = null
+  agg_tbl = null
+  hwy_tbl = null
 EndMacro
 
 /*
