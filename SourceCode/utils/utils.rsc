@@ -1541,6 +1541,7 @@ Macro "Count Difference Map" (macro_opts)
       GroupBy: count_id_field,
       FieldStats: {Count: "sum", Volume: "sum"}
     })
+    agg_vw = df2.GetView()
 
     // Join aggregated data back to disaggregate column of count IDs
     join = df.Join({
@@ -1687,6 +1688,7 @@ Macro "Count Difference Map" (macro_opts)
   RestoreWindow(GetWindowName())
   SaveMap(map, output_file)
   CloseMap(map)
+  if agg_vw <> null then CloseView(agg_vw)
 EndMacro
 
 /*
@@ -1793,11 +1795,13 @@ Macro "Link Summary" (MacroOpts)
     GroupBy: grouping_fields,
     FieldStats: fieldstats
   })
+  agg_vw = agg_tbl.GetView()
   export = agg_tbl.Export({FileName: output_file})
-
+  
   export = null
   agg_tbl = null
   hwy_tbl = null
+  CloseView(agg_vw)
 EndMacro
 
 /*
