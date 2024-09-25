@@ -2635,7 +2635,6 @@ Macro "Roadway Count Comparison Tables" (MacroOpts)
     vw = agg.GetView()
     agg = null
     CloseView(vw)
-    tbl = null
   end
 
   // Volume group table
