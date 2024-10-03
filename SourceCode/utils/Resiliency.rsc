@@ -11,7 +11,8 @@ Macro "test"
     RunMacro("Resiliency", {
         hwy_dbd: "C:\\projects\\Oahu\\working_files\\resiliency\\base_2022_output_layer\\scenario_links.dbd",
         net_query: "D = 1",
-        analyze_query: "resiliency = 1"
+        analyze_query: "resiliency = 1",
+        se_file: "C:\\projects\\Oahu\\working_files\\resiliency\\scenario_se.bin"
     })
     ShowMessage("Resiliency analysis complete.")
 endmacro
@@ -38,6 +39,7 @@ Macro "Resiliency" (MacroOpts)
     hwy_dbd = MacroOpts.hwy_dbd
     net_query = MacroOpts.net_query
     analyze_query = MacroOpts.analyze_query
+    se_file = MacroOpts.se_file
 
     map = CreateObject("Map", hwy_dbd)
     {nlyr, llyr} = map.GetLayerNames()
@@ -49,6 +51,7 @@ Macro "Resiliency" (MacroOpts)
     link_tbl.AddField({FieldName: "BaseSkimIJCount", Description: "total skim IJ count with all links enabled"})
     link_tbl.AddField({FieldName: "SkimIJCount", Description: "total skim IJ count with link disabled"})
     link_tbl.AddField({FieldName: "Disconnections", Description: "SkimIJCount - BaseSkimIJCount"})
+    link_tbl.AddField({FieldName: "DisconnectedPop", Description: "Population in disconnected zones"})
     link_tbl.Time = link_tbl.Length / link_tbl.PostedSpeed * 60
     link_tbl.SelectByQuery({
         SetName: "links_to_analyze",
@@ -67,9 +70,15 @@ Macro "Resiliency" (MacroOpts)
     net.OutNetworkName = net_file
     net.Run()
 
+    // Get the vector of zonal population, which is used to calculate
+    // disconnected population.
+    se_tbl = CreateObject("Table", se_file)
+    v_pop = se_tbl.Population
+
     // Calculate base stats (with all links enabled)
     opts.net_file = net_file
     opts.hwy_dbd = hwy_dbd
+    opts.v_pop = v_pop
     opts.llyr = llyr
     base_stats = RunMacro("Iterate", opts)
     link_tbl.BaseSkimTime = base_stats.Sum
@@ -101,6 +110,7 @@ Macro "Resiliency" (MacroOpts)
         // Write results
         llyr.SkimTime = stats.Sum
         llyr.SkimIJCount = stats.Count
+        llyr.DisconnectedPop = stats.disconnected_pop
 
         // Re-enable link before next iteration
         net_update.EnableLinks({Type: "BySet", Filter: "ID = " + String(id)})
@@ -120,6 +130,7 @@ Macro "Iterate" (MacroOpts)
     net_file = MacroOpts.net_file
     hwy_dbd = MacroOpts.hwy_dbd
     llyr = MacroOpts.llyr
+    v_pop = MacroOpts.v_pop
 
     // Skim
     skim = CreateObject("Network.Skims")
@@ -135,9 +146,29 @@ Macro "Iterate" (MacroOpts)
     })
     skim.Run()
 
-    // Calculate resilience metrics
+    // Calculate resilience metrics including population of disconnected zones
     mtx = CreateObject("Matrix", mtx_file)
     stats = mtx.GetMatrixStatistics("Time")
+    // Calculated how much population is disconnected
+    v_index = mtx.GetVector({
+        Core: 1,
+        Index: "Row"
+    })
+    mtx.AddCores("is_null")
+    mtx.is_null := if mtx.Time = null then 1 else 0
+    v_row_sum = mtx.GetVector({
+        Core: "is_null",
+        Marginal: "Row Sum"
+    })
+    v_row_sum.rowbased = "true"
+    // All rows will have some null values (at least 1 on the diagonal).
+    // To avoid considering all TAZs as disconnected, identify which
+    // have more than half their destinations disconnected.
+    v_disconnected = if v_row_sum > v_row_sum.length / 2 then 1 else 0
+    v_temp_pop = CopyVector(v_pop)
+    v_temp_pop = if nz(v_disconnected) = 1 then v_temp_pop else 0
+    disconnected_pop = v_temp_pop.sum()
+    stats.disconnected_pop = disconnected_pop
     skim = null
     mtx = null
     DeleteFile(mtx_file)
