@@ -26,7 +26,7 @@ source("R/translate_table.R")
 ## Translate Variables
 
 ```{r}
-file <- "data/_private/vis_survey_2024/Oahu 2024 Visitor Survey Database Final Version Submitted Oct 24 with data dictionary.xlsx"
+file <- "data/_private/vis_survey_2024/Oahu 2024 Visitor Survey Database Final Version Submitted with data dictionary_Revised Jan 15.xlsx"
 per <- read_excel(file, sheet = 3)
 loc <- read_excel(file, sheet = 5)
 
